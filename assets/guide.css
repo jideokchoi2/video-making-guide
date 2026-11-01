@@ -1,0 +1,110 @@
+/* 진성쌤 AI 영상 만들기 가이드 — 공용 스타일 (캐릭터 공방과 같은 색·글꼴) */
+:root{
+  --bg:#EEF1F6; --surface:#FFFFFF; --sunk:#F6F8FB; --ink:#152036; --muted:#5A6680; --line:#D6DCE7;
+  --accent:#2E57E8; --accent-ink:#FFFFFF; --mark:#FFD94A; --mark-ink:#3A2E00; --ok:#1F8A5B; --warn:#B4541A;
+  --bubble:#E7ECFA;
+  --f-display:"Black Han Sans","IBM Plex Sans KR",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,monospace;
+  --r:14px;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 var(--f-body);-webkit-text-size-adjust:100%}
+a{color:var(--accent)}
+img{max-width:100%}
+mark{background:var(--mark);color:var(--mark-ink);padding:0 .15em;border-radius:4px}
+
+/* ── 상단 내비게이션 ── */
+.topbar{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.94);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.topbar-in{max-width:1180px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.brand{font:20px var(--f-display);color:var(--ink);text-decoration:none;white-space:nowrap}
+.brand b{color:var(--accent);font-weight:400}
+.steps{display:flex;gap:6px;flex-wrap:wrap;margin:0;padding:0;list-style:none}
+.steps a{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;text-decoration:none;color:var(--muted);font-size:14px;font-weight:500;border:1px solid transparent}
+.steps a:hover{background:var(--sunk)}
+.steps a .n{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--line);color:var(--ink);font:12px var(--f-mono)}
+.steps a[aria-current="page"]{background:var(--accent);color:var(--accent-ink)}
+.steps a[aria-current="page"] .n{background:#fff;color:var(--accent)}
+
+/* ── 레이아웃 ── */
+.wrap{max-width:1180px;margin:0 auto;padding:28px 16px 64px}
+.hero{padding:12px 0 8px}
+.eyebrow{font:500 13px var(--f-mono);letter-spacing:.06em;color:var(--accent);text-transform:uppercase}
+h1{font:400 clamp(30px,5vw,46px)/1.2 var(--f-display);margin:6px 0 10px}
+h2{font:400 26px/1.3 var(--f-display);margin:0 0 12px}
+h2 small{font:500 14px var(--f-body);color:var(--muted);margin-left:8px}
+h3{font-size:18px;margin:0 0 6px}
+.lede{font-size:18px;color:var(--muted);max-width:760px;margin:0}
+section{margin-top:36px}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+.split{display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr);gap:24px;align-items:start}
+.split > .sticky{position:sticky;top:76px;max-height:calc(100vh - 92px);overflow:auto}
+@media (max-width:900px){.grid2,.split{grid-template-columns:minmax(0,1fr)}.split > .sticky{position:static}}
+
+/* ── 카드 ── */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px}
+.card + .card{margin-top:16px}
+.card-title{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.badge{display:inline-grid;place-items:center;min-width:28px;height:28px;padding:0 8px;border-radius:8px;background:var(--accent);color:#fff;font:600 14px var(--f-mono)}
+.tag{display:inline-block;padding:2px 8px;border-radius:6px;background:var(--bubble);color:var(--accent);font-size:12px;font-weight:600}
+.muted{color:var(--muted)}
+.small{font-size:14px}
+
+/* ── 폼 ── */
+label.f{display:block;font-weight:600;font-size:15px;margin:16px 0 6px}
+label.f:first-child{margin-top:0}
+label.f span{font-weight:400;color:var(--muted);font-size:13px;margin-left:6px}
+input[type=text],input[type=number],textarea,select{width:100%;font:15px/1.5 var(--f-body);color:var(--ink);background:var(--sunk);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+textarea{resize:vertical;min-height:90px}
+input:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-offset:1px;background:#fff}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips input{position:absolute;opacity:0;pointer-events:none}
+.chips label{padding:7px 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface);font-size:14px;cursor:pointer;user-select:none}
+.chips input:checked + label{background:var(--accent);border-color:var(--accent);color:#fff}
+.chips input:focus-visible + label{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ── 버튼 ── */
+.btn{display:inline-flex;align-items:center;gap:6px;font:600 14px var(--f-body);padding:9px 16px;border-radius:10px;border:1px solid var(--accent);background:var(--accent);color:#fff;cursor:pointer;text-decoration:none}
+.btn.ghost{background:var(--surface);color:var(--accent)}
+.btn.sm{padding:5px 10px;font-size:13px}
+.btn.done{background:var(--ok);border-color:var(--ok);color:#fff}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* ── 프롬프트 출력 ── */
+.out{position:relative;background:var(--sunk);border:1px dashed var(--line);border-radius:10px;padding:14px 14px 12px;margin-top:8px}
+.out pre{margin:0;white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere;font:14px/1.7 var(--f-mono)}
+.out-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+.out-head b{font-size:14px}
+
+/* ── 안내 상자 ── */
+.note{border-left:4px solid var(--accent);background:var(--bubble);padding:12px 16px;border-radius:0 10px 10px 0;font-size:15px}
+.note.warn{border-color:var(--warn);background:#FBEFE6}
+.note.ok{border-color:var(--ok);background:#E6F4EC}
+ol.flow{counter-reset:s;list-style:none;padding:0;margin:0}
+ol.flow > li{counter-increment:s;position:relative;padding:0 0 18px 44px}
+ol.flow > li::before{content:counter(s);position:absolute;left:0;top:0;width:30px;height:30px;border-radius:50%;background:var(--mark);color:var(--mark-ink);display:grid;place-items:center;font:600 14px var(--f-mono)}
+ol.flow > li:not(:last-child)::after{content:"";position:absolute;left:14px;top:32px;bottom:2px;width:2px;background:var(--line)}
+
+/* ── 표 ── */
+.tbl{width:100%;border-collapse:collapse;font-size:15px;background:var(--surface)}
+.tbl th,.tbl td{border:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}
+.tbl th{background:var(--sunk);font-weight:600}
+.tbl-wrap{overflow-x:auto;border-radius:var(--r)}
+
+/* ── 단계 이동 ── */
+.pager{display:flex;justify-content:space-between;gap:12px;margin-top:48px;padding-top:20px;border-top:1px solid var(--line)}
+.pager a{flex:1;max-width:48%;padding:14px 18px;border-radius:var(--r);background:var(--surface);border:1px solid var(--line);text-decoration:none;color:var(--ink)}
+.pager a small{display:block;color:var(--muted);font-size:13px}
+.pager a.next{text-align:right;margin-left:auto}
+footer{text-align:center;color:var(--muted);font-size:13px;padding:24px 16px 40px}
+
+/* ── 체크리스트 ── */
+.check{list-style:none;padding:0;margin:0}
+.check li{border-bottom:1px solid var(--line)}
+.check label{display:flex;gap:10px;padding:10px 4px;cursor:pointer}
+.check input{width:18px;height:18px;margin-top:4px;accent-color:var(--ok);flex:none}
+.check input:checked + span{color:var(--muted);text-decoration:line-through}
+.progress{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin:8px 0 4px}
+.progress i{display:block;height:100%;background:var(--ok);width:0;transition:width .3s}

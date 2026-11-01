@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>완성과 점검</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="assets/guide.css">
+</head>
+<body>
+<div id="topbar"></div>
+
+<main class="wrap">
+  <div class="hero">
+    <div class="eyebrow">4단계 · 조립과 점검</div>
+    <h1>브루에서 <mark>완성</mark>하고 점검하기</h1>
+    <p class="lede">앞 단계에서 만든 대본과 장면 재료를 브루에서 하나로 합쳐요. 내보내기 전에 체크리스트로 마지막 점검을 하세요.</p>
+  </div>
+
+  <section>
+    <h2>A. 브루에서 조립하기</h2>
+    <div class="grid2">
+      <div class="card">
+        <h3>방법 ① 브루가 장면까지 만들게 하기 <span class="tag">빠름</span></h3>
+        <ol class="flow" style="margin-top:14px">
+          <li><b>텍스트로 비디오 만들기</b>에서 비율(16:9 / 9:16)을 고릅니다.</li>
+          <li>2단계의 <b>주제 칸·대본 프롬프트</b>를 넣고 AI 글쓰기로 대본을 받거나, 완성 대본을 직접 붙여 넣습니다.</li>
+          <li><b>비디오 꾸미기</b>에서 AI 목소리를 고르고, 이미지 스타일 칸에 2단계 ④ <b>이미지 프롬프트</b>를 넣습니다.</li>
+          <li>만들어진 영상을 문장(클립)별로 훑어보며 어색한 장면만 바꿉니다.</li>
+        </ol>
+      </div>
+      <div class="card">
+        <h3>방법 ② 내가 만든 장면으로 바꾸기 <span class="tag">일관성 높음</span></h3>
+        <ol class="flow" style="margin-top:14px">
+          <li>3단계 프롬프트로 씬별 이미지(또는 짧은 영상)를 만들어 <code>03_장면</code> 폴더에 <b>#1, #2…</b> 번호를 붙여 저장합니다.</li>
+          <li>방법 ①로 뼈대를 만든 뒤, 각 클립의 이미지/영상을 저장해 둔 파일로 <b>교체</b>합니다.</li>
+          <li>영상 클립 길이가 대사보다 짧으면 마지막 프레임을 늘리거나, 대사 문장을 둘로 나눠 맞춥니다.</li>
+        </ol>
+      </div>
+    </div>
+    <p class="small muted">브루의 메뉴 이름과 위치는 버전에 따라 조금씩 달라질 수 있어요. 비슷한 이름의 메뉴를 찾아 주세요.</p>
+  </section>
+
+  <section>
+    <h2>B. AI 목소리 · 자막 · 음악 다듬기</h2>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th style="width:22%">무엇을</th><th>이렇게 하면 좋아요</th><th style="width:30%">예시</th></tr></thead>
+        <tbody>
+          <tr><td><b>숫자·영어 발음</b></td><td>읽는 소리대로 한글로 바꿔 적으면 AI 목소리가 틀리지 않아요. 자막은 숫자 그대로 두고 싶다면 자막과 음성 텍스트를 따로 고치세요.</td><td>30초 → 삼십 초<br>AI → 에이아이</td></tr>
+          <tr><td><b>호흡</b></td><td>쉼표와 마침표가 곧 쉬는 자리예요. 너무 빠르면 문장을 짧게 나누세요.</td><td>"자, 이제, 손등을 문질러요."</td></tr>
+          <tr><td><b>강조</b></td><td>강조할 낱말 앞에서 문장을 끊으면 또렷하게 들려요.</td><td>"제일 중요한 곳은. 손톱 밑이에요."</td></tr>
+          <tr><td><b>자막</b></td><td>한 줄 15자 안팎, 최대 두 줄. 오탈자는 자막을 보며 한 번, 소리를 들으며 한 번 더 확인해요.</td><td>—</td></tr>
+          <tr><td><b>배경음악</b></td><td>영상 전체에 한 곡만, 목소리보다 확실히 작게. 브루 안의 무료 음악이나 유튜브 오디오 보관함처럼 <b>사용 조건이 분명한 음원</b>만 쓰고 출처 표기 조건을 확인해요.</td><td>—</td></tr>
+          <tr><td><b>효과음</b></td><td>장면이 바뀌는 곳이나 정답 공개처럼 꼭 필요한 곳에만 넣어요.</td><td>퀴즈 정답 "딩동!"</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>C. 내보내기 전 체크리스트 <small>체크 상태는 이 브라우저에 저장돼요</small></h2>
+    <div class="card">
+      <div class="row" style="justify-content:space-between"><b id="pct">0 / 0</b><button class="btn sm ghost" id="reset" type="button">모두 해제</button></div>
+      <div class="progress"><i id="bar"></i></div>
+      <ul class="check" id="check"></ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>D. 수업용 평가 루브릭 <small>학생 작품 평가·자기 점검용</small></h2>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th style="width:16%">평가 요소</th><th>잘함</th><th>보통</th><th>노력 필요</th></tr></thead>
+        <tbody>
+          <tr><td><b>기획</b><br><span class="small muted">주제·대상</span></td><td>보는 사람에게 맞는 주제를 정하고, 첫 문장과 마지막 행동 약속이 분명하다.</td><td>주제는 분명하지만 시작이나 마무리가 약하다.</td><td>주제가 흐리거나 내용이 흩어져 있다.</td></tr>
+          <tr><td><b>프롬프트</b><br><span class="small muted">피동장스</span></td><td>피사체·동작·장소·스타일을 모두 구체적으로 쓰고, 결과를 보고 스스로 고쳐 다시 만들었다.</td><td>네 요소를 썼지만 일부가 막연하다.</td><td>요소가 빠져 원하는 결과를 얻지 못했다.</td></tr>
+          <tr><td><b>일관성</b></td><td>모든 장면에서 캐릭터의 얼굴·옷·그림체가 같다.</td><td>한두 장면에서 캐릭터가 달라 보인다.</td><td>장면마다 캐릭터가 달라 같은 인물로 보기 어렵다.</td></tr>
+          <tr><td><b>전달력</b></td><td>목소리·자막·장면이 맞아떨어지고 길이가 계획과 비슷하다.</td><td>대체로 맞지만 어긋나는 부분이 있다.</td><td>소리와 장면이 맞지 않아 이해하기 어렵다.</td></tr>
+          <tr><td><b>윤리</b></td><td>저작권·초상권을 지키고 AI 사용을 밝혔다.</td><td>대부분 지켰지만 표기가 빠졌다.</td><td>허락 없는 음원·인물·캐릭터를 사용했다.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>E. 자주 막히는 곳</h2>
+    <div class="grid2">
+      <div class="card"><h3>장면마다 캐릭터가 달라져요</h3><p class="small muted" style="margin:0">1단계 <b>캐릭터 시트</b>를 매번 참고 이미지로 첨부하고, 3단계의 <b>컷 다시 쓰기</b>에서 "얼굴이 달라짐"을 고르세요.</p></div>
+      <div class="card"><h3>영상이 계획보다 길어요</h3><p class="small muted" style="margin:0">대본 글자 수가 많은 경우가 대부분이에요. 2단계에서 길이를 줄이거나 문장 몇 개를 빼세요(1초 ≈ 5자).</p></div>
+      <div class="card"><h3>그림 속에 이상한 글자가 생겨요</h3><p class="small muted" style="margin:0">프롬프트 끝의 "No text" 문장을 지우지 마세요. 그래도 생기면 간판·책·칠판처럼 글자가 들어갈 물건을 장면에서 빼세요.</p></div>
+      <div class="card"><h3>수업 시간이 부족해요</h3><p class="small muted" style="margin:0">1차시: 캐릭터+대본, 2차시: 장면+브루 조립으로 나누세요. 캐릭터는 모둠별로 하나만 만들면 시간이 절약돼요.</p></div>
+    </div>
+  </section>
+
+  <div class="pager">
+    <a href="scenes.html"><small>이전 단계</small>← 3. 씬 나누기</a>
+    <a class="next" href="index.html"><small>처음으로</small>가이드 홈 →</a>
+  </div>
+</main>
+
+<footer>진성쌤 AI 영상 만들기 가이드</footer>
+<script src="assets/guide.js"></script>
+<script>
+const ITEMS = [
+  '모든 장면에서 캐릭터 얼굴·옷·그림체가 같다',
+  '영상 길이가 계획과 비슷하다 (±10초)',
+  '자막 오탈자를 눈으로 한 번, 소리로 한 번 확인했다',
+  '숫자·영어가 AI 목소리로 바르게 읽힌다',
+  '배경음악이 목소리보다 작고, 한 곡으로 이어진다',
+  '음원·이미지의 사용 조건과 출처 표기를 확인했다',
+  '학생 얼굴·실명·학교 정보 등 개인정보가 나오지 않는다',
+  '실존 인물·유명 캐릭터를 흉내 낸 장면이 없다',
+  '영상 끝이나 설명란에 "AI로 만든 이미지·음성 포함"을 적었다',
+  '그림 속에 이상한 글자나 깨진 손가락이 없다',
+];
+const box = document.getElementById('check');
+let state = Store.get('check', []);
+function draw() {
+  box.innerHTML = ITEMS.map((t, i) =>
+    `<li><label><input type="checkbox" data-i="${i}"${state.includes(i) ? ' checked' : ''}><span>${t}</span></label></li>`).join('');
+  const n = state.length;
+  document.getElementById('pct').textContent = `${n} / ${ITEMS.length} 완료` + (n === ITEMS.length ? ' 🎉 내보내도 좋아요!' : '');
+  document.getElementById('bar').style.width = (n / ITEMS.length * 100) + '%';
+}
+box.addEventListener('change', e => {
+  const i = +e.target.dataset.i;
+  state = e.target.checked ? [...new Set([...state, i])] : state.filter(x => x !== i);
+  Store.set('check', state); draw();
+});
+document.getElementById('reset').onclick = () => { state = []; Store.set('check', state); draw(); };
+draw();
+</script>
+</body>
+</html>

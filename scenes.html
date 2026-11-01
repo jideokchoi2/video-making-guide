@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>씬 나누기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="assets/guide.css">
+<style>
+  .scene{display:grid;grid-template-columns:120px minmax(0,1fr);gap:16px}
+  .scene .meta{font:400 34px/1 var(--f-display);color:var(--accent)}
+  .scene .meta small{display:block;font:500 13px var(--f-mono);color:var(--muted);margin-top:6px}
+  .scene .line{font-size:16px;font-weight:500;margin:0 0 6px}
+  @media (max-width:640px){.scene{grid-template-columns:minmax(0,1fr)}}
+  .sum{display:flex;gap:16px;flex-wrap:wrap;font-size:14px;color:var(--muted)}
+  .sum b{color:var(--ink);font-size:18px}
+</style>
+</head>
+<body>
+<div id="topbar"></div>
+
+<main class="wrap">
+  <div class="hero">
+    <div class="eyebrow">3단계 · 장면 재료</div>
+    <h1>이야기를 <mark>씬</mark>으로 나누기</h1>
+    <p class="lede">2단계에서 받은 대본(또는 하고 싶은 이야기)을 붙여 넣으면, 길이에 맞춰 장면을 나누고 장면마다 이미지·영상 프롬프트를 만들어 줘요.</p>
+  </div>
+
+  <div class="split" style="margin-top:24px">
+    <form class="card sticky" id="f" data-save="scenes">
+      <label class="f" for="story">대본 / 이야기<span>문장 단위로 나눠요</span></label>
+      <textarea id="story" name="story" rows="7" placeholder="예) 손을 씻었는데 왜 배가 아플까요? 눈에 보이지 않는 세균이 손톱 밑에 숨어 있었어요. ..."></textarea>
+
+      <label class="f" for="char">캐릭터 고정 문구<span>영어 권장</span></label>
+      <input type="text" id="char" name="char" placeholder="예) a Korean male teacher with round glasses and a blue hoodie">
+
+      <label class="f">그림체</label>
+      <div class="chips" id="styles"></div>
+
+      <label class="f">화면 비율</label>
+      <div class="chips">
+        <input type="radio" name="ratio" id="r1" value="16:9" checked><label for="r1">16:9 가로</label>
+        <input type="radio" name="ratio" id="r2" value="9:16"><label for="r2">9:16 쇼츠</label>
+        <input type="radio" name="ratio" id="r3" value="1:1"><label for="r3">1:1</label>
+      </div>
+
+      <div class="grid2" style="gap:12px">
+        <div><label class="f" for="total">전체 길이(초)</label><input type="number" id="total" name="total" min="10" max="600" value="60"></div>
+        <div><label class="f" for="per">씬 하나(초)</label><input type="number" id="per" name="per" min="3" max="15" value="6"></div>
+      </div>
+
+      <label class="f">카메라</label>
+      <div class="chips">
+        <input type="radio" name="cam" id="c1" value="static camera, no camera movement" checked><label for="c1">고정</label>
+        <input type="radio" name="cam" id="c2" value="slow push-in toward the character"><label for="c2">천천히 다가가기</label>
+        <input type="radio" name="cam" id="c3" value="slow pan from left to right"><label for="c3">좌우 이동</label>
+        <input type="radio" name="cam" id="c4" value="camera follows the character"><label for="c4">따라가기</label>
+      </div>
+
+      <label class="f">소리<span>영상 AI용</span></label>
+      <div class="chips">
+        <input type="checkbox" name="snd" id="s1" value="sfx" checked><label for="s1">효과음</label>
+        <input type="checkbox" name="snd" id="s2" value="voice"><label for="s2">캐릭터 대사</label>
+        <input type="checkbox" name="snd" id="s3" value="bgm"><label for="s3">배경음악</label>
+      </div>
+      <p class="small muted" style="margin:10px 0 0">배경음악은 브루에서 한 곡으로 깔아야 장면마다 음악이 끊기지 않아요. 보통은 꺼 두세요.</p>
+    </form>
+
+    <div>
+      <div class="card">
+        <div class="sum" id="sum"></div>
+        <div class="row" style="margin-top:12px">
+          <button class="btn" data-copy="allImg">이미지 프롬프트 전체 복사</button>
+          <button class="btn ghost" data-copy="allVid">영상 프롬프트 전체 복사</button>
+        </div>
+        <pre id="allImg" hidden></pre><pre id="allVid" hidden></pre>
+      </div>
+      <div id="list"></div>
+
+      <section>
+        <h2>마음에 안 드는 컷 다시 쓰기</h2>
+        <form class="card" id="fix" data-save="fix">
+          <label class="f" for="fixNo">몇 번 씬인가요?</label>
+          <select id="fixNo" name="no"></select>
+          <label class="f">무엇이 문제인가요?<span>여러 개 선택</span></label>
+          <div class="chips" id="probs"></div>
+          <label class="f" for="want">원하는 모습<span>선택</span></label>
+          <input type="text" id="want" name="want" placeholder="예) 캐릭터가 웃으면서 엄지척">
+          <div class="out" style="margin-top:14px"><div class="out-head"><b class="muted small">고친 이미지 프롬프트</b><button class="btn sm" data-copy="fixOut">복사</button></div><pre id="fixOut"></pre></div>
+          <p class="small muted" style="margin:10px 0 0">다시 뽑을 때는 <b>1단계 캐릭터 시트를 참고 이미지로 꼭 함께 첨부</b>하세요. 문장보다 이미지가 일관성을 훨씬 잘 잡아 줘요.</p>
+        </form>
+      </section>
+    </div>
+  </div>
+
+  <div class="pager">
+    <a href="script.html"><small>이전 단계</small>← 2. 대본</a>
+    <a class="next" href="finish.html"><small>다음 단계</small>4. 완성·점검 →</a>
+  </div>
+</main>
+
+<footer>진성쌤 AI 영상 만들기 가이드</footer>
+<script src="assets/guide.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+// 그림체: 화면 이름 → 영어 프롬프트
+const STYLES = {
+  '2D 플랫': 'flat 2D vector illustration, bright soft colors',
+  '2D 웹툰': '2D webtoon style, clean line art, cel shading',
+  '3D 애니메이션': '3D animated film style, soft lighting, rounded shapes',
+  '수채화': 'watercolor illustration, gentle paper texture',
+  '클레이': 'claymation style, handmade clay figures',
+  '종이공예': 'layered paper craft diorama style',
+  '픽셀 아트': 'pixel art, 16-bit game style',
+  '그림책': "children's picture book illustration, colored pencil texture",
+};
+$('styles').innerHTML = Object.keys(STYLES).map((k, i) =>
+  `<input type="radio" name="style" id="st${i}" value="${k}"${i === 0 ? ' checked' : ''}><label for="st${i}">${k}</label>`).join('');
+
+// 씬마다 샷 크기를 바꿔 지루함을 줄임
+const SHOTS = ['wide shot showing the whole place', 'medium shot from the waist up', 'close-up on the face and hands'];
+
+// 문장 단위로 자른 뒤 씬 개수에 맞게 고르게 묶기
+function splitScenes(text, n) {
+  const sents = text.replace(/\s+/g, ' ').split(/(?<=[.!?。…])\s+/).map(s => s.trim()).filter(Boolean);
+  if (!sents.length) return [];
+  n = Math.max(1, Math.min(n, sents.length));
+  const out = Array.from({ length: n }, () => []);
+  sents.forEach((s, i) => out[Math.floor(i * n / sents.length)].push(s));
+  return out.map(a => a.join(' '));
+}
+
+let scenes = [], cfg = {};
+
+bindForm($('f'), d => {
+  cfg = d;
+  const total = Math.max(10, +d.total || 60), per = Math.max(3, +d.per || 6);
+  scenes = splitScenes(d.story || '', Math.ceil(total / per));
+  const ch = d.char || 'the main character from the reference image';
+  const snd = d.snd || [];
+
+  const imgP = (s, i) =>
+    `[Scene ${i + 1}] ${STYLES[d.style]}, ${d.ratio} aspect ratio, ${SHOTS[i % 3]}.\n` +
+    `Character: ${ch}. Use the attached character sheet as reference; keep the same face, hair, outfit and colors.\n` +
+    `Scene: ${s}\n` +
+    `No text, no letters, no logo, no watermark.`;
+  const vidP = (s, i) => {
+    const sound = [snd.includes('sfx') && 'natural sound effects that match the action',
+                   snd.includes('voice') && `the character says in Korean: "${s}"`,
+                   snd.includes('bgm') ? 'light background music' : 'no background music'].filter(Boolean).join('; ');
+    return `[Scene ${i + 1}] Animate the attached image. Duration: ${per} seconds. Camera: ${d.cam}.\n` +
+           `Action: ${s}\n` +
+           `Keep the character's look exactly the same, smooth natural motion, no morphing.\n` +
+           `Sound: ${sound}.`;
+  };
+
+  $('sum').innerHTML = scenes.length
+    ? `<span>씬 <b>${scenes.length}</b>개</span><span>씬당 <b>${per}</b>초</span><span>합계 약 <b>${scenes.length * per}</b>초</span><span>비율 <b>${d.ratio}</b></span>`
+    : '<span>왼쪽에 대본을 붙여 넣으면 씬이 나뉘어요.</span>';
+
+  $('list').innerHTML = scenes.map((s, i) => `
+    <article class="card scene">
+      <div class="meta">#${i + 1}<small>${i * per}~${(i + 1) * per}초</small></div>
+      <div>
+        <p class="line">${esc(s)}</p>
+        <div class="out"><div class="out-head"><b class="muted small">이미지 프롬프트</b><button class="btn sm" data-copy="img${i}">복사</button></div><pre id="img${i}">${esc(imgP(s, i))}</pre></div>
+        <div class="out"><div class="out-head"><b class="muted small">영상 프롬프트 (이미지를 첨부해서)</b><button class="btn sm ghost" data-copy="vid${i}">복사</button></div><pre id="vid${i}">${esc(vidP(s, i))}</pre></div>
+      </div>
+    </article>`).join('');
+
+  $('allImg').textContent = scenes.map(imgP).join('\n\n');
+  $('allVid').textContent = scenes.map(vidP).join('\n\n');
+
+  // 컷 다시 쓰기의 씬 번호 목록 갱신
+  const sel = $('fixNo'), keep = sel.value;
+  sel.innerHTML = scenes.map((s, i) => `<option value="${i}">#${i + 1} ${esc(s.slice(0, 24))}…</option>`).join('') || '<option value="">씬이 아직 없어요</option>';
+  if (keep && +keep < scenes.length) sel.value = keep;
+  sel.dispatchEvent(new Event('change', { bubbles: true }));
+});
+
+// 자주 생기는 문제 → 프롬프트에 덧붙일 고침 문장
+const FIX = {
+  '얼굴이 달라짐': 'Match the face in the reference image exactly: same eyes, hairstyle and skin tone.',
+  '옷·색이 바뀜': 'Same outfit and the same colors as the reference image, no new accessories.',
+  '손가락이 이상함': 'Natural hands with five fingers each, hands relaxed or partly hidden.',
+  '글자가 생김': 'Absolutely no text, letters, numbers or signs anywhere in the image.',
+  '배경이 안 맞음': 'Simple background that clearly matches the scene, fewer objects.',
+  '너무 복잡함': 'Minimal composition, one character, one action, plenty of empty space.',
+  '너무 어두움': 'Bright, evenly lit, cheerful daytime lighting.',
+  '캐릭터가 작음': 'Character is large and centered, filling about half of the frame.',
+};
+$('probs').innerHTML = Object.keys(FIX).map((k, i) =>
+  `<input type="checkbox" name="p" id="p${i}" value="${k}"><label for="p${i}">${k}</label>`).join('');
+
+bindForm($('fix'), d => {
+  const i = +d.no;
+  if (!scenes.length || isNaN(i) || !scenes[i]) { $('fixOut').textContent = '3단계 위쪽에서 먼저 씬을 만들어 주세요.'; return; }
+  const ch = cfg.char || 'the main character from the reference image';
+  $('fixOut').textContent =
+    `[Scene ${i + 1} - retry] ${STYLES[cfg.style]}, ${cfg.ratio} aspect ratio.\n` +
+    `Character: ${ch}. Use the attached character sheet as the main reference.\n` +
+    `Scene: ${d.want ? d.want + ' — ' : ''}${scenes[i]}\n` +
+    (d.p || []).map(k => FIX[k]).join('\n') + ((d.p || []).length ? '\n' : '') +
+    `No text, no logo, no watermark.`;
+});
+</script>
+</body>
+</html>
