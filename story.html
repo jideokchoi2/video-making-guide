@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>스토리보드 만들기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="assets/guide.css">
+</head>
+<body>
+<div id="topbar"></div>
+
+<main class="wrap">
+  <div class="hero">
+    <div class="eyebrow">3단계 · 스토리보드</div>
+    <h1>8초씩 끊어 쓰는 <mark>스토리보드</mark></h1>
+    <p class="lede">Flow는 클립을 하나씩(Veo는 최대 8초) 만들어 이어 붙여요. 그래서 대본보다 <b>"씬 하나 = 클립 하나"</b>로 나눈 스토리보드가 먼저 필요해요. 아래 프롬프트를 Gemini 같은 채팅 AI에 붙여 넣으세요.</p>
+  </div>
+
+  <div class="split" style="margin-top:24px">
+    <form class="card sticky" id="f" data-save="story">
+      <label class="f" for="topic">영상 주제</label>
+      <input type="text" id="topic" name="topic" placeholder="예) 손 씻기 6단계, 왜 30초나 씻어야 할까?">
+
+      <label class="f">보는 사람</label>
+      <div class="chips">
+        <input type="radio" name="aud" id="a1" value="초등 1~2학년"><label for="a1">초1~2</label>
+        <input type="radio" name="aud" id="a2" value="초등 3~4학년" checked><label for="a2">초3~4</label>
+        <input type="radio" name="aud" id="a3" value="초등 5~6학년"><label for="a3">초5~6</label>
+        <input type="radio" name="aud" id="a4" value="학부모"><label for="a4">학부모</label>
+        <input type="radio" name="aud" id="a5" value="선생님(연수)"><label for="a5">교사 연수</label>
+      </div>
+
+      <label class="f">영상 종류</label>
+      <div class="chips">
+        <input type="radio" name="genre" id="g1" value="정보 설명" checked><label for="g1">정보 설명</label>
+        <input type="radio" name="genre" id="g2" value="이야기(캐릭터가 문제를 겪고 해결)"><label for="g2">이야기</label>
+        <input type="radio" name="genre" id="g3" value="퀴즈(질문 → 생각할 시간 → 정답)"><label for="g3">퀴즈</label>
+        <input type="radio" name="genre" id="g4" value="캠페인(문제 → 행동 약속)"><label for="g4">캠페인</label>
+        <input type="radio" name="genre" id="g5" value="광고(제품·습관을 재미있게 소개)"><label for="g5">광고</label>
+      </div>
+
+      <label class="f" for="n">씬 개수<span id="nOut"></span></label>
+      <input type="range" id="n" name="n" min="3" max="12" value="6" style="width:100%;accent-color:var(--accent)">
+
+      <label class="f">소리 방식</label>
+      <div class="chips">
+        <input type="radio" name="voice" id="v1" value="talk" checked><label for="v1">캐릭터가 직접 말하기</label>
+        <input type="radio" name="voice" id="v2" value="sfx"><label for="v2">대사 없이 효과음만</label>
+      </div>
+
+      <label class="f">말투</label>
+      <div class="chips">
+        <input type="radio" name="tone" id="t1" value="친근한 해요체" checked><label for="t1">친근하게</label>
+        <input type="radio" name="tone" id="t2" value="차분한 존댓말"><label for="t2">차분하게</label>
+        <input type="radio" name="tone" id="t3" value="신나는 말투"><label for="t3">신나게</label>
+      </div>
+
+      <label class="f" for="char">캐릭터 재료 이름<span>2단계에서 붙인 이름</span></label>
+      <input type="text" id="char" name="char" placeholder="예) 한음쌤">
+
+      <label class="f" for="must">꼭 넣을 내용<span>쉼표로 구분</span></label>
+      <textarea id="must" name="must" placeholder="예) 비누 거품 30초, 손톱 밑, 엄지손가락"></textarea>
+    </form>
+
+    <div>
+      <div class="card">
+        <div class="card-title"><span class="badge">1</span><h3>스토리보드 프롬프트</h3><span class="tag">Gemini·ChatGPT 등에 붙여 넣기</span></div>
+        <div class="out"><div class="out-head"><b class="muted small" id="sumLine"></b><button class="btn sm" data-copy="o1">복사</button></div><pre id="o1"></pre></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span class="badge">2</span><h3>이런 결과가 나와요</h3></div>
+        <p class="small muted" style="margin:0 0 8px">한 줄에 씬 하나, <b>장면 / 대사</b> 형식이에요. 결과를 그대로 복사해서 4단계 입력칸에 붙여 넣으면 씬마다 Flow 프롬프트가 만들어져요.</p>
+        <div class="out"><pre id="ex">교실 문이 열리고 손을 흔들며 들어오는 @한음쌤 / 손 씻었는데 왜 배가 아플까요?
+손바닥 확대, 눈에 보이지 않던 세균 캐릭터들이 반짝이며 나타난다 / 범인은 손에 숨은 세균이에요!
+세면대 앞 @한음쌤, 비누 거품을 크게 만든다 / 비누 거품으로 삼십 초 문질러요.
+@한음쌤 손 확대, 엄지손가락과 손톱 밑을 꼼꼼히 문지른다 / 엄지랑 손톱 밑도 잊지 마세요.
+세균 캐릭터들이 거품에 밀려 물과 함께 사라진다 / 와, 세균이 다 사라졌어요!
+깨끗한 손을 들어 보이며 엄지척하는 @한음쌤 / 점심 먹기 전에 꼭 같이 해요!</pre></div>
+      </div>
+
+      <div class="card">
+        <h3>8초 스토리보드의 3가지 규칙</h3>
+        <ol class="flow" style="margin-top:12px">
+          <li><b>씬 하나에 동작 하나</b><br><span class="small muted">"들어와서 손 씻고 웃는다"처럼 여러 동작을 넣으면 8초 안에 어색해져요.</span></li>
+          <li><b>대사는 20자 안쪽</b><br><span class="small muted">사람이 8초에 편하게 말하는 양은 한 문장 정도예요. 길면 다음 씬으로 나눠요.</span></li>
+          <li><b>캐릭터는 매번 @이름으로</b><br><span class="small muted">재료로 등록한 이름을 씬마다 적어야 Flow가 같은 캐릭터로 그려요.</span></li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <div class="pager">
+    <a href="character.html"><small>이전 단계</small>← 2. 캐릭터</a>
+    <a class="next" href="scenes.html"><small>다음 단계</small>4. 씬 영상 만들기 →</a>
+  </div>
+</main>
+
+<footer>한음쌤의 영상 실습 도우미</footer>
+<script src="assets/guide.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const EX = $('ex').textContent; // 예시 원문(이름만 바꿔 보여 줌)
+bindForm($('f'), d => {
+  const n = +d.n || 6, ch = d.char ? '@' + d.char.replace(/^@/, '') : '@캐릭터';
+  const must = (d.must || '').split(',').map(s => s.trim()).filter(Boolean);
+  const talk = d.voice === 'talk';
+  $('nOut').textContent = `${n}개 · 약 ${n * 8}초`;
+  $('sumLine').textContent = `씬 ${n}개 × 8초 = 약 ${n * 8}초 영상`;
+  $('o1').textContent = [
+    `${d.aud}에게 보여 줄 짧은 AI 영상의 스토리보드를 만들어 주세요.`,
+    `영상은 8초짜리 클립 ${n}개를 이어 붙여 만듭니다.`,
+    ``,
+    `- 주제: ${d.topic || '(주제)'}`,
+    `- 형식: ${d.genre}`,
+    `- 주인공: ${ch} (모든 씬에 같은 이름으로 적어 주세요)`,
+    talk ? `- 대사: 주인공이 ${d.tone}로 직접 말합니다` : `- 대사: 없음. 효과음과 표정·동작으로만 전달합니다`,
+    must.length ? `- 꼭 넣을 내용: ${must.join(', ')}` : null,
+    ``,
+    `조건`,
+    `1. 씬 하나에는 카메라에 보이는 동작을 딱 하나만 씁니다.`,
+    `2. 첫 씬은 궁금증을 일으키고, 마지막 씬은 보는 사람이 바로 해 볼 행동 한 가지로 끝냅니다.`,
+    talk ? `3. 대사는 씬마다 한 문장, 공백 포함 20자 이내로 씁니다. 숫자와 영어는 읽는 소리대로 한글로 씁니다.` : `3. 대사 칸에는 들릴 효과음을 짧게 씁니다. (예: 뽀드득, 딩동)`,
+    `4. 실존 인물, 유명 캐릭터, 글자가 보이는 간판·칠판은 넣지 않습니다.`,
+    ``,
+    `출력 형식 (설명 없이 이 형식의 ${n}줄만)`,
+    `장면 설명 / ${talk ? '대사' : '효과음'}`,
+  ].filter(l => l !== null).join('\n');
+  $('ex').textContent = EX.replaceAll('@한음쌤', ch);
+});
+</script>
+</body>
+</html>

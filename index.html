@@ -3,15 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>진성쌤 AI 영상 가이드</title>
-<meta name="description" content="캐릭터 만들기부터 대본, 씬 나누기, 완성 점검까지 단계별로 따라 하는 AI 영상 제작 가이드">
+<title>한음쌤의 영상 실습 도우미</title>
+<meta name="description" content="Google Flow로 캐릭터부터 스토리보드, 씬 영상, 완성까지 따라 하는 AI 영상 실습 도우미">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="assets/guide.css">
 <style>
-  .road{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:20px}
-  @media (max-width:900px){.road{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  .road{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;margin-top:20px}
+  @media (max-width:1000px){.road{grid-template-columns:repeat(3,minmax(0,1fr))}}
+  @media (max-width:720px){.road{grid-template-columns:repeat(2,minmax(0,1fr))}}
   @media (max-width:520px){.road{grid-template-columns:minmax(0,1fr)}}
   .road a{display:flex;flex-direction:column;gap:6px;text-decoration:none;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;transition:transform .15s,border-color .15s}
   .road a:hover{transform:translateY(-2px);border-color:var(--accent)}
@@ -33,34 +34,39 @@
 
 <main class="wrap">
   <div class="hero">
-    <div class="eyebrow">교원 연수 · 수업 실습용</div>
-    <h1>캐릭터 한 명으로 만드는<br><mark>AI 영상</mark> 4단계</h1>
-    <p class="lede">캐릭터 이미지 → 대본 → 장면(씬) → 브루에서 음성·자막 입히기. 각 단계에서 질문에 답하면 바로 붙여 넣을 프롬프트가 만들어져요. 입력한 내용은 이 브라우저에만 저장됩니다.</p>
+    <div class="eyebrow">교원 연수 · 수업 실습용 · Google Flow</div>
+    <h1>한음쌤의<br><mark>영상 실습</mark> 도우미</h1>
+    <p class="lede">Google Flow 하나로 캐릭터 이미지 → 스토리보드 → 씬 영상 → 완성 영상까지. 단계마다 질문에 답하면 Flow에 바로 붙여 넣을 프롬프트가 만들어져요. 입력한 내용은 이 브라우저에만 저장됩니다.</p>
     <div class="row" style="margin-top:18px">
-      <a class="btn" href="character.html">1단계부터 시작하기 →</a>
-      <a class="btn ghost" href="#prepare">준비물 먼저 보기</a>
+      <a class="btn" href="flow.html">1단계부터 시작하기 →</a>
+      <a class="btn ghost" href="models.html">최신 모델 비교 보기</a>
     </div>
   </div>
 
   <nav class="road" aria-label="제작 단계">
+    <a href="flow.html">
+      <span class="big">1</span><span class="t">Flow 시작</span>
+      <ul><li>화면과 기능 6가지</li><li>크레딧 계산</li><li>강의 전 확인</li></ul>
+      <span class="time">예상 10분</span>
+    </a>
     <a href="character.html">
-      <span class="big">1</span><span class="t">캐릭터</span>
-      <ul><li>피동장스 4칸 채우기</li><li>기본 이미지 1:1</li><li>캐릭터 시트 16:9</li></ul>
+      <span class="big">2</span><span class="t">캐릭터</span>
+      <ul><li>피동장스 4칸</li><li>나노바나나로 이미지</li><li>@재료로 등록</li></ul>
       <span class="time">예상 15분</span>
     </a>
-    <a href="script.html">
-      <span class="big">2</span><span class="t">대본</span>
-      <ul><li>주제·대상·길이 정하기</li><li>브루용 주제·대본 프롬프트</li><li>글자 수 계산</li></ul>
+    <a href="story.html">
+      <span class="big">3</span><span class="t">스토리보드</span>
+      <ul><li>씬 하나 = 8초</li><li>장면 / 대사 형식</li><li>Gemini에 붙여 넣기</li></ul>
       <span class="time">예상 10분</span>
     </a>
     <a href="scenes.html">
-      <span class="big">3</span><span class="t">씬 나누기</span>
-      <ul><li>이야기를 장면별로 자르기</li><li>씬마다 이미지·영상 프롬프트</li><li>마음에 안 드는 컷 다시 쓰기</li></ul>
-      <span class="time">예상 20분</span>
+      <span class="big">4</span><span class="t">씬 영상</span>
+      <ul><li>씬별 Flow 프롬프트</li><li>재료·프레임·글 방식</li><li>컷 다시 쓰기</li></ul>
+      <span class="time">예상 25분</span>
     </a>
     <a href="finish.html">
-      <span class="big">4</span><span class="t">완성·점검</span>
-      <ul><li>브루에서 음성·자막·음악</li><li>내보내기 전 체크리스트</li><li>수업용 평가 루브릭</li></ul>
+      <span class="big">5</span><span class="t">완성·점검</span>
+      <ul><li>장면 빌더 조립</li><li>체크리스트</li><li>평가 루브릭</li></ul>
       <span class="time">예상 15분</span>
     </a>
   </nav>
@@ -68,32 +74,32 @@
   <section>
     <h2>한눈에 보는 흐름</h2>
     <div class="pipe">
-      <div><b>① 캐릭터 고정</b><span>기본 이미지와 시트를 저장해 모든 장면의 참고 이미지로 써요</span></div>
-      <div><b>② 대본</b><span>글자 수를 영상 길이에 맞춰 정해요</span></div>
-      <div><b>③ 장면 재료</b><span>씬마다 이미지 → 필요하면 짧은 영상</span></div>
-      <div><b>④ 브루 조립</b><span>대본·장면·AI 목소리·자막을 한 번에 맞춰요</span></div>
-      <div><b>⑤ 점검·공유</b><span>저작권·개인정보·오탈자 확인 후 내보내기</span></div>
+      <div><b>① 캐릭터 이미지</b><span>Flow 이미지 생성(나노바나나)으로 기본 이미지·시트</span></div>
+      <div><b>② 재료 등록</b><span>@이름을 붙여 모든 씬에서 같은 캐릭터로</span></div>
+      <div><b>③ 스토리보드</b><span>8초 클립 단위로 장면과 대사 나누기</span></div>
+      <div><b>④ 씬 영상</b><span>Veo 3.1로 씬마다 클립 생성</span></div>
+      <div><b>⑤ 장면 빌더</b><span>순서대로 이어 붙이고 내보내기</span></div>
     </div>
   </section>
 
   <section id="prepare">
-    <h2>준비물 <small>계정은 미리 만들어 두면 수업 시간이 절약돼요</small></h2>
+    <h2>준비물 <small>강의 전날 미리 한 번 해 보세요</small></h2>
     <div class="grid2">
       <div class="card">
-        <div class="card-title"><span class="tag">필수</span><h3>브루(Vrew)</h3></div>
-        <p class="small muted" style="margin:0">대본을 넣으면 장면·AI 목소리·자막을 한 번에 맞춰 주는 영상 편집 앱이에요. 4단계에서 사용합니다.</p>
+        <div class="card-title"><span class="tag">필수</span><h3>Google 계정 + Flow</h3></div>
+        <p class="small muted" style="margin:0">이미지·영상 생성과 조립을 모두 Flow에서 해요. 계정마다 하루 무료 크레딧이 있어요(1단계 참고). 요금제·시간대 제한이 있을 수 있으니 미리 클립 하나를 만들어 보세요.</p>
       </div>
       <div class="card">
-        <div class="card-title"><span class="tag">필수</span><h3>이미지 생성 AI 한 가지</h3></div>
-        <p class="small muted" style="margin:0">참고 이미지를 첨부할 수 있는 도구가 좋아요(캐릭터 일관성 유지). 브루 안의 이미지 생성, 미리캔버스 AI, Gemini, ChatGPT 등 학교에서 허용한 도구를 고르세요.</p>
+        <div class="card-title"><span class="tag">필수</span><h3>채팅 AI</h3></div>
+        <p class="small muted" style="margin:0">3단계 스토리보드를 쓸 때 사용해요. 같은 Google 계정으로 쓸 수 있는 Gemini가 편해요.</p>
       </div>
       <div class="card">
-        <div class="card-title"><span class="tag">선택</span><h3>영상 생성 AI</h3></div>
-        <p class="small muted" style="margin:0">정지 이미지를 몇 초짜리 움직이는 컷으로 바꿀 때 써요. 없어도 브루의 이미지 + 자막만으로 충분히 완성됩니다.</p>
+        <div class="card-title"><span class="tag">선택</span><h3>편집 앱</h3></div>
+        <p class="small muted" style="margin:0">자막이나 배경음악을 넣고 싶을 때만 필요해요. Flow에서 내보낸 파일을 브루·캡컷 등에서 마무리합니다.</p>
       </div>
       <div class="card">
-        <div class="card-title"><span class="tag">선택</span><h3>저장 폴더 하나</h3></div>
-        <p class="small muted" style="margin:0"><code>01_캐릭터</code> <code>02_대본</code> <code>03_장면</code> <code>04_완성</code>처럼 단계별 폴더를 만들어 두면 재료를 찾기 쉬워요.</p>
+        <div class="card-title"><span class="tag">선택</span><h3>예비 클립</h3></div>
+        <p class="small muted" style="margin:0">강의 중 생성이 늦어지거나 크레딧이 부족할 때를 대비해 미리 만든 클립 몇 개를 준비해 두면 흐름이 끊기지 않아요.</p>
       </div>
     </div>
   </section>
@@ -101,14 +107,14 @@
   <section>
     <h2>수업에 쓰기 전에</h2>
     <div class="note warn">
-      <b>안전 안내</b> · 학생 얼굴 사진·실명, 실존 인물, 유명 만화·게임 캐릭터를 프롬프트나 참고 이미지로 쓰지 않도록 지도해 주세요. 학생과 함께 쓸 때는 학교에서 허용한 AI 도구와 각 서비스의 연령 기준을 먼저 확인하세요. 완성 영상에는 "AI로 만든 이미지·음성 포함"을 표시하는 것을 권장합니다.
+      <b>안전 안내</b> · 학생 얼굴 사진·실명, 실존 인물, 유명 만화·게임 캐릭터를 프롬프트나 참고 이미지로 쓰지 않도록 지도해 주세요. 학생 계정으로 Flow를 쓸 수 있는지는 서비스 이용약관(연령 기준)과 학교 정책을 먼저 확인하세요. 확인 전에는 교사 시연 + 학생 프롬프트 설계 방식을 권합니다. 완성 영상에는 "AI로 만든 영상"이라고 표시해 주세요.
     </div>
   </section>
 
-  <div class="pager"><span></span><a class="next" href="character.html"><small>다음 단계</small>1. 캐릭터 만들기 →</a></div>
+  <div class="pager"><span></span><a class="next" href="flow.html"><small>다음 단계</small>1. Flow 시작하기 →</a></div>
 </main>
 
-<footer>진성쌤 AI 영상 만들기 가이드 · 교원 연수·수업 실습용</footer>
+<footer>한음쌤의 영상 실습 도우미 · 교원 연수·수업 실습용</footer>
 <script src="assets/guide.js"></script>
 </body>
 </html>

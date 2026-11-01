@@ -1,4 +1,4 @@
-/* 진성쌤 AI 영상 만들기 가이드 — 공용 스타일 (캐릭터 공방과 같은 색·글꼴) */
+/* 한음쌤의 영상 실습 도우미 — 공용 스타일 (캐릭터 공방과 같은 색·글꼴) */
 :root{
   --bg:#EEF1F6; --surface:#FFFFFF; --sunk:#F6F8FB; --ink:#152036; --muted:#5A6680; --line:#D6DCE7;
   --accent:#2E57E8; --accent-ink:#FFFFFF; --mark:#FFD94A; --mark-ink:#3A2E00; --ok:#1F8A5B; --warn:#B4541A;
@@ -10,6 +10,7 @@
   color-scheme:light;
 }
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 var(--f-body);-webkit-text-size-adjust:100%}
 a{color:var(--accent)}
@@ -41,7 +42,7 @@ section{margin-top:36px}
 .grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
 .split{display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr);gap:24px;align-items:start}
 .split > .sticky{position:sticky;top:76px;max-height:calc(100vh - 92px);overflow:auto}
-@media (max-width:900px){.grid2,.split{grid-template-columns:minmax(0,1fr)}.split > .sticky{position:static}}
+@media (max-width:900px){.grid2,.split{grid-template-columns:minmax(0,1fr)}.split > .sticky{position:static;max-height:none;overflow:visible}}
 
 /* ── 카드 ── */
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px}
@@ -91,7 +92,8 @@ ol.flow > li:not(:last-child)::after{content:"";position:absolute;left:14px;top:
 .tbl{width:100%;border-collapse:collapse;font-size:15px;background:var(--surface)}
 .tbl th,.tbl td{border:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}
 .tbl th{background:var(--sunk);font-weight:600}
-.tbl-wrap{overflow-x:auto;border-radius:var(--r)}
+.tbl-wrap{overflow-x:auto;border-radius:var(--r);-webkit-overflow-scrolling:touch}
+.tbl-wrap .tbl{min-width:680px}
 
 /* ── 단계 이동 ── */
 .pager{display:flex;justify-content:space-between;gap:12px;margin-top:48px;padding-top:20px;border-top:1px solid var(--line)}

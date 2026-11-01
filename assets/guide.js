@@ -1,12 +1,14 @@
-/* 진성쌤 AI 영상 만들기 가이드 — 공용 스크립트
+/* 한음쌤의 영상 실습 도우미 — 공용 스크립트
    1) 상단 단계 내비게이션 그리기  2) 복사 버튼  3) 브라우저 저장(실패해도 동작) */
 (function () {
   const STEPS = [
     { href: 'index.html', n: '홈', label: '처음' },
-    { href: 'character.html', n: '1', label: '캐릭터' },
-    { href: 'script.html', n: '2', label: '대본' },
-    { href: 'scenes.html', n: '3', label: '씬 나누기' },
-    { href: 'finish.html', n: '4', label: '완성·점검' },
+    { href: 'flow.html', n: '1', label: 'Flow 시작' },
+    { href: 'character.html', n: '2', label: '캐릭터' },
+    { href: 'story.html', n: '3', label: '스토리보드' },
+    { href: 'scenes.html', n: '4', label: '씬 영상' },
+    { href: 'finish.html', n: '5', label: '완성·점검' },
+    { href: 'models.html', n: '★', label: '모델 비교' },
   ];
   const here = location.pathname.split('/').pop() || 'index.html';
 
@@ -15,7 +17,7 @@
   if (slot) {
     slot.className = 'topbar';
     slot.innerHTML =
-      '<div class="topbar-in"><a class="brand" href="index.html">진성쌤 <b>AI 영상</b> 가이드</a>' +
+      '<div class="topbar-in"><a class="brand" href="index.html">한음쌤의 <b>영상 실습</b> 도우미</a>' +
       '<ul class="steps">' +
       STEPS.map(s =>
         `<li><a href="${s.href}"${s.href === here ? ' aria-current="page"' : ''}><span class="n">${s.n}</span>${s.label}</a></li>`
