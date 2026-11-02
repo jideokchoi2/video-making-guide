@@ -17,6 +17,17 @@
   .pick .k{font:400 22px var(--f-display);color:var(--accent)}
   .uncertain{color:var(--warn);font-weight:600;font-size:12px;white-space:nowrap}
   .src{font-size:13px;color:var(--muted)} .src li{margin:2px 0}
+  /* 초당 비용 막대: 한 가지 색, 정확한 값은 채움 / 범위로만 알려진 값은 점선 테두리 */
+  .cost{display:flex;align-items:center;gap:10px;min-width:230px}
+  .cost .track{flex:1;height:14px;background:var(--sunk);border-radius:0 4px 4px 0}
+  .cost .fill{display:block;height:100%;background:var(--accent);border-radius:0 4px 4px 0}
+  .cost .fill.approx{background:repeating-linear-gradient(135deg,#9DB4F5 0 5px,#C7D5FA 5px 10px);outline:1.5px dashed var(--accent);outline-offset:-1.5px}
+  .cost b{font-variant-numeric:tabular-nums;white-space:nowrap;font-size:14px;min-width:92px;text-align:right}
+  #astra td b + span{display:block;font:500 12px var(--f-mono);color:var(--muted);margin-top:2px}
+  .crit{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+  @media (max-width:860px){.crit{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  .crit .card{margin:0;padding:16px}
+  .crit h3{font-size:16px;margin:0 0 4px}
 </style>
 </head>
 <body>
@@ -51,11 +62,64 @@
           <tr><td><b>Veo 3.1</b><span>Google · Lite / Fast / Quality</span></td><td>Flow, Gemini 앱</td><td>영상과 소리(대사·효과음)를 함께 만들어요. 소리 품질과 영화 같은 화질에 대한 평가가 좋고, 시작·끝 프레임과 재료(참고 이미지)를 지원해요.</td><td>Flow 기본 모델. 클립당 Lite 10 · Fast 20 · Quality 100크레딧. 클립은 최대 8초.</td></tr>
           <tr><td><b>Gemini Omni Flash</b><span>Google · 2026년 5월</span></td><td>Flow, Gemini 앱, API</td><td>장면이 바뀌어도 캐릭터의 모습과 <b>목소리</b>를 유지하는 데 초점을 둔 모델이에요. 올린 영상의 일부 구간을 고치는 편집도 돼요. API 기준 한 번에 10초.</td><td>크레딧은 길이·화질마다 달라요. <span class="uncertain">수치 확인 필요</span></td></tr>
           <tr><td><b>Kling 3.0</b><span>Kuaishou</span></td><td>Kling 웹·앱</td><td>디테일과 가격 대비 품질이 좋다는 평가가 많아요. 영화 같은 장면 연출에 자주 추천돼요.</td><td>"4K를 바로 만드는 유일한 모델"이라는 리뷰도 있어요. <span class="uncertain">확인 필요</span></td></tr>
-          <tr><td><b>Seedance 2.0</b><span>ByteDance · 2026년 2월</span></td><td>여러 영상 플랫폼</td><td>입 모양 맞추기(립싱크)와 여러 장의 참고 이미지를 함께 쓰는 데 강하다는 평가예요. 영상 비교 순위에서 상위권으로 소개돼요.</td><td>"Seedance 2.5"를 언급한 자료도 있지만 다른 출처로 확인되지 않았어요. <span class="uncertain">확인 필요</span></td></tr>
+          <tr><td><b>Seedance 2.0</b><span>ByteDance · 2026년 2월</span></td><td>여러 영상 플랫폼</td><td>입 모양 맞추기(립싱크)와 여러 장의 참고 이미지를 함께 쓰는 데 강하다는 평가예요. 영상 비교 순위에서 상위권으로 소개돼요.</td><td>상위 버전 <b>2.5</b>가 아래 유튜브 실측 비교에 등장해요(최고가·최고 완성도).</td></tr>
           <tr><td><b>Sora 2</b><span>OpenAI</span></td><td>—</td><td>앱은 2026년 4월, API는 2026년 9월 24일에 종료됐다는 보도가 있어요.</td><td>새로 수업에 쓰기보다 다른 모델을 권해요. <span class="uncertain">공식 확인 필요</span></td></tr>
         </tbody>
       </table>
     </div>
+  </section>
+
+  <section id="astra">
+    <h2>유튜브 실측 비교 · 애니메이션 영상 AI 8종 <small>2D·3D 애니메이션 기준</small></h2>
+    <div class="note"><b>출처</b> · AI 아스트라 채널 <a href="http://www.youtube.com/watch?v=xewyMTsmuZI" target="_blank" rel="noopener">「AI 영상 8종 끝장 비교 ⚡ 가격, 퀄리티, 스펙 싹다 분석해보았습니다」</a>의 요약본을 정리했어요. 가격은 <b>PixVerse 크레딧 기준(1크레딧 ≈ 약 70원)</b>으로 환산한 값이라, 각 모델 공식 사이트나 다른 플랫폼 요금과는 다를 수 있어요. 이 비교에는 Flow의 Veo 3.1이 포함되지 않았어요.</div>
+
+    <h3 style="margin-top:22px">평가 기준 4가지</h3>
+    <div class="crit">
+      <div class="card"><h3>캐릭터 일관성</h3><p class="small muted" style="margin:0">컷이 바뀌어도 인물·물체 모양이 유지되는가</p></div>
+      <div class="card"><h3>모션 블러·깨짐</h3><p class="small muted" style="margin:0">빠른 동작, 복잡한 동선에서 화면이 일그러지는가</p></div>
+      <div class="card"><h3>감정 연기·물리 반응</h3><p class="small muted" style="margin:0">상황에 맞는 표정, 머리카락·바람 같은 디테일</p></div>
+      <div class="card"><h3>장르 구현도</h3><p class="small muted" style="margin:0">2D 작화 선, 3D 슬랩스틱, 액션 앵글, 소리 맞춤</p></div>
+    </div>
+
+    <h3 style="margin-top:22px">초당 비용 비교 <small class="muted small" style="font-weight:400">비싼 순 · 빗금 막대는 "300원대 후반"처럼 범위로만 알려진 값</small></h3>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th style="width:6%">순위</th><th style="width:20%">모델</th><th style="width:34%">초당 비용 (원)</th><th>특징·한계</th></tr></thead>
+        <tbody>
+<tr><td>1</td><td><b>Seedance 2.5</b><span>ByteDance (시댄스)</span></td><td><div class="cost" title="Seedance 2.5: 초당 489원"><span class="track"><span class="fill" style="width:100.0%"></span></span><b>489원</b></div></td><td>최고가. 극장판급 연출과 완성도, 상황에 맞춘 BGM·효과음</td></tr>
+<tr><td>2</td><td><b>Flux 3</b><span></span></td><td><div class="cost" title="Flux 3: 초당 300원대 후반"><span class="track"><span class="fill approx" style="width:77.7%"></span></span><b>300원대 후반</b></div></td><td>모션 블러가 심하고 에셋이 튀는 현상</td></tr>
+<tr><td>3</td><td><b>Seedance 2.0</b><span>ByteDance (시댄스)</span></td><td><div class="cost" title="Seedance 2.0: 초당 300원대 중반"><span class="track"><span class="fill approx" style="width:71.6%"></span></span><b>300원대 중반</b></div></td><td>캐릭터 중복 생성, 방향 인지 저하</td></tr>
+<tr><td>4</td><td><b>Grok Imagine 1.5</b><span>xAI</span></td><td><div class="cost" title="Grok Imagine 1.5: 초당 300원대 초반"><span class="track"><span class="fill approx" style="width:65.4%"></span></span><b>300원대 초반</b></div></td><td>무난하지만 플래시 애니메이션 느낌</td></tr>
+<tr><td>5</td><td><b>Gemini Omni 1.1 Flash</b><span>Google</span></td><td><div class="cost" title="Gemini Omni 1.1 Flash: 초당 210원"><span class="track"><span class="fill" style="width:42.9%"></span></span><b>210원</b></div></td><td>품질 양호, 최대 길이 10초 제한</td></tr>
+<tr><td>6</td><td><b>Wan 2.1 Prime</b><span>Alibaba (완)</span></td><td><div class="cost" title="Wan 2.1 Prime: 초당 약 200원"><span class="track"><span class="fill approx" style="width:40.9%"></span></span><b>약 200원</b></div></td><td>시댄스 2.5 대비 약 43% 비용. 2D 애니메이션의 반전 복병</td></tr>
+<tr><td>7</td><td><b>Kling 4.0</b><span>Kuaishou (클링)</span></td><td><div class="cost" title="Kling 4.0: 초당 157원"><span class="track"><span class="fill" style="width:32.1%"></span></span><b>157원</b></div></td><td>저렴한 가성비. 다소 정적이고 모션 블러 있음</td></tr>
+<tr><td>8</td><td><b>Minimax H3</b><span>MiniMax (미니맥스)</span></td><td><div class="cost" title="Minimax H3: 초당 140원"><span class="track"><span class="fill" style="width:28.6%"></span></span><b>140원</b></div></td><td>최저가(2K 지원). 방향 인지·선 표현이 아쉬움</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="margin-top:22px">스타일별 테스트 결과</h3>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th style="width:18%">모델</th><th>2D 일본 애니메이션<br><span class="small muted" style="font-weight:400">메카 출격 · 여름 자전거 · 히어로 액션 · 마법 변신</span></th><th>3D 애니메이션<br><span class="small muted" style="font-weight:400">고슴도치 다이빙 · 아기 고양이 · 문어 집배원 · 꼬마마녀</span></th></tr></thead>
+        <tbody>
+          <tr><td><b>Seedance 2.5</b></td><td>극장판 수준 연출, 정교한 바람·머리카락 물리, 상황에 맞춘 BGM·효과음 강약 조절</td><td><b>압도적 1위.</b> 다리 많은 문어, 빗자루 비행 같은 복잡한 물체와 슬랩스틱 물리를 소화하고 서사를 스스로 풀어냄</td></tr>
+          <tr><td><b>Wan 2.1 Prime</b></td><td><b>최대 이변.</b> 실사에선 약했지만 2D에선 시댄스 2.5에 근접한 움직임·선 매끄러움. 모션 블러 적고 가성비 최고</td><td>단순 컷은 준수. 복잡한 동작을 반복하거나 3D 특유의 속도감은 2D보다 정체</td></tr>
+          <tr><td><b>Kling 4.0</b></td><td>레이어가 따로 노는 플래시 애니메이션 느낌, 액션에서 모션 블러가 눈에 띔</td><td>단순한 씬은 카메라 워킹·속도감 괜찮음. 물체가 많아지면 형태가 무너짐</td></tr>
+          <tr><td><b>Gemini Omni 1.1 Flash</b></td><td>화풍 구현은 깔끔하지만 길이 제한(10초)이 아쉬움</td><td>—</td></tr>
+          <tr><td><b>Minimax H3</b></td><td>로봇이 뒤로 역주행하는 등 방향 인지가 취약</td><td>—</td></tr>
+          <tr><td><b>Flux 3</b></td><td>에셋 튐 현상이 심함</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="margin-top:22px">상황별 추천</h3>
+    <div class="pick">
+      <div class="card"><div class="k">2D · 가성비</div><p class="small" style="margin:6px 0 0"><b>Wan 2.1 Prime</b> · 시댄스 절반 이하 비용으로 최상위권 2D 작화 연출</p></div>
+      <div class="card"><div class="k">쇼츠·릴스 대량 제작</div><p class="small" style="margin:6px 0 0"><b>Kling 4.0</b> · 초당 157원으로 무난한 3D 영상 양산</p></div>
+      <div class="card"><div class="k">고퀄리티 최종본</div><p class="small" style="margin:6px 0 0"><b>Seedance 2.5</b> · 복잡한 서사·여러 캐릭터·소품, 연출력·프롬프트 이해도·소리 품질 독보적</p></div>
+    </div>
+    <p class="small muted" style="margin-top:10px">요약본 표기 차이: 원문 요약은 시댄스를 "SeaArt(시댄스)"로 적었는데, SeaArt는 여러 모델을 쓰는 플랫폼이고 시댄스(Seedance)는 ByteDance의 모델이에요. 또 요약본의 순위표에서 Wan(약 200원)은 7위로 적혀 있지만 초당 비용 순으로는 6위라 여기서는 비용 순으로 정렬했어요. <span class="uncertain">영상 원문 확인 권장</span></p>
   </section>
 
   <section>
@@ -78,6 +142,7 @@
     <ul class="src">
       <li><a href="https://blog.google/innovation-and-ai/products/veo-updates-flow/" target="_blank" rel="noopener">Google 블로그 — Veo 3.1과 Flow</a> · <a href="https://blog.google/innovation-and-ai/models-and-research/google-labs/flow-updates/" target="_blank" rel="noopener">Google 블로그 — Flow와 Gemini Omni</a> · <a href="https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-omni-flash-nano-banana-2-lite/" target="_blank" rel="noopener">Google 블로그 — Gemini Omni Flash·Nano Banana 2 Lite</a></li>
       <li><a href="https://en.wikipedia.org/wiki/Veo_(text-to-video_model)" target="_blank" rel="noopener">Wikipedia — Veo</a> · <a href="https://the-decoder.com/google-launches-nano-banana-2-lite-for-fast-ai-images-and-gemini-omni-flash-for-video-via-api/" target="_blank" rel="noopener">The Decoder — Omni Flash API</a></li>
+      <li><a href="http://www.youtube.com/watch?v=xewyMTsmuZI" target="_blank" rel="noopener">AI 아스트라(YouTube) — AI 영상 8종 끝장 비교</a></li>
       <li><a href="https://lushbinary.com/blog/ai-video-generation-sora-veo-kling-seedance-comparison/" target="_blank" rel="noopener">Lushbinary — Sora 2 vs Veo 3.1 vs Kling 3.0</a> · <a href="https://tech-insider.org/best-ai-video-generator-2026/" target="_blank" rel="noopener">Tech Insider — Veo 3.1 vs Kling 3.0 vs Gemini Omni</a> · <a href="https://opencreator.io/blog/ai-video-models-comparison-2026" target="_blank" rel="noopener">OpenCreator — 영상 모델 비교</a> · <a href="https://www.atlascloud.ai/blog/guides/seedance-vs-kling-vs-sora-vs-veo" target="_blank" rel="noopener">Atlas Cloud — Seedance·Kling·Sora·Veo</a></li>
       <li><a href="https://www.eachlabs.ai/blog/best-ai-image-generation-models-2026" target="_blank" rel="noopener">Eachlabs — 이미지 모델 2026</a> · <a href="https://toonystory.com/blog/best-ai-for-character-consistency-2026" target="_blank" rel="noopener">ToonyStory — 캐릭터 일관성 비교</a> · <a href="https://queststudio.io/blog/best-ai-models-for-character-consistency" target="_blank" rel="noopener">Quest Studio — 캐릭터 일관성</a> · <a href="https://pixo.video/blog/best-ai-image-generators" target="_blank" rel="noopener">Pixo — 이미지 생성기 비교</a></li>
       <li><a href="https://www.veo3ai.io/blog/is-google-flow-free" target="_blank" rel="noopener">veo3ai — Flow 크레딧</a> · <a href="https://felloai.com/google-flow/" target="_blank" rel="noopener">Fello AI — Flow 요금</a></li>
