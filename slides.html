@@ -74,6 +74,24 @@ h1,h2,h3,p{margin:0}
 .btn{display:inline-flex;align-items:center;gap:12px;padding:20px 36px;border-radius:999px;background:var(--blue);color:#fff;text-decoration:none;font-size:28px;font-weight:800}
 .btn.ghost{background:#fff;color:var(--blue);border:3px solid var(--blue)}
 .slide > a.btn{align-self:flex-start}
+/* 깎기 vs 쌓기 */
+.vs-card{background:#16161D;color:#fff;border-radius:34px;padding:44px 46px;display:flex;flex-direction:column;gap:18px;flex:1}
+.vs-card h3{font-size:58px;font-weight:900;display:flex;align-items:center;gap:18px}
+.vs-card h3 small{font-size:28px;font-weight:600;color:#B9BCD0}
+.vs-card .pt{display:inline-block;border:2px solid #5A5D72;border-radius:999px;padding:10px 26px;font-size:30px;font-weight:800;margin:0 10px 10px 0}
+.vs-card .pt.on{border-color:#F07A4A}
+.vs-card p{font-size:28px;color:#C9CBDA;line-height:1.5}
+.vs-card svg{height:300px;align-self:center}
+/* 코드 데모 */
+.demo{position:relative;width:100%;height:560px;border-radius:30px;overflow:hidden;background:linear-gradient(180deg,#BFD8FF,#FBE3EF)}
+.demo .plane{position:absolute;left:-120px;top:120px;font-size:90px;animation:fly 6s linear infinite}
+@keyframes fly{0%{transform:translate(0,0) rotate(8deg)}50%{transform:translate(900px,-60px) rotate(-6deg)}100%{transform:translate(1900px,40px) rotate(8deg)}}
+.demo .roll{position:absolute;left:0;right:0;top:100%;text-align:center;animation:roll 9s linear infinite}
+.demo .roll div{font-size:46px;font-weight:800;color:#2A2F55;margin:14px 0}
+.demo .roll .end{font-size:74px;margin-top:40px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+@keyframes roll{from{transform:translateY(0)}to{transform:translateY(-1500px)}}
+.code{background:#16161D;color:#E7E9F5;border-radius:24px;padding:28px 34px;font:24px/1.55 ui-monospace,Menlo,Consolas,monospace;white-space:pre;overflow:hidden}
+.code .c{color:#7F86A8} .code .k{color:#F07A4A} .code .s{color:#7FD1A8}
 .cb{display:grid;grid-template-columns:360px 1fr 210px;align-items:center;gap:24px}
 .cb-n{font-size:30px;font-weight:800}
 .cb-t{height:46px;background:#EEF1FA;border-radius:0 8px 8px 0}
@@ -134,7 +152,7 @@ img.char{border-radius:30px;box-shadow:0 10px 30px rgba(60,70,140,.18);display:b
     <div class="card"><div class="k">SESSION 02</div><h3>화면 담기</h3><p>샷 사이즈 · 앵글 · 카메라 무빙</p></div>
     <div class="card"><div class="k">SESSION 03</div><h3>영상 완성하기</h3><p>구도와 빛 · 편집 · 소리</p></div>
     <div class="card"><div class="k">SESSION 04</div><h3>AI로 영상 만들기</h3><p>기준 이미지와 일관성</p></div>
-    <div class="card blue"><div class="k">SESSION 05</div><h3>Flow 실습</h3><p>캐릭터 한 장으로 1분 영상</p></div>
+    <div class="card blue"><div class="k">SESSION 05</div><h3>Flow 실습</h3><p>캐릭터 한 장으로 1분 영상 + 코드로 영상 만들기</p></div>
   </div>
 </section>
 
@@ -850,6 +868,123 @@ img.char{border-radius:30px;box-shadow:0 10px 30px rgba(60,70,140,.18);display:b
     <div class="card blue"><div class="k">고퀄리티 최종본</div><h3>Seedance 2.5</h3><p>복잡한 서사·여러 캐릭터, 연출력·소리 품질 독보적</p></div>
   </div>
   <div class="note blue" style="margin-top:36px">오늘 실습은 <b>Flow(Veo 3.1)</b>로 진행해요. 이 비교는 "다른 도구도 써 보고 싶다"는 분들을 위한 참고 자료예요.</div>
+</section>
+
+<section class="slide" data-s="SESSION 05+" data-t="코드로만 영상 만들기">
+  <span class="pill">05+ · 코드로 영상</span>
+  <div class="center">
+    <p class="h3" style="color:var(--sub)">Claude · Gemini에게 코드를 쓰게 해서</p>
+    <h1 class="h1 grad" style="font-size:130px;margin:20px 0 40px">코드로만 영상 만들기</h1>
+    <span class="tag" style="font-size:30px;padding:16px 44px">AI 영상은 깎고, 코드 영상은 쌓는다</span>
+  </div>
+</section>
+
+<section class="slide" data-s="SESSION 05+" data-t="깎기 vs 쌓기">
+  <span class="pill">05+ · 코드로 영상</span>
+  <div class="head" style="margin-bottom:34px"><h2 class="h2">깎기 <span class="grad">vs</span> 쌓기</h2></div>
+  <div class="row" style="gap:40px">
+    <div class="vs-card">
+      <h3>대리석 <small>구글 Flow · 영상 모델</small></h3>
+      <svg viewBox="0 0 260 300" aria-label="대리석 흉상"><defs><linearGradient id="mb" x1="0" x2="1"><stop offset="0" stop-color="#E9EAF0"/><stop offset="1" stop-color="#B9BCC8"/></linearGradient></defs>
+<rect x="40" y="270" width="180" height="26" rx="6" fill="#3A3B46"/><path d="M60 270 L60 170 Q130 140 200 170 L200 270Z" fill="url(#mb)"/>
+<rect x="112" y="120" width="40" height="40" fill="url(#mb)"/><ellipse cx="132" cy="80" rx="52" ry="62" fill="url(#mb)"/>
+<path d="M95 60 Q120 30 160 45" stroke="#8F92A3" stroke-width="3" fill="none"/><path d="M80 200 L90 260 M120 190 L118 262 M170 195 L176 262" stroke="#A3A6B5" stroke-width="2"/></svg>
+      <div><span class="pt">▲ 자연스러움</span><span class="pt">▲ 표현력</span></div>
+      <p>한 덩어리로 생성 → 일부만 고치기 어려워 <b>다시 깎아야</b> 함 (크레딧)</p>
+    </div>
+    <div class="vs-card">
+      <h3>레고 <small>Claude · Gemini · 코드</small></h3>
+      <svg viewBox="0 0 260 300" aria-label="레고 흉상"><rect x="30" y="285" width="200" height="12" rx="4" fill="#3A3B46"/><rect x="98" y="14" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="124" y="14" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="150" y="14" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="72" y="44" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="98" y="44" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="124" y="44" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="150" y="44" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="176" y="44" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="72" y="74" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="98" y="74" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="124" y="74" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="150" y="74" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="176" y="74" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="98" y="104" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="124" y="104" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="150" y="104" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="124" y="134" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="46" y="164" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="72" y="164" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="98" y="164" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="124" y="164" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="150" y="164" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="176" y="164" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="202" y="164" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="46" y="194" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="72" y="194" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="98" y="194" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="124" y="194" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="150" y="194" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="176" y="194" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="202" y="194" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="46" y="224" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="72" y="224" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="98" y="224" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="124" y="224" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="150" y="224" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="176" y="224" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="202" y="224" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="46" y="254" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="72" y="254" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="98" y="254" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="124" y="254" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="150" y="254" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="176" y="254" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="202" y="254" width="24" height="28" rx="3" fill="#C9CBD6" stroke="#8D90A0"/><rect x="20" y="194" width="24" height="28" rx="3" fill="#F07A4A"/></svg>
+      <div><span class="pt on">▲ 고치기 쉬움</span><span class="pt">▲ 글자 정확</span></div>
+      <p>블록(코드 한 줄)만 바꿔 끼우면 끝 → 수정 비용 <b>거의 0</b></p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-s="SESSION 05+" data-t="코드 영상은 어떻게 만들어질까">
+  <span class="pill">05+ · 코드로 영상</span>
+  <div class="head"><h2 class="h2">코드 영상은 어떻게 만들어질까?</h2><p class="lead">AI가 그림을 "생성"하는 게 아니라, 움직임을 "설계도(코드)"로 씁니다</p></div>
+  <div class="flow" style="gap:12px">
+    <div class="card"><div class="k">1 · 말로 요청</div><h3>프롬프트</h3><p>장면·글자·색·시간</p></div><span class="arrow">›</span>
+    <div class="card"><div class="k">2 · AI가 작성</div><h3>HTML 코드</h3><p>CSS·JS 애니메이션</p></div><span class="arrow">›</span>
+    <div class="card"><div class="k">3 · 바로 보기</div><h3>미리보기</h3><p>Claude 아티팩트 · Gemini 캔버스</p></div><span class="arrow">›</span>
+    <div class="card blue"><div class="k">4 · 파일로</div><h3>MP4</h3><p>화면 녹화 또는 렌더링</p></div>
+  </div>
+</section>
+
+<section class="slide" data-s="SESSION 05+" data-t="이 화면도 코드예요 (데모)">
+  <span class="pill">05+ · 코드로 영상</span>
+  <div class="row" style="gap:40px;align-items:center">
+    <div style="width:620px">
+      <h2 class="h2" style="font-size:66px">이 화면도<br><span class="grad">코드예요</span></h2>
+      <p class="lead" style="font-size:30px">종이비행기와 엔딩 크레딧은 이미지·영상 파일 없이 CSS 몇 줄로 움직입니다.</p>
+      <div class="code" style="margin-top:30px"><span class="c">/* 크레딧을 아래→위로 9초 동안 */</span>
+<span class="k">@keyframes</span> roll {
+  to { transform: <span class="s">translateY(-1500px)</span>; }
+}
+.roll { animation: roll <span class="s">9s</span> linear; }</div>
+    </div>
+    <div class="demo" style="flex:1">
+      <div class="plane">✈️</div>
+      <div class="roll">
+        <div>학생 1</div><div>학생 2</div><div>학생 3</div><div>학생 4</div><div>학생 5</div><div>학생 6</div><div>…</div>
+        <div class="end">졸업을 축하해요</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-s="SESSION 05+" data-t="언제 깎고 언제 쌓을까">
+  <span class="pill">05+ · 코드로 영상</span>
+  <div class="head"><h2 class="h2">언제 깎고, 언제 쌓을까?</h2></div>
+  <table class="t">
+    <tr><th style="width:22%">만들 것</th><th style="width:22%">추천</th><th>이유</th></tr>
+    <tr><td><b>캐릭터 연기·감정</b></td><td>🗿 Flow</td><td>표정·몸짓·빛의 자연스러움은 영상 모델이 압도적</td></tr>
+    <tr><td><b>제목·자막·엔딩 크레딧</b></td><td>🧱 코드</td><td>AI 영상은 글자가 깨지기 쉬움 → 코드는 한 글자도 안 틀림</td></tr>
+    <tr><td><b>그래프·인포그래픽</b></td><td>🧱 코드</td><td>숫자가 정확하고, 값만 바꿔 다시 만들 수 있음</td></tr>
+    <tr><td><b>수업 개념 애니메이션</b></td><td>🧱 코드</td><td>물의 순환·분수·지구 공전처럼 규칙이 있는 움직임</td></tr>
+    <tr><td><b>졸업·행사 영상</b></td><td>🗿 + 🧱</td><td>장면은 Flow, 타이틀·이름 크레딧은 코드로 만들어 편집 앱에서 합치기</td></tr>
+  </table>
+</section>
+
+<section class="slide" data-s="SESSION 05+" data-t="실습: 코드 영상 프롬프트">
+  <span class="pill">05+ · 코드로 영상</span>
+  <div class="head" style="margin-bottom:34px"><h2 class="h2"><span class="tag on" style="vertical-align:middle">실습</span> 코드 영상 프롬프트</h2><p class="lead" style="font-size:32px">Claude 또는 Gemini(캔버스)에 그대로 붙여 넣으세요</p></div>
+  <div class="g2">
+    <div class="quote" style="font-size:28px;line-height:1.6">🎓 <b>졸업 엔딩 크레딧</b><br>1920×1080 크기의 HTML 한 파일로 졸업 영상 엔딩 크레딧 애니메이션을 만들어 줘. 파스텔 하늘 배경에 종이비행기가 천천히 날아가고, 아래 이름들이 아래에서 위로 올라간 뒤 마지막에 "졸업을 축하해요"가 나타나. 총 30초, 외부 라이브러리 없이, 클릭하면 처음부터 재생.<br>이름: [학생 이름 목록]<button class="copy">복사</button></div>
+    <div class="quote" style="font-size:28px;line-height:1.6;border-left-color:var(--pink)">💧 <b>수업 개념 애니메이션</b><br>1920×1080 HTML 한 파일로 초등 4학년용 "물의 순환" 20초 애니메이션을 만들어 줘. 바다에서 증발 → 구름 → 비 → 강으로 흘러 바다로 돌아오는 과정을 단계마다 큰 한글 자막과 함께 보여 줘. 밝은 플랫 일러스트 느낌, 외부 라이브러리 없이.<button class="copy">복사</button></div>
+  </div>
+</section>
+
+<section class="slide" data-s="SESSION 05+" data-t="고치기 = 블록 바꿔 끼우기">
+  <span class="pill">05+ · 코드로 영상</span>
+  <div class="head"><h2 class="h2">고치기 = <span class="grad">블록 바꿔 끼우기</span></h2><p class="lead">다시 만들지 말고, 바꿀 것만 한 줄로 말하세요</p></div>
+  <div class="g3">
+    <div class="card"><div class="k">글자</div><h3>"이름을 1.2배 크게"</h3><p>나머지는 그대로 유지</p></div>
+    <div class="card"><div class="k">색·분위기</div><h3>"배경을 노을빛으로"</h3><p>CSS 색 값 몇 개만 바뀜</p></div>
+    <div class="card"><div class="k">시간</div><h3>"20% 느리게, 총 40초"</h3><p>애니메이션 시간만 조정</p></div>
+  </div>
+  <div class="note mint" style="margin-top:36px">Flow는 한 컷을 고치려면 <b>다시 생성(크레딧 소모)</b>, 코드는 <b>대화로 수정(추가 비용 거의 없음)</b>. 결과가 매번 똑같이 재현되는 것도 장점이에요.</div>
+</section>
+
+<section class="slide" data-s="SESSION 05+" data-t="코드를 영상 파일로 만들기">
+  <span class="pill">05+ · 코드로 영상</span>
+  <div class="head"><h2 class="h2">코드를 <span class="grad">영상 파일(MP4)</span>로</h2></div>
+  <div class="g3">
+    <div class="card blue"><div class="k">가장 쉬움 · 화면 녹화</div><h3>재생하고 녹화</h3><p>Windows: <b>Win + Alt + R</b> (게임 바)<br>Mac: <b>Shift + ⌘ + 5</b><br>브라우저를 전체 화면(F11)으로 두고 녹화</p></div>
+    <div class="card"><div class="k">정확한 길이·화질 · 렌더링</div><h3>렌더링 도구</h3><p><b>Remotion</b>(React), <b>HyperFrames</b>(HTML) 같은 도구로 코드를 프레임 단위 MP4로 출력</p></div>
+    <div class="card"><div class="k">수학·과학 개념</div><h3>Manim</h3><p>그래프·도형 변환 애니메이션에 강한 파이썬 도구. "Manim 코드로 만들어 줘"라고 요청</p></div>
+  </div>
+  <p class="foot">렌더링 도구는 설치가 필요해요. 수업에서는 화면 녹화로 시작하는 것을 추천합니다.</p>
+</section>
+
+<section class="slide" data-s="SESSION 05+" data-t="핵심 정리">
+  <span class="pill">05+ · 코드로 영상</span>
+  <div class="center">
+    <p class="h3" style="color:var(--sub);margin-bottom:40px">핵심 정리</p>
+    <h2 class="h2" style="font-size:90px">감정은 <span class="grad">깎고</span>,<br>정보는 <span class="grad">쌓는다</span></h2>
+    <p class="lead" style="margin-top:40px">캐릭터의 연기는 Flow로, 글자·숫자·규칙 있는 움직임은 코드로. 두 가지를 편집 앱에서 합치면 완성.</p>
+  </div>
 </section>
 
 <section class="slide" data-s="SESSION 05" data-t="핵심 정리">
