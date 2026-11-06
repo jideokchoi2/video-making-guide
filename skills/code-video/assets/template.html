@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TITLE</title>
+<style>
+  html,body{margin:0;height:100%;background:#000;overflow:hidden}
+  canvas{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
+  #ui{position:fixed;inset:0;display:grid;place-items:center;background:#000;color:#cfc4ab;
+      font:15px/1.7 "Apple SD Gothic Neo","Malgun Gothic",serif;text-align:center;cursor:pointer;user-select:none}
+  #ui b{display:block;font-size:40px;margin-bottom:6px;color:#e8d9b5}
+  #ui small{color:#7d7666}
+  #ui.hide{display:none}
+</style>
+</head>
+<body>
+<canvas id="c" width="960" height="720"></canvas>
+<div id="ui"><div id="msg">그림을 그리는 중…</div></div>
+<script>
+'use strict';
+/* =====================================================================
+   코드 영상 템플릿 — 손그림 셀 애니메이션 엔진
+   구조: ① 도구  ② 배경 미리 칠하기  ③ 셀 캐릭터  ④ 효과  ⑤ 컷(SHOTS)
+         ⑥ 필름 질감  ⑦ 소리  ⑧ 재생 제어
+   점검: 주소 끝에 #t=12.5 → 그 시점 정지 화면 / window.renderAt(t)
+   ===================================================================== */
+const W=960,H=720,FPS=24;           // 4:3 = OVA·레이저디스크 느낌. 16:9가 필요하면 W=1280,H=720
+const cv=document.getElementById('c'),X=cv.getContext('2d');
+function fit(){const s=Math.min(innerWidth/W,innerHeight/H);cv.style.width=W*s+'px';cv.style.height=H*s+'px';}
+addEventListener('resize',fit);fit();
+
+/* ---------- ① 도구 ---------- */
+const mk=(w,h)=>{const c=document.createElement('canvas');c.width=Math.max(1,w|0);c.height=Math.max(1,h|0);return c;};
+const S=mk(W,H),SX=S.getContext('2d');       // 장면은 여기에 그리고, 마지막에 필름 처리해서 X로
+const HL=mk(W/4,H/4),HLX=HL.getContext('2d');
+const MK=mk(W,H),MKX=MK.getContext('2d');    // 필터·마스크용 임시 캔버스 (한 번만 필터!)
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const lerp=(a,b,t)=>a+(b-a)*t;
+const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+const eout=t=>1-Math.pow(1-t,3);
+const seg=(t,a,b)=>clamp((t-a)/(b-a));
+function hash(n){const s=Math.sin(n*12.9898+78.233)*43758.5453;return s-Math.floor(s);}
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+let R=mulberry(1);const seed=n=>{R=mulberry(n);};const rnd=(a=0,b=1)=>a+(b-a)*R();
+let DS=0; // 그림 번호 = floor(frame/2). 선 떨림·빗줄기 등 "다시 그린" 요소는 DS로 바뀜 (on twos)
+
+function hex(h){h=h.replace('#','');return[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)];}
+const arr=c=>typeof c==='string'?hex(c):c;
+const rgb=(a,al)=>al==null?`rgb(${a[0]|0},${a[1]|0},${a[2]|0})`:`rgba(${a[0]|0},${a[1]|0},${a[2]|0},${al})`;
+function mix(a,b,t){a=arr(a);b=arr(b);return[lerp(a[0],b[0],t),lerp(a[1],b[1],t),lerp(a[2],b[2],t)];}
+function vary(c,v){c=arr(c);const k=rnd(-v,v)*255;return rgb([c[0]+k+rnd(-v,v)*60,c[1]+k+rnd(-v,v)*60,c[2]+k+rnd(-v,v)*60]);}
+
+// 경로: 숫자 평면 배열 [x0,y0,x1,y1,...]
+function bz(x0,y0,x1,y1,x2,y2,x3,y3,n=12){const o=[];for(let i=0;i<=n;i++){const t=i/n,u=1-t;o.push(u*u*u*x0+3*u*u*t*x1+3*u*t*t*x2+t*t*t*x3,u*u*u*y0+3*u*u*t*y1+3*u*t*t*y2+t*t*t*y3);}return o;}
+function ar(cx,cy,rx,ry,a0,a1,n=16){const o=[];for(let i=0;i<=n;i++){const a=a0+(a1-a0)*i/n;o.push(cx+Math.cos(a)*rx,cy+Math.sin(a)*ry);}return o;}
+const J=(...a)=>[].concat(...a);
+function trace(c,p,closed=true){c.beginPath();c.moveTo(p[0],p[1]);for(let i=2;i<p.length;i+=2)c.lineTo(p[i],p[i+1]);if(closed)c.closePath();}
+function fill(c,p,col){trace(c,p);c.fillStyle=typeof col==='string'?col:rgb(col);c.fill();}
+function bbox(p){let a=1e9,b=1e9,c2=-1e9,d=-1e9;for(let i=0;i<p.length;i+=2){a=Math.min(a,p[i]);c2=Math.max(c2,p[i]);b=Math.min(b,p[i+1]);d=Math.max(d,p[i+1]);}return{x:a,y:b,w:c2-a,h:d-b};}
+function blob(x,y,rx,ry,n=16,ir=.2,flat=true){const o=[];for(let i=0;i<n;i++){const a=i/n*Math.PI*2;const r=1+(rnd()-.5)*2*ir;let yy=Math.sin(a)*ry*r;if(flat&&yy>0)yy*=.5;o.push(x+Math.cos(a)*rx*r,y+yy);}return o;}
+function shift(p,dx,dy){return p.map((v,i)=>v+(i%2?dy:dx));}
+
+/* 손으로 그린 선: 구간마다 굵기 변화 + 그림 번호(DS)마다 미세한 떨림.
+   바깥 실루엣 w≈3, 안쪽 디테일 w≈1~1.5. 빛 받는 가장자리는 col에 주황/하늘색 = 색 홀드 선 */
+function ink(c,p,w=2,col='#120b14',o={}){
+  const amp=o.boil??.55,sd=o.s??p.length*1.7;
+  const q=new Array(p.length);
+  for(let i=0;i<p.length;i++)q[i]=p[i]+(hash(sd+i*7.31+DS*13.7)-.5)*2*amp;
+  if(o.closed)q.push(q[0],q[1]);
+  const m=q.length/2;c.strokeStyle=col;c.lineCap='round';c.lineJoin='round';
+  for(let i=0;i<m-1;i++){
+    let ww=w*(.72+.56*hash(sd+i*3.7+DS*.37));
+    if(o.taper){const t=i/Math.max(1,m-2);ww*=.3+.7*Math.sin(Math.PI*clamp(t*.92+.04));}
+    c.lineWidth=Math.max(.3,ww);c.beginPath();c.moveTo(q[2*i],q[2*i+1]);c.lineTo(q[2*i+2],q[2*i+3]);c.stroke();
+  }
+}
+/* 포스터컬러 붓질 채우기 (배경 전용 — 미리 칠할 때만 쓰기. 매 프레임 쓰면 느림) */
+function paint(c,p,col,o={}){
+  c.save();trace(c,p);c.fillStyle=typeof col==='string'?col:rgb(col);c.fill();c.clip();
+  const b=bbox(p);const n=Math.min(o.max??5000,(b.w*b.h)/(o.area??220)*(o.d??1));const ang=o.a??0;
+  c.lineCap='round';
+  for(let i=0;i<n;i++){
+    const x=rnd(b.x-10,b.x+b.w+10),y=rnd(b.y-10,b.y+b.h+10);
+    const a=ang+rnd(-(o.aj??.35),o.aj??.35),L=rnd(o.l0??6,o.l1??20);
+    c.globalAlpha=rnd(o.al0??.12,o.al1??.4);c.strokeStyle=vary(col,o.v??.05);c.lineWidth=rnd(o.w0??1.5,o.w1??5);
+    c.beginPath();c.moveTo(x,y);c.quadraticCurveTo(x+Math.cos(a)*L*.5+rnd(-2,2),y+Math.sin(a)*L*.5+rnd(-2,2),x+Math.cos(a)*L,y+Math.sin(a)*L);c.stroke();
+  }
+  c.restore();c.globalAlpha=1;
+}
+function glow(c,x,y,r,col,a=1){const g=c.createRadialGradient(x,y,0,x,y,r);const k=arr(col);g.addColorStop(0,rgb(k,a));g.addColorStop(.35,rgb(k,a*.35));g.addColorStop(1,rgb(k,0));c.fillStyle=g;c.fillRect(x-r,y-r,r*2,r*2);}
+const PAPER=(()=>{const c=mk(256,256),g=c.getContext('2d'),d=g.createImageData(256,256);for(let i=0;i<d.data.length;i+=4){const v=128+(Math.random()-.5)*60+(Math.random()<.02?-40:0);d.data[i]=d.data[i+1]=d.data[i+2]=v;d.data[i+3]=255;}g.putImageData(d,0,0);return c;})();
+function paper(g,x,y,w,h,a=.08){g.save();g.globalCompositeOperation='overlay';g.globalAlpha=a;g.fillStyle=g.createPattern(PAPER,'repeat');g.fillRect(x,y,w,h);g.restore();}
+
+/* ---------- ② 배경 레이어 (월드 좌표, 시작할 때 한 번만 칠함) ---------- */
+function layer(x0,x1,y0,y1,bs,fn){const c=mk((x1-x0)*bs,(y1-y0)*bs),g=c.getContext('2d');g.setTransform(bs,0,0,bs,-x0*bs,-y0*bs);fn(g);g.setTransform(1,0,0,1,0,0);paper(g,0,0,c.width,c.height,.07);return{c,x0,x1,y0,y1};}
+// f: 시차 계수 (먼 하늘 .2, 먼 마을 .5, 중경 .8, 근경 1). 레이어는 화면보다 넉넉히 넓게 칠할 것
+function drawL(c,L,f,cx,cy,REFX=W/2,REFY=H/2){const ox=(cx-REFX)*(1-f),oy=(cy-REFY)*(1-f)*.6;c.drawImage(L.c,L.x0+ox,L.y0+oy,L.x1-L.x0,L.y1-L.y0);}
+function camSet(c,cx,cy,z){c.setTransform(z,0,0,z,W/2-cx*z,H/2-cy*z);}  // 촬영대 카메라
+const camLerp=(t,a,b,A,B,e=ease)=>{const u=e(seg(t,a,b));return{x:lerp(A.x,B.x,u),y:lerp(A.y,B.y,u),z:lerp(A.z,B.z,u)};};
+
+let SKY,HILLS;   // ← 장면에 맞게 바꾸기
+function makeSky(){return layer(-300,W+300,-200,H+100,.6,g=>{seed(31);
+  const gr=g.createLinearGradient(0,-200,0,H);gr.addColorStop(0,'#04060d');gr.addColorStop(.6,'#122042');gr.addColorStop(1,'#2a3256');g.fillStyle=gr;g.fillRect(-300,-200,W+600,H+300);
+  for(let i=0;i<220;i++){g.fillStyle=`rgba(235,240,255,${rnd(.2,.9)})`;g.beginPath();g.arc(rnd(-300,W+300),rnd(-200,H*.6),rnd(.4,1.3),0,7);g.fill();}
+  glow(g,700,140,360,'#f2b766',.4);paint(g,ar(700,140,44,44,0,7,36),'#fff0c6',{l0:6,l1:14,w0:2,w1:5,area:30});
+  for(let i=0;i<20;i++){const x=rnd(-300,W+300),y=rnd(-100,380);if(Math.hypot(x-700,y-140)<160)continue;const p=blob(x,y,rnd(90,260),rnd(26,60),22,.15);const dx=700-x,dy=140-y,d=Math.hypot(dx,dy);
+    paint(g,p,mix('#262b4a','#b48c62',clamp(1-d/700)*.6),{area:200});paint(g,shift(p,-dx/d*12,-dy/d*12),mix('#0d1430','#1d2850',R()),{area:160,l0:14,l1:40,w0:4,w1:10});}
+});}
+function makeHills(){return layer(-300,W+300,300,H+100,1,g=>{seed(5);
+  const hill=[-300,H+100];for(let x=-300;x<=W+300;x+=30)hill.push(x,520+Math.sin(x*.006)*40+Math.sin(x*.017)*14);hill.push(W+300,H+100);
+  paint(g,hill,'#0b111f',{a:-.2,l0:10,l1:30,area:120});
+  for(let i=0;i<40;i++){const x=rnd(-200,W+200),y=rnd(560,660);g.fillStyle=rgb(mix('#f7b257','#ffd88c',R()));g.fillRect(x,y,4,5);glow(g,x+2,y+2,10,'#ffb158',.3);}
+});}
+
+/* ---------- ③ 셀 캐릭터 (매 프레임 그리되 DS로 on twos) ----------
+   규칙: 단색 면 + 딱 떨어지는 그림자 1~2단 + 잉크 선 + 빛 쪽 색 홀드 선.
+   복잡한 정적 부분은 선 떨림 3종을 미리 그려 두고 CARV[DS%3]처럼 번갈아 쓰면 빠름 */
+function drawLantern(c,x,y,s,t){  // 예시 캐릭터: 날아오르는 종이 등불
+  c.save();c.translate(x,y);c.scale(s,s);c.rotate(Math.sin(Math.floor(t*12)/12*2)*.06);
+  const body=J(ar(0,0,22,30,-Math.PI/2,Math.PI/2,12),ar(0,0,22,30,Math.PI/2,Math.PI*1.5,12));
+  fill(c,body,'#e9a95a');fill(c,ar(-6,0,14,28,Math.PI/2,Math.PI*1.5,10).concat([-6,-28]),'#b9773a');   // 그림자 1단
+  c.globalCompositeOperation='lighter';glow(c,0,6,60,'#ffcf7d',.55);c.globalCompositeOperation='source-over';
+  ink(c,body,2.6,'#2a140c',{closed:1,s:1});ink(c,[-22,-2,22,-2],1,'#2a140c',{s:2});ink(c,[-18,14,18,14],1,'#2a140c',{s:3});
+  ink(c,ar(0,0,22,30,-1.2,.4,8),1.2,'#ff9a44',{s:4,boil:.3});                                          // 색 홀드 선
+  c.restore();
+}
+
+/* ---------- ④ 효과: 모두 손그림 획 (파티클 시스템 느낌 금지) ---------- */
+function rain(c,o={}){const n=o.n??220,ang=o.ang??.22,al=o.al??1,sd=DS;c.lineCap='round';
+  for(let i=0;i<n;i++){const near=i<n*.22,x=hash(i*1.31+sd*.71)*(W+160)-80,y=hash(i*2.17+sd*1.13)*(H+120)-60;const L=(near?44:20)*(.6+hash(i*3.3+sd)*.8);
+    let col=near?'190,210,240':'150,175,215',a=(near?.42:.26)*al;
+    if(o.gold){const d=Math.hypot(x-o.gold.x,y-o.gold.y);if(d<o.gold.r){col='255,206,120';a=Math.min(1,a*2.4*(1-d/o.gold.r)+a);}}
+    c.strokeStyle=`rgba(${col},${a})`;c.lineWidth=near?1.7:1;c.beginPath();c.moveTo(x,y);c.lineTo(x-ang*L,y+L);c.stroke();}
+  if(o.splash!=null){for(let i=0;i<(o.sn??30);i++){const x=hash(i*5.1+sd*.37)*W,y=o.splash+hash(i*6.7+sd*.91)*(H-o.splash);const s=.6+hash(i)*1.2;c.strokeStyle=`rgba(190,210,240,${.45*al})`;c.lineWidth=1;c.beginPath();c.moveTo(x-4*s,y);c.lineTo(x-6*s,y-5*s);c.moveTo(x,y-1);c.lineTo(x,y-7*s);c.moveTo(x+4*s,y);c.lineTo(x+6*s,y-5*s);c.stroke();}}}
+function sparkBurst(c,x,y,amt,sd,scale=1){c.globalCompositeOperation='lighter';
+  for(let i=0;i<14*amt;i++){const a=hash(sd+i*1.7)*Math.PI*2,L=(6+hash(sd+i*2.3)*26)*scale;const x2=x+Math.cos(a)*L,y2=y+Math.sin(a)*L*.7+L*.3;
+    c.strokeStyle=i%3?'rgba(255,214,120,.9)':'rgba(170,230,255,.95)';c.lineWidth=(i%3?1.6:1.1)*scale;c.beginPath();c.moveTo(x,y);c.lineTo((x+x2)/2+(hash(i+sd)-.5)*6*scale,(y+y2)/2);c.lineTo(x2,y2);c.stroke();}
+  glow(c,x,y,40*scale,'#ffe6a8',.6*amt);c.globalCompositeOperation='source-over';}
+// 꼬리(불꽃·빛 자국): 과거 시점 위치를 다시 계산해서 이어 그림 → 상태 저장 없이 어느 시점이든 같은 그림
+function trail(c,posAt,t,n=12){c.globalCompositeOperation='lighter';for(let k=1;k<=n;k++){const p=posAt(t-k*.05);const a=1-k/(n+1),fall=k*k*.35;c.strokeStyle=`rgba(255,${200-k*6},${120-k*6},${a})`;c.lineWidth=2.2*a+.5;c.beginPath();c.moveTo(p.x,p.y+fall);c.lineTo(p.x-6,p.y+fall+4);c.stroke();}c.globalCompositeOperation='source-over';}
+
+/* ---------- ⑤ 컷 목록: [시작, 끝, 그리는 함수(t)] ---------- */
+const lanternPos=t=>({x:lerp(300,640,eout(seg(t,0,10))),y:lerp(620,200,ease(seg(t,0,10)))});
+function shotWide(t){const c=SX;c.setTransform(1,0,0,1,0,0);c.fillStyle='#000';c.fillRect(0,0,W,H);
+  const cam=camLerp(t,0,5,{x:W/2,y:H/2+20,z:1},{x:W/2+30,y:H/2,z:1.06});camSet(c,cam.x,cam.y,cam.z);
+  drawL(c,SKY,.2,cam.x,cam.y);drawL(c,HILLS,1,cam.x,cam.y);
+  const tc=Math.floor(t*12)/12,p=lanternPos(tc);trail(c,lanternPos,t,8);drawLantern(c,p.x,p.y,1,t);
+  c.setTransform(1,0,0,1,0,0);rain(c,{n:160,al:.6,gold:{...lanternPos(t),r:140}});}
+function shotClose(t){const c=SX;c.setTransform(1,0,0,1,0,0);
+  const tc=Math.floor(t*12)/12,p=lanternPos(tc);const cam={x:p.x,y:p.y-20,z:2.6};camSet(c,cam.x,cam.y,cam.z);
+  drawL(c,SKY,.2,cam.x,cam.y);drawLantern(c,p.x,p.y,1,t);c.setTransform(1,0,0,1,0,0);rain(c,{n:120,al:.5,gold:{x:W/2,y:H/2+20,r:220}});}
+const SHOTS=[[0,5,shotWide],[5,10,shotClose]];
+const END=10.5;
+
+/* ---------- ⑥ 필름 질감 ---------- */
+const GRAIN=[];for(let k=0;k<8;k++){const g=mk(W/2,H/2),gx=g.getContext('2d'),d=gx.createImageData(g.width,g.height);for(let i=0;i<d.data.length;i+=4){const v=128+(Math.random()-.5)*230;d.data[i]=d.data[i+1]=d.data[i+2]=v;d.data[i+3]=255;}gx.putImageData(d,0,0);GRAIN.push(g);}
+const VIG=(()=>{const g=X.createRadialGradient(W/2,H/2,H*.35,W/2,H/2,H*.85);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,.6)');return g;})();
+function film(frame,fade){
+  X.setTransform(1,0,0,1,0,0);X.globalCompositeOperation='source-over';X.globalAlpha=1;X.fillStyle='#000';X.fillRect(0,0,W,H);
+  const wx=(hash(frame*1.7)-.5)*1.6,wy=(hash(frame*2.3)-.5)*1.4;                 // 게이트 흔들림
+  X.filter='blur(.5px) saturate(1.06)';X.drawImage(S,wx,wy);X.filter='none';          // 필름 전사 부드러움
+  HLX.setTransform(1,0,0,1,0,0);HLX.clearRect(0,0,HL.width,HL.height);HLX.filter='contrast(2.4) brightness(.85) blur(5px)';HLX.drawImage(S,0,0,HL.width,HL.height);HLX.filter='none';
+  X.globalCompositeOperation='screen';X.globalAlpha=.6;X.drawImage(HL,wx,wy,W,H);X.globalAlpha=1;   // 할레이션
+  X.fillStyle='rgb(16,14,24)';X.fillRect(0,0,W,H);                                    // 들뜬 검정
+  X.globalCompositeOperation='soft-light';X.fillStyle='rgba(255,222,186,.14)';X.fillRect(0,0,W,H);   // 색 틀어짐
+  X.globalCompositeOperation='overlay';X.globalAlpha=.17;X.drawImage(GRAIN[frame%GRAIN.length],0,0,W,H);X.globalAlpha=1;
+  X.globalCompositeOperation='source-over';X.fillStyle=VIG;X.fillRect(0,0,W,H);
+  X.fillStyle=`rgba(0,0,0,${hash(frame*.913)*.04})`;X.fillRect(0,0,W,H);           // 노출 깜빡임
+  if(hash(frame*3.1)>.82){X.fillStyle='rgba(230,220,200,.5)';X.beginPath();X.ellipse(hash(frame)*W,hash(frame*2)*H,1.5,1,0,0,7);X.fill();}
+  if(fade>0){X.fillStyle=`rgba(0,0,0,${fade})`;X.fillRect(0,0,W,H);}
+}
+function render(t){
+  const frame=Math.floor(t*FPS);DS=Math.floor(frame/2);
+  const shot=SHOTS.find(s=>t>=s[0]&&t<s[1])||SHOTS[SHOTS.length-1];shot[2](t);
+  film(frame,Math.max(1-seg(t,0,1.2),seg(t,END-1.2,END)));
+}
+
+/* ---------- ⑦ 소리 (Web Audio 합성) ---------- */
+let AC=null,t0=0,NB=null,MASTER=null,REV=null,state='load';
+function mkNoise(sec){const b=AC.createBuffer(2,AC.sampleRate*sec,AC.sampleRate);for(let ch=0;ch<2;ch++){const d=b.getChannelData(ch);let l=0;for(let i=0;i<d.length;i++){const w=Math.random()*2-1;l=(l+.02*w)/1.02;d[i]=w*.85+l*3;}}return b;}
+function mkImpulse(sec){const b=AC.createBuffer(2,AC.sampleRate*sec,AC.sampleRate);for(let ch=0;ch<2;ch++){const d=b.getChannelData(ch);for(let i=0;i<d.length;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2.6);}return b;}
+function out(rev=0,pan=0){const g=AC.createGain(),p=AC.createStereoPanner();p.pan.value=pan;g.connect(p);p.connect(MASTER);if(rev){const s=AC.createGain();s.gain.value=rev;g.connect(s);s.connect(REV);}return g;}
+// 잡음 기반: 비·바람·천둥·딸깍·찢어짐·불꽃
+function nz(at,dur,o={}){const s=AC.createBufferSource();s.buffer=NB;const f=AC.createBiquadFilter();f.type=o.type||'bandpass';f.frequency.setValueAtTime(o.f||1000,at);if(o.f2)f.frequency.exponentialRampToValueAtTime(o.f2,at+dur);f.Q.value=o.q??1;const g=AC.createGain();g.gain.setValueAtTime(0,at);g.gain.linearRampToValueAtTime(o.vol??.3,at+(o.a??.005));g.gain.exponentialRampToValueAtTime(.0001,at+dur);s.connect(f);f.connect(g);g.connect(out(o.rev||0,o.pan||0));s.start(at,Math.random()*3);s.stop(at+dur+.1);}
+// 음 기반: 종·멜로디·패드·끼익·모터
+function osc(at,dur,o={}){const s=AC.createOscillator();s.type=o.type||'sine';s.frequency.setValueAtTime(o.f||440,at);if(o.f2)s.frequency.exponentialRampToValueAtTime(o.f2,at+dur);s.detune.value=o.det||0;const g=AC.createGain();const a=o.a??.01,r=o.r??dur*.6;g.gain.setValueAtTime(0,at);g.gain.linearRampToValueAtTime(o.vol??.1,at+a);g.gain.setValueAtTime(o.vol??.1,at+Math.max(a,dur-r));g.gain.exponentialRampToValueAtTime(.0001,at+dur);let node=s;if(o.lp){const f=AC.createBiquadFilter();f.type='lowpass';f.frequency.value=o.lp;s.connect(f);node=f;}node.connect(g);g.connect(out(o.rev||0,o.pan||0));s.start(at);s.stop(at+dur+.05);}
+const mtof=m=>440*Math.pow(2,(m-69)/12);
+function bell(at,f0=1180){for(const [k,a] of [[1,.16],[2.32,.08],[2.76,.07],[4.1,.04],[5.4,.03]])osc(at,2.4,{f:f0*k,vol:a,a:.002,r:2.3,rev:.5});}
+function pad(at,dur,notes,vol=.025,lp=1200){for(const n of notes)for(const det of [-7,7])osc(at,dur+1.6,{type:'sawtooth',f:mtof(n),det,vol,a:1.4,r:1.8,lp,rev:.4});}
+function buildAudio(){
+  AC=new (window.AudioContext||window.webkitAudioContext)();NB=mkNoise(4);
+  MASTER=AC.createGain();MASTER.gain.value=.85;const comp=AC.createDynamicsCompressor();comp.threshold.value=-16;comp.ratio.value=4;MASTER.connect(comp);comp.connect(AC.destination);
+  REV=AC.createConvolver();REV.buffer=mkImpulse(3.2);const rg=AC.createGain();rg.gain.value=.55;REV.connect(rg);rg.connect(MASTER);
+  const T=AC.currentTime+.2;t0=T;   // 화면 시계 = AC.currentTime - t0 → 소리와 그림이 항상 맞음
+  // 계속 흐르는 빗소리: 시간표대로 크기 조절
+  {const s=AC.createBufferSource();s.buffer=NB;s.loop=true;const h=AC.createBiquadFilter();h.type='highpass';h.frequency.value=700;const g=AC.createGain();g.gain.value=0;s.connect(h);h.connect(g);g.connect(MASTER);s.start(T);
+   for(const [tt,v] of [[0,0],[1.2,.25],[9,.2],[END,0]])g.gain.linearRampToValueAtTime(v,T+tt);}
+  pad(T+1,4,[50,57,62,65,69]);pad(T+5,5,[46,53,57,62,65]);
+  bell(T+5);for(const [a,n] of [[6,76],[7,79],[8,81]])osc(T+a,1.6,{type:'triangle',f:mtof(n),vol:.05,a:.03,rev:.5});
+}
+
+/* ---------- ⑧ 재생 제어 ---------- */
+const ui=document.getElementById('ui'),msg=document.getElementById('msg');
+let lastFrame=-1,mute=false,tStartPerf=0;
+function clock(){if(AC&&!mute)return AC.currentTime-t0;return (performance.now()-tStartPerf)/1000;}
+function loop(){if(state!=='play')return;const t=clock();if(t>=END){state='end';ui.classList.remove('hide');msg.innerHTML='<b>↻</b>다시 보기';return;}
+  const f=Math.floor(Math.max(0,t)*FPS);if(f!==lastFrame){lastFrame=f;render(Math.max(0,t));}requestAnimationFrame(loop);}
+function start(){if(AC){try{AC.close();}catch(e){}}try{buildAudio();mute=false;}catch(e){mute=true;tStartPerf=performance.now();}
+  state='play';lastFrame=-1;ui.classList.add('hide');requestAnimationFrame(loop);}
+ui.addEventListener('click',()=>{if(state==='ready'||state==='end')start();});
+addEventListener('keydown',e=>{if(e.code==='Space'&&state==='play'&&AC){e.preventDefault();if(AC.state==='running')AC.suspend();else AC.resume();}if(e.key==='r'||e.key==='R'){if(state!=='load')start();}});
+window.renderAt=t=>{render(t);};   // 점검 스크립트가 사용
+setTimeout(()=>{
+  SKY=makeSky();HILLS=makeHills();  // ← 배경을 여기서 미리 칠함
+  const m=location.hash.match(/t=([\d.]+)/);
+  if(m){ui.classList.add('hide');render(parseFloat(m[1]));state='still';return;}
+  state='ready';msg.innerHTML=`<b>▶</b>클릭하면 재생됩니다 · 소리 있음 · 약 ${Math.round(END)}초<br><small>Space 일시정지 · R 처음부터</small>`;
+},30);
+</script>
+</body>
+</html>
