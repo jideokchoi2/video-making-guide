@@ -38,6 +38,14 @@
   .term p{margin:0;font-size:14.5px;line-height:1.65}
   .term .tip{font-size:13.5px;color:var(--muted);border-left:3px solid var(--mark);padding-left:10px}
   .term .tip strong{color:var(--ink)}
+  .vrow{display:flex;gap:6px;flex-wrap:wrap}
+  .vbtn{font:600 13px var(--f-body);border:1px solid var(--accent);color:var(--accent);background:var(--surface);border-radius:999px;padding:5px 12px;cursor:pointer}
+  .vbtn.on{background:var(--accent);color:#fff}
+  .vbtn.save{border-color:var(--line);color:var(--muted)}
+  .player{display:none;flex-direction:column;gap:6px}
+  .player.open{display:flex}
+  .player canvas{width:100%;aspect-ratio:16/9;border-radius:8px;background:#000;display:block;cursor:pointer}
+  .player .hint{font-size:12px;color:var(--muted)}
   .term .more{display:none;font-size:13.5px;background:#f3efff;border-radius:8px;padding:10px 12px;color:#3d2a7a}
   .term .more strong{color:#6b45d9}
   body.adv .term .more{display:block}
@@ -257,7 +265,11 @@ const TERMS=[
 {cat:'comp',lv:1,ko:'삼분할 구도',en:'Rule of Thirds',b:'정중앙',a:'교차점에',
  d:'화면을 가로세로 3등분하고 선이나 교차점에 피사체를 두는 구도입니다. 정중앙보다 안정적이고 보기 좋아요.',
  x:'<strong>한 걸음 더</strong> 인물의 눈을 위쪽 가로선에 맞추고, 지평선은 아래(하늘 강조)나 위(땅 강조) 가로선에 둡니다. 스마트폰 카메라 설정에서 격자를 켜세요.',
- draw(c,a){view(c,a?128:96,48,2.2,()=>scene(c));grid3(c);}},
+ draw(c,a){const z=2.2,ex=96,ey=41;            // 인물 눈 위치(월드)
+   const sx=a?CW/3:CW/2,sy=a?CH/3:CH/2;             // 눈을 둘 화면 위치: 전=정중앙, 후=왼쪽 위 교차점
+   view(c,ex+(CW/2-sx)/z,ey+(CH/2-sy)/z,z,()=>scene(c));grid3(c);
+   for(const [px,py] of [[CW/3,CH/3],[CW*2/3,CH/3],[CW/3,CH*2/3],[CW*2/3,CH*2/3]]){const on=a&&px===CW/3&&py===CH/3;if(on){c.strokeStyle='#ec5f9b';c.lineWidth=2;c.beginPath();c.arc(px,py,9,0,7);c.stroke();c.strokeStyle='#fff';c.lineWidth=1;c.beginPath();c.arc(px,py,11,0,7);c.stroke();}else circ(c,px,py,2.6,'rgba(255,255,255,.9)');}
+   if(!a){c.strokeStyle='#ec5f9b';c.lineWidth=2;c.beginPath();c.arc(CW/2,CH/2,9,0,7);c.stroke();}}},
 {cat:'comp',lv:1,ko:'헤드룸',en:'Headroom',b:'머리 위가 너무 넓음',a:'알맞은 여백',
  d:'인물 머리 위와 화면 위쪽 사이의 여백입니다. 너무 넓으면 인물이 가라앉아 보이고, 없으면 답답해요.',
  x:'<strong>한 걸음 더</strong> 클로즈업으로 갈수록 헤드룸을 줄이고, 아주 가까우면 이마를 살짝 잘라도 자연스럽습니다.',
@@ -458,6 +470,72 @@ const TERMS=[
  draw(c,a,t){paper(c);const f=a?Math.floor(t*12):0;c.strokeStyle=K.ink;c.lineWidth=2.4;c.lineJoin='round';c.beginPath();for(let i=0;i<=40;i++){const ang=i/40*Math.PI*2;const r=32+(hash(i*3.1+f)-.5)*(a?2.4:0);const x=96+Math.cos(ang)*r,y=54+Math.sin(ang)*r;i?c.lineTo(x,y):c.moveTo(x,y);}c.stroke();}},
 ];
 
+
+/* =====================================================================
+   설명 영상 — 카드마다 코드로 만든 약 10초짜리 영상
+   제목 → BEFORE(자막) → 화면 전환 → AFTER(자막) → 전후 나란히 + 뜻 설명
+   ===================================================================== */
+const VW=384,VH=216,VD=10.4;                  // 영상 크기(16:9)와 길이(초)
+const SEG={title:[0,1.4],before:[1.4,4.3],wipe:[4.3,4.9],after:[4.9,7.6],explain:[7.6,VD]};
+let current=null;                            // 지금 재생 중인 영상 (한 번에 하나만)
+function firstSentences(s,n=2){const plain=s.replace(/<[^>]+>/g,'');const parts=plain.split(/(?<=[.!?])\s+/);return parts.slice(0,n).join(' ');}
+function wrapText(c,s,maxW){const out=[];let line='';for(const ch of s){const tryL=line+ch;if(c.measureText(tryL).width>maxW&&line){out.push(line);line=ch.trim()?ch:'';}else line=tryL;}if(line)out.push(line);return out;}
+function caption(c,tag,txt,col){c.font='700 13px "IBM Plex Sans KR",sans-serif';const w=Math.min(VW-24,c.measureText(tag+'  '+txt).width+24);
+  rr(c,(VW-w)/2,VH-38,w,26,13,'rgba(10,12,24,.78)');c.textAlign='left';c.textBaseline='middle';
+  c.fillStyle=col;c.fillText(tag,(VW-w)/2+12,VH-25);const tw=c.measureText(tag+'  ').width;c.fillStyle='#fff';c.font='500 13px "IBM Plex Sans KR",sans-serif';c.fillText(txt,(VW-w)/2+12+tw,VH-25);}
+function drawTerm(c,term,after,t,x,y,w,h){c.save();c.beginPath();c.rect(x,y,w,h);c.clip();c.translate(x,y);c.scale(w/CW,h/CH);try{term.draw(c,after,t);}catch(e){}c.restore();}
+function videoFrame(c,term,cat,T){
+  c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,VW,VH);const k=(a,b)=>clamp((T-a)/(b-a));
+  if(T<SEG.title[1]){                                           // ① 제목
+    const g=c.createLinearGradient(0,0,VW,VH);g.addColorStop(0,'#dce8ff');g.addColorStop(1,'#ffe3ef');c.fillStyle=g;c.fillRect(0,0,VW,VH);
+    const u=ease(k(0,.6));c.globalAlpha=u;
+    text(c,cat.name+(term.lv===2?' · 심화':''),VW/2,62,{size:12,col:'#5b5f78'});
+    text(c,term.ko,VW/2,100+(1-u)*10,{size:26});text(c,term.en,VW/2,132,{size:12,col:'#3d7bf7'});c.globalAlpha=1;
+  }else if(T<SEG.wipe[0]){                                      // ② BEFORE
+    drawTerm(c,term,false,T,0,0,VW,VH);rr(c,10,10,62,20,10,'rgba(10,12,24,.7)');text(c,'BEFORE',41,20,{size:10,col:'#fff'});
+    if(T>SEG.before[0]+.3)caption(c,'전',term.b,'#ffd27a');
+  }else if(T<SEG.after[0]){                                     // ③ 와이프 전환
+    const u=ease(k(SEG.wipe[0],SEG.wipe[1])),wx=VW*u;
+    drawTerm(c,term,false,T,0,0,VW,VH);c.save();c.beginPath();c.rect(0,0,wx,VH);c.clip();drawTerm(c,term,true,T,0,0,VW,VH);c.restore();
+    c.fillStyle='#fff';c.fillRect(wx-1.5,0,3,VH);
+  }else if(T<SEG.explain[0]){                                   // ④ AFTER
+    drawTerm(c,term,true,T,0,0,VW,VH);rr(c,10,10,56,20,10,'#ec5f9b');text(c,'AFTER',38,20,{size:10,col:'#fff'});
+    if(T>SEG.after[0]+.3)caption(c,'후',term.a,'#ff9ac2');
+  }else{                                                        // ⑤ 나란히 비교 + 뜻
+    rect(c,0,0,VW,VH,'#f4f1ea');const u=ease(k(SEG.explain[0],SEG.explain[0]+.5));
+    const pw=158,ph=90,py=10+(1-u)*-20;drawTerm(c,term,false,T,16,py,pw,ph);drawTerm(c,term,true,T,VW-16-pw,py,pw,ph);
+    frameBox(c,16,py,pw,ph,'#c8cde0');frameBox(c,VW-16-pw,py,pw,ph,'#ec5f9b');
+    text(c,'BEFORE · '+term.b,16+pw/2,py+ph+11,{size:9,col:'#5b5f78',b:false});text(c,'AFTER · '+term.a,VW-16-pw/2,py+ph+11,{size:9,col:'#ec5f9b',b:false});
+    arrow(c,VW/2-14,py+ph/2,VW/2+14,py+ph/2,'#ec5f9b',2.4);
+    c.globalAlpha=k(SEG.explain[0]+.4,SEG.explain[0]+1);c.font='500 12.5px "IBM Plex Sans KR",sans-serif';
+    const lines=wrapText(c,firstSentences(term.d),VW-40).slice(0,4);rr(c,12,132,VW-24,VH-142,10,'#fff');
+    c.textAlign='left';c.textBaseline='middle';c.fillStyle='#1d1d2b';lines.forEach((l,i)=>c.fillText(l,22,148+i*17));c.globalAlpha=1;
+  }
+  rect(c,0,VH-3,VW*(T/VD),3,'#ec5f9b');                         // 진행 막대
+}
+function setupPlayer(el,term,cat){
+  const [btn,save]=el.querySelectorAll('.vbtn'),box=el.querySelector('.player'),cv=box.querySelector('canvas');
+  const D2=Math.min(2,window.devicePixelRatio||1);cv.width=VW*D2;cv.height=VH*D2;const c=cv.getContext('2d');
+  const st={playing:false,t0:0,paused:0,raf:0,el,btn,box};
+  const draw=T=>{c.save();c.scale(D2,D2);videoFrame(c,term,cat,T);c.restore();};
+  const loop=now=>{if(!st.playing)return;const T=((now-st.t0)/1000)%VD;draw(T);st.raf=requestAnimationFrame(loop);};
+  const play=()=>{if(current&&current!==st)stop(current);current=st;st.playing=true;st.t0=performance.now()-st.paused*1000;btn.classList.add('on');btn.textContent='■ 닫기';st.raf=requestAnimationFrame(loop);};
+  const pause=()=>{st.playing=false;st.paused=((performance.now()-st.t0)/1000)%VD;cancelAnimationFrame(st.raf);};
+  st.stop=()=>{pause();st.paused=0;box.classList.remove('open');btn.classList.remove('on');btn.textContent='▶ 설명 영상';save.hidden=true;};
+  btn.onclick=()=>{if(box.classList.contains('open')){st.stop();return;}box.classList.add('open');save.hidden=!window.MediaRecorder||!cv.captureStream;play();};
+  cv.onclick=()=>{st.playing?pause():play();};
+  // 영상 저장: 한 바퀴(약 10초)를 녹화해서 .webm 파일로 내려받기
+  save.onclick=()=>{try{
+    const types=['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'];const mime=types.find(m=>MediaRecorder.isTypeSupported(m));
+    const rec=new MediaRecorder(cv.captureStream(30),mime?{mimeType:mime,videoBitsPerSecond:4e6}:{});const chunks=[];
+    rec.ondataavailable=e=>e.data.size&&chunks.push(e.data);
+    rec.onstop=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(chunks,{type:'video/webm'}));a.download=`용어집_${term.ko.split(',')[0].trim()}.webm`;a.click();save.disabled=false;save.textContent='⬇ 영상 저장';};
+    st.paused=0;play();rec.start();save.disabled=true;save.textContent='● 녹화 중 (10초)';setTimeout(()=>rec.stop(),VD*1000+150);
+  }catch(e){save.textContent='이 브라우저는 저장을 지원하지 않아요';}};
+  st.draw=draw;el._player=st;
+}
+function stop(st){st.stop();}
+
 /* =====================================================================
    화면 구성
    ===================================================================== */
@@ -475,11 +553,13 @@ CATS.forEach(cat=>{
     el.innerHTML=`<h3><span>${t.ko}<span class="en">${t.en}</span></span>${t.lv===2?'<span class="badge-adv">심화</span>':''}</h3>
       <div class="pair"><figure><canvas role="img" aria-label="${t.ko} 적용 전"></canvas><figcaption><b>BEFORE</b>${t.b}</figcaption></figure>
       <figure class="after"><canvas role="img" aria-label="${t.ko} 적용 후"></canvas><figcaption><b>AFTER</b>${t.a}</figcaption></figure></div>
-      <p>${t.d}</p>${t.t?`<p class="tip"><strong>팁</strong> ${t.t}</p>`:''}${t.x?`<p class="more">${t.x}</p>`:''}`;
+      <p>${t.d}</p>${t.t?`<p class="tip"><strong>팁</strong> ${t.t}</p>`:''}${t.x?`<p class="more">${t.x}</p>`:''}
+      <div class="vrow"><button class="vbtn" type="button">▶ 설명 영상</button><button class="vbtn save" type="button" hidden>⬇ 영상 저장</button></div>
+      <div class="player"><canvas role="img" aria-label="${t.ko} 설명 영상"></canvas><span class="hint">화면을 누르면 멈춤·재생 · 약 10초 반복</span></div>`;
     const [c0,c1]=el.querySelectorAll('canvas');for(const cv of [c0,c1]){cv.width=CW*DPR;cv.height=CH*DPR;}
     paintCanvas(c0,t,false,.9);paintCanvas(c1,t,true,.9);
     if(t.anim)anims.push({el,c0,c1,t,vis:false});
-    cards.push({el,t,sec});grid.appendChild(el);
+    cards.push({el,t,sec});grid.appendChild(el);setupPlayer(el,t,cat);
   });
   main.appendChild(sec);
 });
