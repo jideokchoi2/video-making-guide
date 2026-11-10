@@ -9,6 +9,7 @@
     { href: 'scenes.html', n: '4', label: '씬 영상' },
     { href: 'finish.html', n: '5', label: '완성·점검' },
     { href: 'models.html', n: '★', label: '모델 비교' },
+    { href: 'glossary.html', n: '📖', label: '용어집' },
   ];
   const here = location.pathname.split('/').pop() || 'index.html';
 

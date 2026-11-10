@@ -1,0 +1,513 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>영상 용어집</title>
+<meta name="description" content="영상 제작과 AI 영상 용어를 전후 비교 그림으로 정리한 용어집 · 기초와 심화">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="assets/guide.css">
+<style>
+  .levels{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px;gap:4px;margin-top:18px}
+  .levels button{border:0;background:transparent;font:600 15px var(--f-body);padding:9px 20px;border-radius:999px;cursor:pointer;color:var(--muted)}
+  .levels button[aria-pressed="true"]{background:var(--accent);color:#fff}
+  .levels button .c{font:500 12px var(--f-mono);opacity:.8;margin-left:4px}
+  .lvnote{margin:10px 0 0;font-size:14px;color:var(--muted)}
+  .tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:18px}
+  .tools input{max-width:280px}
+  .cats{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+  .cats a{font-size:13px;color:var(--ink);text-decoration:none;border:1px solid var(--line);padding:5px 12px;border-radius:999px;background:var(--surface)}
+  .cats a:hover{border-color:var(--accent)}
+  .cats a .n{font:500 11px var(--f-mono);color:var(--muted);margin-left:4px}
+  .gsec{margin-top:44px}
+  .gsec h2 small{font:500 12px var(--f-mono);letter-spacing:.06em}
+  .ggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:16px}
+  .term{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+  .term.adv{border-color:#d9cdf7;background:linear-gradient(180deg,#faf8ff,#fff)}
+  .term h3{margin:0;font-size:18px;line-height:1.3;display:flex;gap:8px;align-items:flex-start;justify-content:space-between}
+  .term h3 .en{display:block;font:500 12px var(--f-mono);color:var(--muted);margin-top:2px}
+  .badge-adv{flex:none;font:600 11px var(--f-body);color:#6b45d9;background:#efe8ff;border-radius:6px;padding:2px 7px;margin-top:3px}
+  .pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .pair figure{margin:0;display:flex;flex-direction:column;gap:4px}
+  .pair canvas{width:100%;aspect-ratio:16/9;border-radius:6px;background:#eef1f6;display:block}
+  .pair figcaption{font-size:12px;color:var(--muted);line-height:1.35}
+  .pair figcaption b{font:600 10px var(--f-mono);letter-spacing:.06em;margin-right:5px;color:var(--ink)}
+  .pair .after figcaption b{color:var(--accent)}
+  .term p{margin:0;font-size:14.5px;line-height:1.65}
+  .term .tip{font-size:13.5px;color:var(--muted);border-left:3px solid var(--mark);padding-left:10px}
+  .term .tip strong{color:var(--ink)}
+  .term .more{display:none;font-size:13.5px;background:#f3efff;border-radius:8px;padding:10px 12px;color:#3d2a7a}
+  .term .more strong{color:#6b45d9}
+  body.adv .term .more{display:block}
+  body:not(.adv) .term.adv{display:none}
+  .term.hit-none{display:none!important}
+  .gsec.empty{display:none}
+  @media (prefers-reduced-motion:no-preference){body.adv .term.adv{animation:pop .35s ease}@keyframes pop{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}}
+</style>
+</head>
+<body>
+<div id="topbar"></div>
+<main class="wrap">
+  <div class="hero">
+    <div class="eyebrow">용어집 · 전후 비교로 보는 영상 언어</div>
+    <h1>영상 <mark>용어집</mark></h1>
+    <p class="lede">용어마다 적용 <b>전(BEFORE)</b>과 <b>후(AFTER)</b>를 그림으로 나란히 보여 줍니다. 그림은 모두 자바스크립트로 그렸고, 카메라 무빙처럼 움직임이 중요한 용어는 그림이 직접 움직입니다.</p>
+    <div class="levels" role="group" aria-label="난이도">
+      <button id="bBasic" aria-pressed="true">기초<span class="c" id="cBasic"></span></button>
+      <button id="bAdv" aria-pressed="false">심화<span class="c" id="cAdv"></span></button>
+    </div>
+    <p class="lvnote" id="lvnote"></p>
+    <div class="tools"><input type="text" id="q" placeholder="용어 찾기 (예: 돌리, 디졸브, fps)" aria-label="용어 찾기"></div>
+    <nav class="cats" id="cats" aria-label="분류"></nav>
+  </div>
+  <div id="main"></div>
+</main>
+<footer>한음쌤의 영상 실습 도우미 · 영상 용어집</footer>
+<script src="assets/guide.js"></script>
+<script>
+'use strict';
+/* =====================================================================
+   그림 도구 — 모든 그림은 192×108(16:9) 좌표계에서 그림
+   ===================================================================== */
+const CW=192,CH=108;
+const K={sky1:'#a9c9f2',sky2:'#e6f0fb',gr1:'#9cc48a',gr2:'#7aa968',wall:'#efe5d4',floor:'#caa47c',ink:'#2a2f45',skin:'#f2c9a3',shirt:'#3d7bf7',pants:'#2b3352',pink:'#ec5f9b',sun:'#ffcf5a',dark:'#1d2133',paper:'#f4f1ea',hair:'#2a2230',mute:'#8e94ab'};
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v)),lerp=(a,b,t)=>a+(b-a)*t;
+const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+const tri=(t,p=3)=>{const u=(t%p)/p;return u<.5?u*2:2-u*2;};      // 0→1→0 왕복
+const saw=(t,p=3)=>(t%p)/p;
+function hash(n){const s=Math.sin(n*12.9898+78.233)*43758.5453;return s-Math.floor(s);}
+function rect(c,x,y,w,h,col){c.fillStyle=col;c.fillRect(x,y,w,h);}
+function circ(c,x,y,r,col){c.fillStyle=col;c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.fill();}
+function rr(c,x,y,w,h,r,col){c.fillStyle=col;c.beginPath();c.roundRect?c.roundRect(x,y,w,h,r):c.rect(x,y,w,h);c.fill();}
+function line(c,x0,y0,x1,y1,col=K.ink,w=1.5){c.strokeStyle=col;c.lineWidth=w;c.lineCap='round';c.beginPath();c.moveTo(x0,y0);c.lineTo(x1,y1);c.stroke();}
+function arrow(c,x0,y0,x1,y1,col=K.pink,w=2){line(c,x0,y0,x1,y1,col,w);const a=Math.atan2(y1-y0,x1-x0);c.fillStyle=col;c.beginPath();c.moveTo(x1,y1);c.lineTo(x1-7*Math.cos(a-.45),y1-7*Math.sin(a-.45));c.lineTo(x1-7*Math.cos(a+.45),y1-7*Math.sin(a+.45));c.fill();}
+function text(c,s,x,y,o={}){c.font=`${o.b===false?'':'700 '}${o.size||10}px "IBM Plex Sans KR",sans-serif`;c.fillStyle=o.col||K.ink;c.textAlign=o.al||'center';c.textBaseline='middle';c.fillText(s,x,y);}
+function sky(c,top=K.sky1,bot=K.sky2,gy=78){const g=c.createLinearGradient(0,0,0,gy);g.addColorStop(0,top);g.addColorStop(1,bot);c.fillStyle=g;c.fillRect(-400,-400,1000,gy+400);rect(c,-400,gy,1000,400,K.gr1);rect(c,-400,gy,1000,3,K.gr2);}
+function room(c){rect(c,-400,-400,1000,480,K.wall);rect(c,-400,80,1000,400,K.floor);rect(c,-400,79,1000,2,'#b08860');}
+function paper(c){rect(c,0,0,CW,CH,K.paper);}
+function mountains(c){c.fillStyle='#8fb0d8';c.beginPath();c.moveTo(-120,78);c.lineTo(-60,42);c.lineTo(0,70);c.lineTo(50,38);c.lineTo(110,72);c.lineTo(160,40);c.lineTo(230,70);c.lineTo(300,48);c.lineTo(320,78);c.fill();}
+function tree(c,x,y,h=34){rect(c,x-2,y-h*.45,4,h*.45,'#7a5434');circ(c,x,y-h*.62,h*.3,'#4f9a5a');circ(c,x-h*.16,y-h*.5,h*.22,'#5cae66');circ(c,x+h*.17,y-h*.52,h*.2,'#468a50');}
+function house(c,x,y,w=34,h=24){rect(c,x,y-h,w,h,'#f6e3c4');c.fillStyle='#d0614a';c.beginPath();c.moveTo(x-3,y-h);c.lineTo(x+w/2,y-h-14);c.lineTo(x+w+3,y-h);c.fill();rect(c,x+w*.4,y-h*.55,w*.22,h*.55,'#8a5a3a');rect(c,x+4,y-h+5,7,7,'#9fd0f0');}
+function sun(c,x,y,r=8){circ(c,x,y,r*1.9,'rgba(255,207,90,.25)');circ(c,x,y,r,K.sun);}
+/* 사람: (x, 발끝 y), 키 h. o.face: 1 오른쪽, -1 왼쪽, 0 정면 / o.col 옷색 / o.dark 실루엣 / o.mouth 0~1 */
+function person(c,x,y,h=44,o={}){const s=h/44,face=o.face??0,dark=o.dark;
+  const skin=dark?'#20232f':K.skin,shirt=dark?'#20232f':(o.col||K.shirt),pants=dark?'#20232f':K.pants,hair=dark?'#20232f':K.hair;
+  rect(c,x-6*s,y-18*s,5*s,18*s,pants);rect(c,x+1*s,y-18*s,5*s,18*s,pants);
+  rr(c,x-9*s,y-34*s,18*s,18*s,4*s,shirt);
+  rect(c,x-12*s,y-32*s,4*s,13*s,shirt);rect(c,x+8*s,y-32*s,4*s,13*s,shirt);
+  circ(c,x,y-39*s,6*s,skin);c.fillStyle=hair;c.beginPath();c.arc(x,y-40*s,6.2*s,Math.PI,Math.PI*2);c.fill();
+  if(!dark){const ex=face*2.2*s;circ(c,x-2*s+ex,y-39*s,.9*s,K.ink);circ(c,x+2*s+ex,y-39*s,.9*s,K.ink);
+    if(o.mouth!=null){rr(c,x-1.6*s+ex,y-36.4*s,3.2*s,(0.6+o.mouth*1.8)*s,.8*s,'#b23a48');}else{c.strokeStyle='#b23a48';c.lineWidth=.8*s;c.beginPath();c.arc(x+ex,y-37*s,1.6*s,.2,Math.PI-.2);c.stroke();}}}
+function scene(c){sky(c);mountains(c);sun(c,150,24);house(c,18,78);tree(c,170,78);tree(c,-30,78,40);tree(c,250,78,30);person(c,96,80,44);}
+function view(c,cx,cy,z,fn,rot=0){c.save();c.translate(CW/2,CH/2);c.rotate(rot);c.scale(z,z);c.translate(-cx,-cy);fn();c.restore();}
+function frameBox(c,x,y,w,h,col=K.ink){c.strokeStyle=col;c.lineWidth=1.5;c.strokeRect(x,y,w,h);}
+function cam(c,x,y,a=0,col=K.ink){c.save();c.translate(x,y);c.rotate(a);rr(c,-7,-5,12,10,2,col);c.fillStyle=col;c.beginPath();c.moveTo(5,-3);c.lineTo(10,-6);c.lineTo(10,6);c.lineTo(5,3);c.fill();c.restore();}
+function grid3(c,col='rgba(255,255,255,.85)'){c.strokeStyle=col;c.lineWidth=1;c.setLineDash([3,3]);for(const k of [1,2]){line(c,CW*k/3,0,CW*k/3,CH,col,1);line(c,0,CH*k/3,CW,CH*k/3,col,1);}c.setLineDash([]);}
+function wave(c,x,y,w,h,amp,col,sd=1){c.strokeStyle=col;c.lineWidth=1.2;c.beginPath();for(let i=0;i<=w;i+=1.5){const a=typeof amp==='function'?amp(i/w):amp;const v=(hash(i*.37+sd)*2-1)*a*h/2;c.moveTo(x+i,y-v);c.lineTo(x+i,y+v);}c.stroke();}
+function track(c,y,label,clips,col){text(c,label,14,y+6,{size:8,col:K.mute});for(const [x0,x1,cc,lab] of clips){rr(c,x0,y,x1-x0,12,3,cc||col);if(lab)text(c,lab,(x0+x1)/2,y+6,{size:7,col:'#fff'});}}
+function blurDraw(c,px,fn){c.save();c.filter=`blur(${px}px)`;fn();c.restore();c.filter='none';}
+function flat(c,col){rect(c,0,0,CW,CH,col);}
+function ball(c,x,y,r=7,col=K.pink){circ(c,x,y,r,col);circ(c,x-r*.35,y-r*.35,r*.3,'rgba(255,255,255,.6)');}
+function film(c,x,y,w,h,n,fn){for(let i=0;i<n;i++){const fx=x+i*(w/n);rect(c,fx,y,w/n-3,h,'#fff');c.save();c.beginPath();c.rect(fx,y,w/n-3,h);c.clip();fn(i,fx,y,w/n-3,h);c.restore();frameBox(c,fx,y,w/n-3,h,'#9aa1b8');}}
+
+/* =====================================================================
+   용어 데이터
+   lv:1 기초 / lv:2 심화(심화를 누르면 추가) · x: 심화를 누르면 기초 카드에 붙는 설명
+   b/a: 전·후 그림 설명 · d: 뜻 · t: 팁 · anim: 그림이 움직임
+   ===================================================================== */
+const CATS=[
+ {id:'structure',name:'영상의 구조',en:'STRUCTURE'},
+ {id:'size',name:'샷 사이즈',en:'SHOT SIZE'},
+ {id:'angle',name:'앵글',en:'ANGLE'},
+ {id:'move',name:'카메라 무빙',en:'CAMERA MOVE'},
+ {id:'comp',name:'구도와 빛',en:'COMPOSITION & LIGHT'},
+ {id:'edit',name:'편집',en:'EDITING'},
+ {id:'sound',name:'소리',en:'SOUND'},
+ {id:'spec',name:'규격과 파일',en:'FORMAT & FILE'},
+ {id:'ai',name:'AI 영상',en:'AI VIDEO'},
+ {id:'code',name:'애니메이션·코드 영상',en:'ANIMATION & CODE'},
+];
+const ballScene=(c,x)=>{paper(c);rect(c,0,84,CW,24,'#ddd6c8');ball(c,x,74,9);};
+const TERMS=[
+/* ---------- 영상의 구조 ---------- */
+{cat:'structure',lv:1,ko:'프레임',en:'Frame',b:'사진 한 장',a:'여러 장이 이어짐',
+ d:'영상을 이루는 정지된 사진 한 장입니다. 사진이 빠르게 넘어가면 움직이는 것처럼 보여요. 플립북과 같은 원리입니다.',
+ x:'<strong>한 걸음 더</strong> 프레임 사이 변화가 작을수록 부드럽고, 크면 뚝뚝 끊겨 보입니다. AI 영상의 "깜빡임(flicker)"은 프레임마다 그림이 미세하게 바뀌어서 생겨요.',
+ anim:1,draw(c,a,t){if(!a){ballScene(c,96);return;}paper(c);film(c,6,20,180,60,5,(i,x,y,w,h)=>{rect(c,x,y+44,w,16,'#ddd6c8');ball(c,x+8+i*((w-16)/4)+ (saw(t,1.2)*0),y+36-Math.sin(i/4*Math.PI)*24,6);});text(c,'1  2  3  4  5',96,92,{size:9,col:K.mute});}},
+{cat:'structure',lv:1,ko:'fps, 프레임레이트',en:'Frames Per Second',b:'초당 6장',a:'초당 24장',
+ d:'1초에 들어가는 프레임 수입니다. 24fps는 영화 같은 느낌, 30fps는 일반 영상·수업 영상, 60fps 이상은 부드러운 움직임과 슬로모션에 씁니다.',
+ x:'<strong>한 걸음 더</strong> 슬로모션은 높은 fps로 찍은 뒤 느린 fps로 재생해 만듭니다. 120fps로 찍어 30fps로 틀면 4배 느려져요. 촬영 fps와 편집 프로젝트 fps가 다르면 끊김이 생길 수 있습니다.',
+ anim:1,draw(c,a,t){const f=a?24:6;const tt=Math.floor(t*f)/f;ballScene(c,30+tri(tt,2.4)*132);text(c,a?'24fps':'6fps',170,14,{size:10,col:K.pink});}},
+{cat:'structure',lv:1,ko:'샷, 컷',en:'Shot / Cut',b:'끊김 없이 한 덩어리',a:'컷으로 이어 붙임',
+ d:'카메라가 켜지고 꺼질 때까지 끊김 없이 찍힌 한 덩어리입니다. 편집에서 샷과 샷을 잇는 지점을 "컷"이라고 해요.',
+ x:'<strong>한 걸음 더</strong> 영상 문법에서 샷은 "한 번의 시선"입니다. 샷이 바뀔 때마다 시청자의 시선도 새로 시작하므로, 샷을 바꿀 이유(새 정보·반응·강조)가 있을 때 자르세요.',
+ draw(c,a){paper(c);if(!a){rr(c,14,40,164,28,4,K.shirt);text(c,'샷 1 (끊김 없이)',96,54,{col:'#fff'});return;}const cols=[K.shirt,'#7c5cf0',K.pink];[14,72,130].forEach((x,i)=>{rr(c,x,40,52,28,4,cols[i]);text(c,'샷 '+(i+1),x+26,54,{col:'#fff'});});line(c,68,32,68,76,K.ink,1.5);line(c,126,32,126,76,K.ink,1.5);text(c,'컷',68,26,{size:9});text(c,'컷',126,26,{size:9});}},
+{cat:'structure',lv:1,ko:'신, 장면',en:'Scene',b:'장소가 섞임',a:'장소·시간으로 묶음',
+ d:'같은 장소·같은 시간에 일어나는 샷들의 묶음입니다. 장소나 시간이 바뀌면 새 신이 시작돼요.',
+ x:'<strong>한 걸음 더</strong> 신이 바뀔 때는 시청자가 "여기가 어디지?"를 알 수 있게 설정 샷이나 소리(종소리·바람)로 장소를 먼저 알려 주면 좋습니다.',
+ draw(c,a){paper(c);const s=[['교실','#f6e3c4'],['운동장','#cfe8c0'],['교실','#f6e3c4'],['운동장','#cfe8c0']];const order=a?[0,2,1,3]:[0,1,2,3];order.forEach((k,i)=>{rr(c,10+i*45,36,40,30,3,s[k][1]);text(c,s[k][0],30+i*45,51,{size:9});});if(a){frameBox(c,7,30,93,42,K.pink);frameBox(c,97,30,93,42,'#7c5cf0');text(c,'신 1',53,22,{col:K.pink});text(c,'신 2',143,22,{col:'#7c5cf0'});}}},
+{cat:'structure',lv:1,ko:'테이크',en:'Take',b:'한 번만 촬영',a:'여러 번 중 베스트',
+ d:'같은 샷을 얻기 위한 촬영 시도 번호입니다. 샷 3을 네 번 찍었다면 샷 3, 테이크 1~4가 되고, 편집할 때 가장 잘 나온 하나만 고릅니다.',
+ x:'<strong>한 걸음 더</strong> 촬영 기록은 S#2 C#3 T#4(신2, 컷3, 테이크4)처럼 적습니다. AI 영상에서는 같은 프롬프트로 여러 번 생성하는 것이 테이크와 같아요. 크레딧을 생각해 2~3번 안에서 고르세요.',
+ draw(c,a){paper(c);const n=a?4:1;for(let i=0;i<n;i++){const x=a?8+i*46:76;rr(c,x,30,40,40,4,'#fff');frameBox(c,x,30,40,40,'#c8cde0');view(c,96,52,1.1*(.9+i*.05),()=>{},0);c.save();c.beginPath();c.rect(x,30,40,40);c.clip();c.translate(x+20,50);c.scale(.36,.36);c.translate(-96,-54);scene(c);c.restore();text(c,'T'+(i+1),x+20,78,{size:9,col:K.mute});}if(a){frameBox(c,100,28,44,44,K.pink);text(c,'✓ 베스트',122,90,{col:K.pink});}}},
+{cat:'structure',lv:2,ko:'시퀀스',en:'Sequence',b:'신이 흩어짐',a:'하나의 사건으로 묶음',
+ d:'여러 신이 모여 하나의 큰 사건(도입·위기·해결 등)을 이루는 단위입니다. 영상 전체는 시퀀스들이 모여 만들어져요.',
+ draw(c,a){paper(c);const xs=[10,52,94,136];xs.forEach((x,i)=>{rr(c,x,44,38,22,3,['#f6e3c4','#cfe8c0','#e0d6f7','#ffd9c9'][i]);text(c,'신 '+(i+1),x+19,55,{size:9});});if(a){frameBox(c,6,38,84,34,K.pink);frameBox(c,90,38,88,34,'#7c5cf0');text(c,'시퀀스 A · 등교',48,28,{size:9,col:K.pink});text(c,'시퀀스 B · 체육대회',134,28,{size:9,col:'#7c5cf0'});}}},
+{cat:'structure',lv:2,ko:'롱테이크',en:'Long Take',b:'짧은 컷 여러 개',a:'끊지 않고 길게',
+ d:'컷 없이 오래 이어지는 샷입니다. 시청자가 그 순간에 함께 있는 듯한 몰입감을 줘요.',
+ t:'AI 영상은 클립이 짧아서 롱테이크가 어렵습니다. Flow의 "이어서 만들기(Extend)"로 이어 붙이면 비슷한 효과를 낼 수 있어요.',
+ draw(c,a){paper(c);if(a){rr(c,10,46,172,16,4,K.shirt);text(c,'0:00 ─────────── 0:45',96,54,{size:8,col:'#fff'});}else{for(let i=0;i<9;i++)rr(c,10+i*19.3,46,17,16,3,i%2?'#7c5cf0':K.shirt);}text(c,a?'샷 1개 · 45초':'샷 9개 · 각 5초',96,80,{size:10,col:K.mute});}},
+
+/* ---------- 샷 사이즈 ---------- */
+{cat:'size',lv:1,ko:'설정 샷',en:'Establishing Shot',b:'인물부터 시작',a:'장소 전체부터',
+ d:'장소 전체를 넓게 담아 "여기가 어디인지" 알려 주는 샷입니다. 신의 첫 샷으로 자주 씁니다.',
+ x:'<strong>한 걸음 더</strong> 설정 샷 → 미디엄 → 클로즈업 순서로 좁혀 들어가면 시청자가 길을 잃지 않아요. 반대로 클로즈업부터 보여 주고 나중에 장소를 드러내면 궁금증을 만들 수 있습니다.',
+ draw(c,a){view(c,a?96:96,a?54:41,a?.78:5,()=>scene(c));}},
+{cat:'size',lv:1,ko:'풀 샷',en:'Full Shot',b:'발이 잘림',a:'머리부터 발끝까지',
+ d:'인물의 전신을 담아 상황과 동작을 보여 주는 샷입니다.',
+ x:'<strong>한 걸음 더</strong> 발목이나 무릎처럼 관절에서 화면이 잘리면 어색해 보입니다. 자를 때는 관절 사이(허벅지 중간, 정강이 중간)에서 자르세요.',
+ draw(c,a){view(c,96,a?58:50,a?1.6:2.3,()=>scene(c));}},
+{cat:'size',lv:1,ko:'바스트 샷',en:'Bust Shot',b:'멀어서 표정이 안 보임',a:'가슴 위까지',
+ d:'가슴 위까지 담는 샷입니다. 설명·발표·인터뷰에 가장 많이 써요.',
+ x:'<strong>한 걸음 더</strong> 인터뷰는 인물을 화면 한쪽(삼분할 선)에 두고, 바라보는 쪽에 공간(리드룸)을 남기면 안정적입니다.',
+ draw(c,a){view(c,96,a?46:54,a?3.4:1,()=>scene(c));}},
+{cat:'size',lv:1,ko:'클로즈업',en:'Close-up',b:'바스트 샷',a:'얼굴을 가까이',
+ d:'얼굴이나 손을 가까이 담아 감정과 디테일을 강조하는 샷입니다.',
+ x:'<strong>한 걸음 더</strong> 클로즈업은 "중요하다"는 신호라서 자주 쓰면 효과가 떨어집니다. 이야기의 감정이 가장 높은 순간을 위해 아껴 두세요.',
+ draw(c,a){view(c,96,a?41:46,a?6.5:3.4,()=>scene(c));}},
+{cat:'size',lv:2,ko:'익스트림 롱 샷',en:'Extreme Long Shot',b:'인물 중심',a:'인물이 아주 작게',
+ d:'풍경 속에 인물을 아주 작게 담는 샷입니다. 고독함, 웅장함, 거리감을 표현해요.',
+ draw(c,a){view(c,96,a?60:50,a?.42:1.6,()=>{scene(c);if(a){mountains(c);}});}},
+{cat:'size',lv:2,ko:'미디엄 샷',en:'Medium Shot',b:'풀 샷',a:'허리 위까지',
+ d:'허리 위까지 담는 샷입니다. 인물의 몸짓과 표정을 함께 보여 줘서 대화 장면의 기본이 됩니다.',
+ draw(c,a){view(c,96,a?50:58,a?2.5:1.6,()=>scene(c));}},
+{cat:'size',lv:2,ko:'익스트림 클로즈업',en:'Extreme Close-up',b:'얼굴 전체',a:'눈만 가득',
+ d:'눈, 입, 손끝처럼 아주 작은 부분만 화면 가득 담는 샷입니다. 긴장과 집중을 극대화해요.',
+ draw(c,a){view(c,a?96:96,a?39:41,a?16:6.5,()=>scene(c));}},
+{cat:'size',lv:2,ko:'오버 더 숄더',en:'Over-the-Shoulder',b:'한 사람만',a:'어깨 너머로',
+ d:'한 사람의 어깨 너머로 상대를 담는 샷입니다. 두 사람이 대화하는 관계와 거리를 보여 줘요.',
+ draw(c,a){room(c);person(c,a?120:96,108,80,{face:-1});if(a){c.save();c.globalAlpha=1;person(c,40,150,150,{dark:1});c.restore();}}},
+{cat:'size',lv:2,ko:'투 샷',en:'Two Shot',b:'한 사람씩 따로',a:'두 사람을 한 화면에',
+ d:'두 인물을 한 화면에 담는 샷입니다. 둘의 관계(가까움·거리)를 위치로 보여 줍니다.',
+ draw(c,a){room(c);if(a){person(c,66,100,70,{face:1});person(c,126,100,70,{face:-1,col:K.pink});}else{person(c,96,100,70,{face:0});}}},
+{cat:'size',lv:2,ko:'POV 샷, 시점 샷',en:'Point-of-View Shot',b:'인물을 바라봄',a:'인물이 보는 것',
+ d:'인물의 눈으로 본 장면을 그대로 보여 주는 샷입니다. 시청자가 그 사람이 된 듯한 느낌을 줘요.',
+ draw(c,a){if(!a){room(c);person(c,96,100,70,{face:1});return;}room(c);rr(c,40,44,112,36,4,'#7a5434');text(c,'시험지',96,62,{col:'#fff'});c.fillStyle=K.skin;c.beginPath();c.ellipse(40,104,22,14,-.3,0,7);c.fill();c.beginPath();c.ellipse(152,104,22,14,.3,0,7);c.fill();}},
+
+/* ---------- 앵글 ---------- */
+{cat:'angle',lv:1,ko:'아이 레벨',en:'Eye Level',b:'너무 낮게 잡아 머리가 잘림',a:'눈높이',
+ d:'카메라를 인물의 눈높이에 두는 기본 앵글입니다. 자연스럽고 편안하게 보여요.',
+ x:'<strong>한 걸음 더</strong> 아이들을 찍을 때는 어른 눈높이가 아니라 아이 눈높이까지 카메라를 낮춰야 아이 시점의 아이 레벨이 됩니다.',
+ draw(c,a){if(a){view(c,96,52,2.2,()=>scene(c));}else{view(c,96,62,2.2,()=>scene(c),.0);c.fillStyle='rgba(0,0,0,.0)';}}},
+{cat:'angle',lv:1,ko:'로우 앵글',en:'Low Angle',b:'눈높이',a:'아래에서 위로',
+ d:'카메라가 아래에서 위로 올려다보는 앵글입니다. 인물이 크고 당당하게 보여요.',
+ x:'<strong>한 걸음 더</strong> AI 프롬프트에는 "low angle shot, looking up"이라고 씁니다. 너무 낮으면 위압적으로 보이니 영웅적인 순간에만 쓰세요.',
+ draw(c,a){if(!a){view(c,96,52,2.2,()=>scene(c));return;}sky(c,K.sky1,K.sky2,140);c.save();c.translate(96,108);c.scale(1,1);c.transform(1,0,0,1,0,0);c.beginPath();c.moveTo(-34,0);c.lineTo(34,0);c.lineTo(14,-100);c.lineTo(-14,-100);c.closePath();c.restore();
+   c.save();c.translate(96,112);c.scale(2.6,2.6);person(c,0,0,44,{});c.restore();}},
+{cat:'angle',lv:1,ko:'하이 앵글',en:'High Angle',b:'눈높이',a:'위에서 아래로',
+ d:'카메라가 위에서 내려다보는 앵글입니다. 인물이 작고 귀엽게, 또는 약하게 보이고 전체를 한눈에 보여 줘요.',
+ x:'<strong>한 걸음 더</strong> 학급 단체 활동처럼 "모두가 무엇을 하는지" 보여 줄 때 하이 앵글이 효과적입니다.',
+ draw(c,a){if(!a){view(c,96,52,2.2,()=>scene(c));return;}rect(c,0,0,CW,CH,K.gr1);for(let i=0;i<20;i++)circ(c,hash(i)*CW,hash(i+9)*CH,2,K.gr2);c.save();c.translate(96,96);c.scale(1.4,1.1);person(c,0,0,44,{});c.restore();}},
+{cat:'angle',lv:2,ko:'버즈아이 뷰, 탑 샷',en:"Bird's-eye View",b:'옆에서',a:'바로 위에서',
+ d:'바로 위에서 수직으로 내려다보는 앵글입니다. 지도처럼 배치와 패턴을 보여 줘요. 요리·만들기 영상에서 자주 씁니다.',
+ draw(c,a){if(!a){room(c);rr(c,40,70,112,12,3,'#8a5a3a');rect(c,60,56,20,14,'#ffd9c9');return;}rect(c,0,0,CW,CH,'#c79a6d');for(let i=0;i<6;i++)rect(c,0,i*18,CW,1,'rgba(0,0,0,.1)');rr(c,50,24,92,60,6,'#fff');circ(c,80,54,14,'#f2b257');circ(c,116,54,10,'#9cc48a');}},
+{cat:'angle',lv:2,ko:'더치 앵글',en:'Dutch Angle',b:'수평',a:'기울어짐',
+ d:'카메라를 옆으로 기울여 수평선이 비스듬한 앵글입니다. 불안, 혼란, 긴장을 표현해요.',
+ draw(c,a){view(c,96,52,1.6,()=>scene(c),a?-.26:0);}},
+
+/* ---------- 카메라 무빙 ---------- */
+{cat:'move',lv:1,ko:'팬',en:'Pan',b:'고정',a:'좌우로 고개 돌리기',anim:1,
+ d:'카메라는 제자리에 두고 좌우로 방향을 돌리는 움직임입니다. 공간을 훑어 보여 줄 때 써요.',
+ x:'<strong>한 걸음 더</strong> 너무 빨리 돌리면 화면이 흐려지고 어지럽습니다. 시작과 끝에 1초씩 멈춰 주면 깔끔해요.',
+ draw(c,a,t){view(c,a?lerp(10,190,ease(tri(t,4))):96,50,1.5,()=>scene(c));}},
+{cat:'move',lv:1,ko:'틸트',en:'Tilt',b:'고정',a:'위아래로 고개 들기',anim:1,
+ d:'제자리에서 카메라를 위아래로 움직이는 것입니다. 높이를 강조하거나 아래에서 위로 드러낼 때 써요.',
+ x:'<strong>한 걸음 더</strong> 발끝에서 얼굴로 틸트 업하면 "등장" 느낌이 납니다. 프롬프트에는 "camera tilts up from feet to face".',
+ draw(c,a,t){view(c,96,a?lerp(76,20,ease(tri(t,4))):50,2.4,()=>{scene(c);});}},
+{cat:'move',lv:1,ko:'줌',en:'Zoom',b:'고정',a:'렌즈로 확대',anim:1,
+ d:'카메라는 그대로 두고 렌즈로 확대·축소하는 것입니다. 배경도 함께 납작하게 커집니다.',
+ x:'<strong>한 걸음 더</strong> 줌은 "보는 사람의 눈"이 아니라 "기계"의 움직임이라 인공적인 느낌이 납니다. 다큐·예능에서는 일부러 쓰기도 해요.',
+ draw(c,a,t){view(c,96,50,a?lerp(1.1,2.6,ease(tri(t,4))):1.1,()=>scene(c));}},
+{cat:'move',lv:1,ko:'돌리 인·아웃',en:'Dolly In / Out',b:'줌 (배경도 같이 커짐)',a:'돌리 (인물만 크게 다가옴)',anim:1,
+ d:'카메라가 직접 앞뒤로 이동하는 것입니다. 가까운 인물은 크게, 먼 배경은 조금만 커져서 입체감이 생겨요. 줌과 헷갈리기 쉬운 용어입니다.',
+ x:'<strong>한 걸음 더</strong> 이 차이(시차)는 AI 영상에서도 그대로 프롬프트가 됩니다. "slow dolly-in"은 줌보다 영화처럼 보여요.',
+ draw(c,a,t){const u=ease(tri(t,4));if(!a){view(c,96,50,lerp(1.1,2.2,u),()=>scene(c));return;}
+   view(c,96,50,lerp(1.1,1.35,u),()=>{sky(c);mountains(c);sun(c,150,24);house(c,18,78);tree(c,170,78);});view(c,96,50,lerp(1.1,2.4,u),()=>person(c,96,80,44));}},
+{cat:'move',lv:1,ko:'트래킹',en:'Tracking',b:'고정 (인물이 지나감)',a:'나란히 따라감',anim:1,
+ d:'움직이는 피사체 옆을 나란히 따라가는 움직임입니다. 인물은 화면 안에 머물고 배경이 흐릅니다.',
+ x:'<strong>한 걸음 더</strong> 배경이 여러 겹이면(가까운 나무 빠르게, 먼 산 느리게) 속도감이 커집니다. 이것이 패럴랙스입니다.',
+ draw(c,a,t){const x=lerp(-20,212,saw(t,4));if(!a){view(c,96,50,1.4,()=>{sky(c);mountains(c);house(c,18,78);tree(c,170,78);person(c,x,80,44,{face:1});});return;}
+   view(c,x,50,1.4,()=>{sky(c);c.save();c.translate(x*.6,0);mountains(c);c.restore();house(c,18,78);tree(c,170,78);tree(c,90,78,30);person(c,x,80,44,{face:1});});}},
+{cat:'move',lv:2,ko:'크레인, 지브',en:'Crane / Jib',b:'눈높이 고정',a:'높이 솟아오름',anim:1,
+ d:'카메라를 팔에 달아 높이 올리거나 내리는 움직임입니다. 인물에서 시작해 전체 풍경으로 솟아오르면 엔딩 느낌이 나요.',
+ draw(c,a,t){const u=a?ease(tri(t,5)):0;view(c,96,lerp(52,40,u),lerp(2.4,.9,u),()=>scene(c));}},
+{cat:'move',lv:2,ko:'핸드헬드',en:'Handheld',b:'삼각대 (안정)',a:'손에 들고 (흔들림)',anim:1,
+ d:'카메라를 손에 들고 찍어 자연스럽게 흔들리는 화면입니다. 현장감, 다큐 느낌, 긴박함을 줘요.',
+ draw(c,a,t){const j=a?1:0;view(c,96+Math.sin(t*5.3)*2.2*j+Math.sin(t*13)*.8*j,50+Math.cos(t*4.1)*1.8*j,1.6,()=>scene(c),Math.sin(t*3.7)*.015*j);}},
+{cat:'move',lv:2,ko:'돌리 줌, 버티고 효과',en:'Dolly Zoom',b:'보통 돌리',a:'인물 크기 그대로, 배경만 변함',anim:1,
+ d:'카메라는 뒤로 물러나면서 렌즈는 확대해서, 인물 크기는 그대로인데 배경만 늘어나거나 줄어드는 효과입니다. 충격·깨달음의 순간에 써요.',
+ draw(c,a,t){const u=ease(tri(t,4));if(!a){view(c,96,50,lerp(1.1,2,u),()=>scene(c));return;}view(c,96,50,lerp(.9,2.2,u),()=>{sky(c);mountains(c);sun(c,150,24);house(c,18,78);tree(c,170,78);});view(c,96,50,1.6,()=>person(c,96,80,44));}},
+{cat:'move',lv:2,ko:'랙 포커스, 초점 이동',en:'Rack Focus',b:'모두 선명',a:'초점이 앞→뒤로 이동',anim:1,
+ d:'촬영 중에 초점을 앞의 대상에서 뒤의 대상으로 옮기는 기법입니다. 시청자의 시선을 원하는 곳으로 데려가요.',
+ draw(c,a,t){const u=a?ease(tri(t,4)):0;room(c);blurDraw(c,a?u*3:0,()=>person(c,60,100,74,{face:1}));blurDraw(c,a?(1-u)*3:0,()=>{ball(c,150,70,14,K.pink);rect(c,140,84,20,6,'#8a5a3a');});}},
+
+/* ---------- 구도와 빛 ---------- */
+{cat:'comp',lv:1,ko:'삼분할 구도',en:'Rule of Thirds',b:'정중앙',a:'교차점에',
+ d:'화면을 가로세로 3등분하고 선이나 교차점에 피사체를 두는 구도입니다. 정중앙보다 안정적이고 보기 좋아요.',
+ x:'<strong>한 걸음 더</strong> 인물의 눈을 위쪽 가로선에 맞추고, 지평선은 아래(하늘 강조)나 위(땅 강조) 가로선에 둡니다. 스마트폰 카메라 설정에서 격자를 켜세요.',
+ draw(c,a){view(c,a?128:96,48,2.2,()=>scene(c));grid3(c);}},
+{cat:'comp',lv:1,ko:'헤드룸',en:'Headroom',b:'머리 위가 너무 넓음',a:'알맞은 여백',
+ d:'인물 머리 위와 화면 위쪽 사이의 여백입니다. 너무 넓으면 인물이 가라앉아 보이고, 없으면 답답해요.',
+ x:'<strong>한 걸음 더</strong> 클로즈업으로 갈수록 헤드룸을 줄이고, 아주 가까우면 이마를 살짝 잘라도 자연스럽습니다.',
+ draw(c,a){view(c,96,a?46:34,3,()=>scene(c));}},
+{cat:'comp',lv:1,ko:'리드룸, 시선 공간',en:'Lead Room / Nose Room',b:'시선 앞이 막힘',a:'바라보는 쪽에 여백',
+ d:'인물이 바라보거나 움직이는 방향에 남겨 두는 공간입니다. 여백이 있어야 답답하지 않고 다음 상황을 기대하게 돼요.',
+ draw(c,a){room(c);person(c,a?60:150,100,70,{face:1});}},
+{cat:'comp',lv:1,ko:'역광',en:'Backlight',b:'등 뒤의 빛 (얼굴 어두움)',a:'얼굴 앞의 빛 (밝고 선명)',
+ d:'빛이 인물 뒤에서 비치는 상태입니다. 얼굴이 어둡게 나오므로 보통은 피하고, 감성 연출에만 의도해서 씁니다.',
+ x:'<strong>한 걸음 더</strong> 역광에서 머리카락 가장자리가 빛나는 것을 "림 라이트"라고 합니다. 반사판(흰 종이)으로 얼굴에 빛을 돌려주면 역광을 살리면서 얼굴도 보여요.',
+ draw(c,a){sky(c);if(!a){sun(c,96,32,16);person(c,96,96,70,{dark:1});c.strokeStyle='rgba(255,220,140,.9)';c.lineWidth=1.5;c.beginPath();c.arc(96,96-70*39/44,6*70/44+.5,Math.PI*1.05,Math.PI*1.95);c.stroke();}else{sun(c,30,20,10);person(c,96,96,70,{});}}},
+{cat:'comp',lv:2,ko:'180도 규칙',en:'180-Degree Rule',b:'선을 넘어 방향이 뒤바뀜',a:'같은 쪽에서 찍어 방향 유지',
+ d:'대화하는 두 사람 사이에 가상의 선을 긋고 카메라를 한쪽에만 두는 규칙입니다. 선을 넘으면 두 사람의 좌우 위치가 뒤바뀌어 시청자가 헷갈려요.',
+ draw(c,a){paper(c);const f=(x,flip)=>{rr(c,x,22,78,46,4,K.wall);person(c,x+(flip?56:22),66,34,{face:flip?-1:1});person(c,x+(flip?22:56),66,34,{face:flip?1:-1,col:K.pink});frameBox(c,x,22,78,46,'#c8cde0');};f(10,false);f(104,!a);text(c,'샷 1',49,82,{size:9,col:K.mute});text(c,'샷 2',143,82,{size:9,col:a?K.mute:K.pink});if(!a)text(c,'파랑·분홍 위치가 뒤바뀜',96,96,{size:9,col:K.pink});}},
+{cat:'comp',lv:2,ko:'피사계 심도, 아웃포커스',en:'Depth of Field',b:'모두 선명 (깊은 심도)',a:'배경이 흐림 (얕은 심도)',
+ d:'초점이 맞아 보이는 앞뒤 범위입니다. 얕으면 배경이 흐려져 인물이 돋보이고, 깊으면 전체가 또렷해요.',
+ t:'스마트폰의 "인물 모드"가 얕은 심도를 흉내 냅니다. AI 프롬프트에는 "shallow depth of field".',
+ draw(c,a){blurDraw(c,a?2.6:0,()=>view(c,96,50,1.6,()=>{sky(c);mountains(c);sun(c,150,24);house(c,18,78);tree(c,170,78);}));view(c,96,50,1.6,()=>person(c,96,80,44));}},
+{cat:'comp',lv:2,ko:'3점 조명',en:'Three-Point Lighting',b:'정면 조명 하나 (납작함)',a:'키·필·백 조명',
+ d:'주광(키 라이트), 그림자를 채우는 보조광(필 라이트), 뒤에서 윤곽을 살리는 역광(백 라이트) 세 개로 인물을 입체적으로 비추는 기본 조명입니다.',
+ draw(c,a){flat(c,'#2b3046');if(!a){person(c,96,104,80,{});return;}const o=mk(CW*2,CH*2),g=o.getContext('2d');g.scale(2,2);person(g,96,104,80,{});g.globalCompositeOperation='source-atop';g.fillStyle='rgba(20,24,50,.55)';g.fillRect(100,0,40,108);g.fillStyle='rgba(255,210,140,.18)';g.fillRect(60,0,36,108);c.drawImage(o,0,0,CW,CH);c.strokeStyle='rgba(255,230,170,.95)';c.lineWidth=1.6;c.beginPath();c.arc(96,104-80*39/44,6*80/44+.6,Math.PI*1.1,Math.PI*1.9);c.stroke();text(c,'키',40,30,{size:9,col:'#ffd27a'});text(c,'필',160,40,{size:9,col:'#9fc4ff'});text(c,'백',140,10,{size:9,col:'#ffe6b0'});}},
+{cat:'comp',lv:2,ko:'화이트 밸런스',en:'White Balance',b:'푸르게 틀어짐',a:'흰색이 흰색으로',
+ d:'조명 색에 맞춰 흰색이 흰색으로 보이도록 색을 맞추는 설정입니다. 틀리면 화면 전체가 파랗거나 누렇게 보여요.',
+ draw(c,a){view(c,96,50,1.6,()=>scene(c));rect(c,150,60,26,20,'#fff');if(!a){c.save();c.globalCompositeOperation='multiply';flat(c,'#9fc0ff');c.restore();}}},
+{cat:'comp',lv:2,ko:'골든 아워',en:'Golden Hour',b:'한낮 (그림자 짧고 강함)',a:'해 질 녘 (따뜻하고 긴 그림자)',
+ d:'해가 뜬 직후와 지기 직전, 빛이 낮고 따뜻한 시간대입니다. 사람 얼굴이 부드럽고 그림자가 길게 늘어져 감성적인 장면이 됩니다.',
+ draw(c,a){if(!a){view(c,96,50,1.6,()=>{sky(c,'#8fc0ff','#f4f8ff');sun(c,96,6,8);house(c,18,78);tree(c,170,78);c.fillStyle='rgba(0,0,0,.25)';c.beginPath();c.ellipse(96,81,9,2,0,0,7);c.fill();person(c,96,80,44);});return;}
+   view(c,96,50,1.6,()=>{sky(c,'#f6a35b','#ffe1a8');sun(c,170,64,10);house(c,18,78);tree(c,140,78);c.fillStyle='rgba(80,40,20,.3)';c.beginPath();c.moveTo(96,80);c.lineTo(30,84);c.lineTo(30,88);c.lineTo(96,82);c.fill();person(c,96,80,44,{col:'#e0743a'});});c.save();c.globalCompositeOperation='soft-light';flat(c,'rgba(255,170,80,.5)');c.restore();}},
+
+/* ---------- 편집 ---------- */
+{cat:'edit',lv:1,ko:'컷 편집',en:'Cutting',b:'준비·침묵까지 그대로',a:'핵심만 남김',
+ d:'필요 없는 부분을 잘라내고 이어 붙이는 편집입니다. 편집의 80%가 컷 편집이에요. 한 컷은 3~5초가 적당합니다.',
+ x:'<strong>한 걸음 더</strong> 동작의 중간에서 자르면(액션 컷) 컷이 바뀐 걸 느끼지 못할 만큼 자연스럽습니다. 문을 여는 손 → 문이 열리는 방 안처럼요.',
+ draw(c,a){paper(c);if(!a){rr(c,10,42,172,18,3,'#c8cde0');rr(c,44,42,40,18,3,K.shirt);rr(c,120,42,30,18,3,K.shirt);text(c,'준비',27,51,{size:8});text(c,'침묵',102,51,{size:8});text(c,'침묵',166,51,{size:8});}else{rr(c,40,42,40,18,3,K.shirt);rr(c,82,42,30,18,3,K.shirt);text(c,'핵심만 · 짧고 빠르게',96,74,{size:9,col:K.pink});}}},
+{cat:'edit',lv:1,ko:'A롤 · B롤',en:'A-roll / B-roll',b:'말하는 얼굴만',a:'활동 장면으로 덮기',
+ d:'A롤은 설명하는 사람(메인 화면), B롤은 활동 장면·손동작·자료 화면(보조 화면)입니다. 목소리는 계속 들리고 화면은 B롤로 덮으면 지루하지 않아요.',
+ x:'<strong>한 걸음 더</strong> B롤은 넉넉히 찍어 두세요. 편집할 때 말이 꼬인 부분을 B롤로 덮어 자연스럽게 이을 수 있습니다(점프 컷 감추기).',
+ draw(c,a){paper(c);track(c,30,'영상',a?[[30,70,K.shirt,'A'],[70,128,K.pink,'B'],[128,180,K.shirt,'A']]:[[30,180,K.shirt,'A 말하는 얼굴']]);track(c,52,'소리',[[30,180,'#7c5cf0','목소리 계속']]);}},
+{cat:'edit',lv:1,ko:'트랜지션',en:'Transition',b:'화려한 효과 남발',a:'기본은 그냥 컷',
+ d:'컷과 컷 사이를 잇는 전환 효과입니다. 적게 쓸수록 세련돼 보여요. 기본은 그냥 컷으로 붙이고, 시간·장소가 바뀔 때만 디졸브·페이드를 씁니다.',
+ draw(c,a){paper(c);const xs=[16,66,116];xs.forEach(x=>rr(c,x,40,44,24,3,K.shirt));if(!a){['★','◎'].forEach((s,i)=>{circ(c,63+i*50,52,9,K.pink);text(c,s,63+i*50,52,{col:'#fff',size:10});});text(c,'회전·별·와이프…',96,82,{size:9,col:K.pink});}else{text(c,'컷 · 컷',96,82,{size:9,col:K.mute});}}},
+{cat:'edit',lv:1,ko:'디졸브',en:'Dissolve',b:'컷 (바로 바뀜)',a:'겹치며 서서히',anim:1,
+ d:'앞 장면이 사라지면서 다음 장면이 겹쳐 나타나는 전환입니다. 시간이 흘렀거나 장소가 바뀐 느낌을 줘요.',
+ draw(c,a,t){const u=saw(t,4);const k=a?clamp((u-.3)/.4):(u<.5?0:1);view(c,96,50,1.5,()=>scene(c));c.globalAlpha=k;view(c,96,50,1,()=>{sky(c,'#f6a35b','#ffe1a8');sun(c,150,60,10);tree(c,40,78,50);});c.globalAlpha=1;}},
+{cat:'edit',lv:1,ko:'페이드 인·아웃',en:'Fade In / Out',b:'갑자기 끝남',a:'검정으로 서서히',anim:1,
+ d:'검은 화면에서 서서히 밝아지거나(페이드 인), 서서히 어두워지는(페이드 아웃) 전환입니다. 영상의 시작과 끝, 큰 단락의 구분에 써요.',
+ draw(c,a,t){const u=saw(t,4);view(c,96,50,1.5,()=>scene(c));const k=a?clamp((u-.35)/.35):(u>.7?1:0);flat(c,`rgba(0,0,0,${k})`);}},
+{cat:'edit',lv:1,ko:'자막',en:'Subtitles / Captions',b:'자막 없음',a:'핵심어만 크게',
+ d:'화면에 넣는 글자입니다. 소리를 끄고 보는 사람이 많아서 중요해요. 한 줄 15자 안팎, 최대 두 줄, 핵심어만 크게 씁니다.',
+ x:'<strong>한 걸음 더</strong> AI 영상 생성기는 글자를 잘 깨뜨립니다. 프롬프트에 "no text, no subtitles"를 넣고, 자막은 편집 앱에서 직접 넣으세요.',
+ draw(c,a){view(c,96,46,3.2,()=>scene(c));if(a){rr(c,34,82,124,18,4,'rgba(0,0,0,.65)');text(c,'손 씻기, 30초!',96,91,{col:'#fff',size:11});}}},
+{cat:'edit',lv:2,ko:'점프 컷',en:'Jump Cut',b:'이어지는 한 컷',a:'같은 구도에서 툭 끊김',anim:1,
+ d:'같은 구도에서 중간을 잘라 인물이 툭 튀는 것처럼 보이는 컷입니다. 실수처럼 보일 수도 있지만, 유튜브 영상에서는 빠른 리듬을 위해 일부러 씁니다.',
+ draw(c,a,t){const k=Math.floor(t/.7)%3;room(c);person(c,a?[86,100,92][k]:96,100,a?[70,74,68][k]:70,{mouth:Math.abs(Math.sin(t*9))*.8});}},
+{cat:'edit',lv:2,ko:'J컷 · L컷',en:'J-cut / L-cut',b:'소리와 화면이 같이 바뀜',a:'소리가 먼저(J) 또는 나중(L)',
+ d:'J컷은 다음 장면의 소리가 화면보다 먼저 들리는 편집, L컷은 앞 장면의 소리가 다음 화면까지 이어지는 편집입니다. 대화와 장면 전환이 훨씬 자연스러워져요.',
+ draw(c,a){paper(c);track(c,28,'영상',[[30,104,K.shirt,'장면 A'],[104,180,K.pink,'장면 B']]);track(c,48,'소리',a?[[30,84,K.shirt,'A 소리'],[84,180,K.pink,'B 소리']]:[[30,104,K.shirt,'A 소리'],[104,180,K.pink,'B 소리']]);if(a){line(c,84,22,84,68,'#7c5cf0',1.5);text(c,'J컷: B 소리가 먼저',96,84,{size:9,col:'#7c5cf0'});}}},
+{cat:'edit',lv:2,ko:'매치 컷',en:'Match Cut',b:'관계없는 두 장면',a:'모양이 이어지는 두 장면',anim:1,
+ d:'앞 장면과 뒤 장면의 모양·움직임·색을 맞춰 자연스럽게 잇는 컷입니다. 굴러가는 공 → 떠오르는 해처럼 의미까지 이어 줘요.',
+ draw(c,a,t){const k=saw(t,3)<.5;if(k){ballScene(c,96);}else if(a){sky(c,'#f6a35b','#ffe1a8',84);sun(c,96,74,9);}else{room(c);rr(c,60,40,72,40,4,'#8a5a3a');}}},
+{cat:'edit',lv:2,ko:'인서트 컷',en:'Insert Shot',b:'넓은 화면만',a:'중요한 물건을 가까이 끼워 넣음',
+ d:'넓은 장면 사이에 손, 물건, 글씨 같은 디테일을 가까이 찍어 끼워 넣는 컷입니다. 시청자에게 "이걸 보세요"라고 알려 줘요.',
+ draw(c,a){if(!a){room(c);person(c,96,100,64,{});rr(c,104,64,16,10,2,'#ffd27a');return;}flat(c,K.wall);rr(c,40,26,112,58,8,'#ffd27a');text(c,'초대장',96,55,{size:14});c.fillStyle=K.skin;c.beginPath();c.ellipse(150,88,26,14,-.4,0,7);c.fill();}},
+{cat:'edit',lv:2,ko:'몽타주',en:'Montage',b:'한 장면을 길게',a:'짧은 장면을 빠르게 이어 시간 압축',
+ d:'짧은 장면을 빠르게 이어 붙여 긴 시간의 변화나 노력 과정을 압축해서 보여 주는 편집입니다. 졸업 영상의 "1년 돌아보기"가 대표적이에요.',
+ draw(c,a){if(!a){view(c,96,50,1.5,()=>scene(c));return;}paper(c);const cols=['#f6e3c4','#cfe8c0','#e0d6f7','#ffd9c9','#c9e4f7','#fde7a8'];for(let i=0;i<6;i++){const x=8+(i%3)*60,y=8+Math.floor(i/3)*50;rr(c,x,y,56,46,4,cols[i]);c.save();c.beginPath();c.rect(x,y,56,46);c.clip();c.translate(x+28,y+23);c.scale(.4,.4);c.translate(-96-i*10,-54);scene(c);c.restore();}}},
+{cat:'edit',lv:2,ko:'컬러 그레이딩',en:'Color Grading',b:'촬영 그대로 (밋밋함)',a:'분위기에 맞춰 색 보정',
+ d:'영상 전체의 색감과 대비를 조정해 분위기를 만드는 작업입니다. 같은 장면도 따뜻하게, 차갑게, 옛날 필름처럼 바꿀 수 있어요.',
+ draw(c,a){view(c,96,50,1.5,()=>scene(c));if(!a){c.save();c.globalCompositeOperation='saturation';flat(c,'rgba(128,128,128,.6)');c.restore();flat(c,'rgba(200,200,200,.15)');}else{c.save();c.globalCompositeOperation='soft-light';flat(c,'rgba(255,160,90,.5)');c.restore();c.save();c.globalCompositeOperation='multiply';flat(c,'rgba(200,220,255,.4)');c.restore();}}},
+
+/* ---------- 소리 ---------- */
+{cat:'sound',lv:1,ko:'내레이션',en:'Narration',b:'소리 없음',a:'해설 목소리',
+ d:'화면 밖에서 상황을 설명하는 목소리입니다. 조용한 곳에서 마이크를 입 가까이 대고 녹음하면 깨끗해요.',
+ x:'<strong>한 걸음 더</strong> 문장은 짧게, 숫자·영어는 읽는 소리대로 적습니다. 목소리가 화면을 "설명"하기보다 화면에 없는 정보를 "더해" 줄 때 가장 좋아요.',
+ draw(c,a){paper(c);text(c,'목소리',22,54,{size:9,col:K.mute});if(a)wave(c,44,54,140,34,t=>Math.abs(Math.sin(t*14))*.9+.1,K.shirt,3);else line(c,44,54,184,54,'#c8cde0',1.5);}},
+{cat:'sound',lv:1,ko:'BGM, 배경 음악',en:'Background Music',b:'목소리보다 큼',a:'목소리 아래로 작게',
+ d:'영상 분위기를 만드는 배경 음악입니다. 말할 때는 볼륨을 낮추고, 영상 전체에 한 곡을 이어서 깔면 안정적이에요.',
+ x:'<strong>한 걸음 더</strong> 음악은 반드시 사용 조건이 분명한 음원(무료 음원, 저작권 허락)을 쓰고, 출처 표기 조건을 확인하세요.',
+ draw(c,a){paper(c);text(c,'목소리',22,34,{size:9,col:K.mute});text(c,'음악',22,76,{size:9,col:K.mute});wave(c,44,34,140,26,t=>Math.abs(Math.sin(t*14))*.8+.1,K.shirt,3);wave(c,44,76,140,a?10:34,.9,'#7c5cf0',7);}},
+{cat:'sound',lv:1,ko:'효과음',en:'Sound Effects (SFX)',b:'장면만 있음',a:'포인트 소리',
+ d:'장면을 살리는 포인트 소리입니다. 정답 공개 "딩동", 문 닫힘 "쾅"처럼 꼭 필요한 곳에만 넣어요.',
+ draw(c,a){paper(c);text(c,'효과음',22,54,{size:9,col:K.mute});line(c,44,54,184,54,'#c8cde0',1.5);if(a)[70,128,166].forEach((x,i)=>{wave(c,x,54,12,40,u=>1-u,K.pink,i);text(c,['딩동','쾅','짝'][i],x+6,22,{size:9,col:K.pink});});}},
+{cat:'sound',lv:1,ko:'오디오 레벨',en:'Audio Level',b:'빨간색까지 (찢어짐)',a:'적당한 크기',
+ d:'소리의 크기입니다. 너무 크면 소리가 찢어지고(클리핑), 너무 작으면 잘 안 들려요. 편집 앱의 막대가 빨간색에 닿지 않게 맞춥니다.',
+ draw(c,a){paper(c);for(let i=0;i<14;i++){const on=a?i<10:i<14;const col=i>=12?'#e5484d':i>=9?'#ffb547':'#46b37a';rr(c,30+i*10,40,8,28,2,on?col:'#e2e4ec');}text(c,a?'적당함':'클리핑!',96,84,{col:a?'#46b37a':'#e5484d'});}},
+{cat:'sound',lv:2,ko:'더킹',en:'Ducking',b:'음악이 계속 같은 크기',a:'말할 때만 음악이 내려감',
+ d:'목소리가 나올 때 배경 음악을 자동으로 낮췄다가 말이 끝나면 다시 올리는 기법입니다. 많은 편집 앱에 자동 기능이 있어요.',
+ draw(c,a){paper(c);track(c,26,'목소리',[[44,90,K.shirt],[120,160,K.shirt]]);text(c,'음악',22,70,{size:9,col:K.mute});wave(c,44,70,140,28,u=>{if(!a)return .8;const x=44+u*140;return (x>40&&x<94)||(x>116&&x<164)?.25:.85;},'#7c5cf0',5);}},
+{cat:'sound',lv:2,ko:'앰비언스, 현장음',en:'Ambience / Room Tone',b:'완전한 무음',a:'잔잔한 현장 소리',
+ d:'그 장소의 바탕 소리(교실의 웅성거림, 바람, 빗소리)입니다. 완전히 조용하면 오히려 어색해서, 컷 사이 빈 곳에 깔아 자연스럽게 이어요.',
+ draw(c,a){paper(c);text(c,'바탕',22,54,{size:9,col:K.mute});if(a)wave(c,44,54,140,12,.6,'#46b37a',9);else line(c,44,54,184,54,'#c8cde0',1.5);}},
+{cat:'sound',lv:2,ko:'폴리',en:'Foley',b:'발소리 없음',a:'동작에 맞춘 소리를 따로 녹음',
+ d:'발소리, 옷 스치는 소리, 물건 놓는 소리처럼 화면 속 동작에 맞춰 따로 만들어 넣는 소리입니다. 화면을 훨씬 생생하게 만들어요.',
+ draw(c,a){paper(c);for(let i=0;i<4;i++){c.save();c.translate(40+i*36,40);c.fillStyle=K.ink;c.beginPath();c.ellipse(0,0,5,8,i%2?.2:-.2,0,7);c.fill();c.restore();if(a){wave(c,34+i*36,74,12,22,u=>1-u,K.pink,i);}}text(c,'발소리',20,74,{size:8,col:K.mute});}},
+{cat:'sound',lv:2,ko:'립싱크',en:'Lip Sync',b:'입과 소리가 어긋남',a:'입 모양과 소리가 맞음',anim:1,
+ d:'입 모양과 말소리가 맞는 상태입니다. AI 영상에서 대사를 넣을 때 모델마다 립싱크 품질이 달라요.',
+ draw(c,a,t){room(c);const m=Math.abs(Math.sin(t*9));person(c,60,104,86,{mouth:m});const off=a?0:.35;wave(c,110,54,74,30,u=>Math.abs(Math.sin((t+off)*9+u*0)) ,K.shirt,Math.floor(t*12));text(c,a?'맞음':'0.3초 늦음',148,90,{size:9,col:a?'#46b37a':K.pink});}},
+{cat:'sound',lv:2,ko:'라우드니스 정규화',en:'Loudness Normalization',b:'클립마다 크기가 들쭉날쭉',a:'전체 크기를 고르게',
+ d:'영상 전체의 체감 음량을 일정한 기준에 맞추는 것입니다. 유튜브 같은 플랫폼도 음량을 맞춰서 재생하므로, 너무 크게 만들면 오히려 줄어들어요.',
+ draw(c,a){paper(c);const h=a?[22,22,22,22]:[10,34,16,30];h.forEach((v,i)=>wave(c,24+i*40,54,34,v,.9,['#46b37a','#ffb547','#7c5cf0',K.shirt][i],i));}},
+
+/* ---------- 규격과 파일 ---------- */
+{cat:'spec',lv:1,ko:'해상도',en:'Resolution',b:'낮은 해상도 (깨짐)',a:'FHD 1920×1080',
+ d:'화면을 이루는 점(픽셀)의 개수입니다. 수업 영상은 FHD(1920×1080)가 기본이고, 4K는 3840×2160이에요.',
+ x:'<strong>한 걸음 더</strong> 해상도가 높을수록 파일이 커지고 편집이 무거워집니다. 업로드할 곳(교실 TV, 유튜브, 메신저)에 맞춰 고르세요.',
+ draw(c,a){if(a){view(c,96,50,1.5,()=>scene(c));return;}const s=mk(24,14),g=s.getContext('2d');g.scale(24/CW,14/CH);view(g,96,50,1.5,()=>scene(g));c.imageSmoothingEnabled=false;c.drawImage(s,0,0,CW,CH);c.imageSmoothingEnabled=true;}},
+{cat:'spec',lv:1,ko:'화면비',en:'Aspect Ratio',b:'16:9 가로',a:'9:16 세로',
+ d:'화면의 가로세로 비율입니다. 16:9는 유튜브·수업 화면, 9:16은 쇼츠·릴스, 1:1은 학급 피드에 맞아요. 올릴 곳을 먼저 정하고 비율을 고릅니다.',
+ draw(c,a){paper(c);if(!a){c.save();c.beginPath();c.rect(32,18,128,72);c.clip();c.translate(96,54);c.scale(.66,.66);c.translate(-96,-54);view(c,96,50,1.5,()=>scene(c));c.restore();frameBox(c,32,18,128,72);}else{c.save();c.beginPath();c.rect(76,6,41,96);c.clip();c.translate(96,54);c.scale(1.3,1.3);c.translate(-96,-50);view(c,96,46,1.5,()=>scene(c));c.restore();frameBox(c,76,6,41,96);}}},
+{cat:'spec',lv:1,ko:'MP4',en:'MP4 File',b:'열리지 않는 형식',a:'어디서나 열리는 형식',
+ d:'가장 널리 쓰이는 영상 파일 형식입니다. 컴퓨터, 스마트폰, 유튜브, 교실 TV 어디서나 열려서 내보낼 때 기본으로 고르면 돼요.',
+ draw(c,a){paper(c);rr(c,70,22,52,64,5,a?'#fff':'#eee');frameBox(c,70,22,52,64,a?K.shirt:'#c8cde0');text(c,a?'.mp4':'.???',96,54,{size:14,col:a?K.shirt:K.mute});if(a)['💻','📱','📺'].forEach((s,i)=>text(c,s,40+i*56,98,{size:12}));}},
+{cat:'spec',lv:2,ko:'비트레이트',en:'Bitrate',b:'낮음 (뭉개짐)',a:'높음 (깨끗함)',
+ d:'1초 영상에 쓰는 데이터 양입니다. 낮으면 파일은 작지만 움직임이 많은 장면이 네모나게 뭉개지고, 높으면 깨끗하지만 파일이 커져요.',
+ draw(c,a){const g=c.createLinearGradient(0,0,CW,0);g.addColorStop(0,'#1d2a5a');g.addColorStop(.5,'#ec5f9b');g.addColorStop(1,'#ffd27a');c.fillStyle=g;c.fillRect(0,0,CW,CH);if(!a){for(let y=0;y<CH;y+=12)for(let x=0;x<CW;x+=12){const id=c.getImageData(x+6,y+6,1,1).data;c.fillStyle=`rgb(${id[0]},${id[1]},${id[2]})`;c.fillRect(x,y,12,12);}}}},
+{cat:'spec',lv:2,ko:'코덱',en:'Codec (H.264 / H.265)',b:'H.264',a:'H.265 (같은 화질, 더 작게)',
+ d:'영상을 압축하고 푸는 방식입니다. H.264는 가장 호환성이 좋고, H.265는 비슷한 화질을 더 작은 용량으로 담지만 일부 기기에서 안 열릴 수 있어요.',
+ draw(c,a){paper(c);rr(c,30,a?50:30,a?80:132,22,4,a?'#46b37a':K.shirt);text(c,a?'H.265':'H.264',a?70:96,a?61:41,{col:'#fff'});text(c,'같은 화질의 파일 크기',96,90,{size:9,col:K.mute});}},
+{cat:'spec',lv:2,ko:'컨테이너',en:'Container',b:'영상만 따로',a:'영상·소리·자막을 한 그릇에',
+ d:'영상, 소리, 자막을 함께 담는 "그릇"입니다. MP4·MOV·MKV가 컨테이너이고, 그 안의 영상은 H.264 같은 코덱으로 압축돼 있어요.',
+ draw(c,a){paper(c);if(a){rr(c,30,16,132,76,8,'#fff');frameBox(c,30,16,132,76,K.shirt);text(c,'.mp4',150,24,{size:8,col:K.shirt});}rr(c,44,28,104,16,3,K.shirt);text(c,'영상 (H.264)',96,36,{col:'#fff',size:9});if(a){rr(c,44,50,104,16,3,'#7c5cf0');text(c,'소리 (AAC)',96,58,{col:'#fff',size:9});rr(c,44,72,104,14,3,'#46b37a');text(c,'자막',96,79,{col:'#fff',size:9});}}},
+{cat:'spec',lv:2,ko:'렌더링, 내보내기',en:'Render / Export',b:'편집 앱 안의 프로젝트',a:'한 편의 영상 파일로',
+ d:'편집한 결과를 한 개의 영상 파일로 만드는 과정입니다. 해상도·프레임레이트·비트레이트를 고르고 내보내요.',
+ draw(c,a){paper(c);track(c,24,'영상',[[30,90,K.shirt],[92,150,K.pink],[152,180,K.shirt]]);track(c,40,'소리',[[30,180,'#7c5cf0']]);if(a){rr(c,30,66,150,10,5,'#e2e4ec');rr(c,30,66,150,10,5,'#46b37a');text(c,'완료 · 영상.mp4',105,90,{size:9,col:'#46b37a'});}}},
+
+/* ---------- AI 영상 ---------- */
+{cat:'ai',lv:1,ko:'프롬프트',en:'Prompt',b:'막연한 한 단어',a:'피동장스로 구체적으로',
+ d:'AI에게 주는 지시문입니다. 피사체·동작·장소·스타일(피동장스)과 샷 사이즈·앵글·무빙 용어를 넣을수록 원하는 결과에 가까워져요.',
+ x:'<strong>한 걸음 더</strong> 스타일을 맨 앞에 두면 그림체가 흔들리지 않고, "하지 말 것"(글자·로고 넣지 않기)을 한 줄 넣으면 실패가 줄어듭니다.',
+ draw(c,a){paper(c);rr(c,10,14,172,a?52:22,5,'#fff');frameBox(c,10,14,172,a?52:22,'#c8cde0');if(!a){text(c,'"선생님"',96,25,{size:11});}else{['피 · 하늘색 카디건 선생님','동 · 손을 흔들며 웃음','장 · 햇살 드는 교실','스 · 3D 애니메이션'].forEach((s,i)=>text(c,s,18,24+i*12,{size:9,al:'left'}));}text(c,a?'→ 원하는 장면':'→ 매번 다른 결과',96,a?84:56,{size:10,col:a?'#46b37a':K.pink});}},
+{cat:'ai',lv:1,ko:'텍스트 → 영상',en:'Text to Video',b:'—',a:'글만으로 생성 (컷마다 달라짐)',
+ d:'프롬프트만으로 영상을 만드는 방식입니다. 빠르게 시작할 수 있지만 컷마다 인물·옷·배경이 바뀌기 쉬워요.',
+ draw(c,a){paper(c);const cols=a?[K.shirt,K.pink,'#46b37a']:[K.mute,K.mute,K.mute];[20,78,136].forEach((x,i)=>{rr(c,x,22,46,52,4,'#fff');frameBox(c,x,22,46,52,'#c8cde0');if(a){c.save();c.translate(x+23,72);person(c,0,0,44,{col:cols[i]});c.restore();}text(c,'컷 '+(i+1),x+23,86,{size:9,col:K.mute});});}},
+{cat:'ai',lv:1,ko:'이미지 → 영상',en:'Image to Video',b:'글로만 (흔들림)',a:'기준 이미지에서 시작 (일관됨)',
+ d:'기준 이미지를 먼저 만들고, 그 이미지를 움직이게 하는 방식입니다. 모습과 분위기가 안정적으로 이어져요.',
+ draw(c,a){paper(c);const cols=a?[K.shirt,K.shirt,K.shirt]:[K.shirt,K.pink,'#46b37a'];[20,78,136].forEach((x,i)=>{rr(c,x,22,46,52,4,'#fff');frameBox(c,x,22,46,52,'#c8cde0');c.save();c.translate(x+23,72);person(c,0,0,44,{col:cols[i],face:a?[0,1,-1][i]:0});c.restore();text(c,'컷 '+(i+1),x+23,86,{size:9,col:K.mute});});}},
+{cat:'ai',lv:1,ko:'기준 이미지, 레퍼런스',en:'Reference Image',b:'없음',a:'모든 컷의 기준표',
+ d:'모든 컷의 얼굴·옷·분위기를 맞추는 기준 그림입니다. 캐릭터 시트(여러 각도·표정 모음)를 만들어 두면 더 정확해요.',
+ draw(c,a){paper(c);if(!a){text(c,'?',96,54,{size:30,col:K.mute});return;}[[30,0],[70,1],[110,-1],[150,0]].forEach(([x,f],i)=>{rr(c,x-18,18,36,72,4,'#fff');c.save();c.translate(x,82);person(c,0,0,56,{face:f,mouth:i===3?.8:null});c.restore();});}},
+{cat:'ai',lv:1,ko:'일관성',en:'Consistency',b:'컷마다 다른 사람',a:'모든 컷에서 같은 사람',
+ d:'여러 컷에서 같은 인물·옷·배경이 유지되는 정도입니다. AI 영상의 품질은 일관성에서 갈리고, 일관성은 기준 이미지에서 시작돼요.',
+ draw(c,a){paper(c);for(let i=0;i<4;i++){c.save();c.translate(30+i*44,84);person(c,0,0,56,{col:a?K.shirt:[K.shirt,K.pink,'#46b37a','#ffb547'][i],face:a?0:[0,1,-1,0][i]});c.restore();if(!a){c.fillStyle=['#2a2230','#9a5a2a','#d9b35a','#2a2230'][i];c.beginPath();c.arc(30+i*44,84-56*40/44,6*56/44,Math.PI,Math.PI*2);c.fill();}}}},
+{cat:'ai',lv:1,ko:'크레딧',en:'Credits',b:'고급 모델로 연습',a:'연습은 Lite, 완성은 Fast',
+ d:'AI 영상을 만들 때 쓰는 사용량 단위입니다. Flow는 하루 무료 크레딧이 있고, 모델에 따라 클립당 차감량이 달라요(2026년 11월 기준 Lite 10, Fast 20, Quality 100).',
+ draw(c,a){paper(c);rr(c,20,40,152,18,9,'#e2e4ec');const used=a?[10,10,10,20]:[100];let x=20;used.forEach((u,i)=>{const w=152*Math.min(u,50)/50*(a?1:1);rr(c,x,40,Math.min(w,172-x),18,9,a?(u===20?K.pink:'#46b37a'):'#e5484d');x+=w;});text(c,a?'Lite×3 + Fast×1 = 50':'Quality 1개 = 100 (하루 무료로 부족)',96,74,{size:9,col:a?'#46b37a':'#e5484d'});text(c,'하루 무료 50',96,28,{size:9,col:K.mute});}},
+{cat:'ai',lv:2,ko:'재료로 영상',en:'Ingredients to Video',b:'글로만 설명',a:'@이름으로 재료 불러오기',
+ d:'캐릭터·물건 이미지를 "재료"로 등록하고 프롬프트에서 @이름으로 불러와 여러 클립에서 같은 모습을 유지하는 Flow 기능입니다.',
+ draw(c,a){paper(c);rr(c,10,60,172,24,5,'#fff');frameBox(c,10,60,172,24,'#c8cde0');text(c,a?'@한음쌤 이 손을 흔든다':'안경 쓴 남자 선생님이 손을 흔든다',96,72,{size:9});if(a){rr(c,70,10,52,42,5,'#fff');c.save();c.translate(96,50);person(c,0,0,38,{});c.restore();text(c,'@한음쌤',96,8,{size:8,col:K.pink});}}},
+{cat:'ai',lv:2,ko:'프레임으로 영상',en:'Frames to Video',b:'시작 이미지만',a:'시작·끝 이미지 사이를 채움',anim:1,
+ d:'시작 프레임(필요하면 끝 프레임도)을 정해 주면 그 사이의 움직임을 AI가 만들어 주는 방식입니다. 구도를 정확히 정하고 싶을 때 써요.',
+ draw(c,a,t){paper(c);rr(c,8,30,40,40,4,'#fff');ball(c,20,58,6);text(c,'시작',28,80,{size:8,col:K.mute});if(a){rr(c,144,30,40,40,4,'#fff');ball(c,172,42,6,'#46b37a');text(c,'끝',164,80,{size:8,col:K.mute});const u=tri(t,3);ball(c,lerp(70,122,u),lerp(60,42,u)-Math.sin(u*Math.PI)*10,6,u>.5?'#46b37a':K.pink);}else{arrow(c,56,50,120,50,K.mute);text(c,'?',134,50,{size:16,col:K.mute});}}},
+{cat:'ai',lv:2,ko:'이어서 만들기',en:'Extend',b:'8초에서 끝',a:'다음 장면을 이어 붙임',
+ d:'만든 클립 뒤에 "다음에 일어나는 일"을 이어 붙여 더 긴 장면을 만드는 Flow 기능입니다. 한 번에 만들 수 있는 길이의 한계를 넘을 때 써요.',
+ draw(c,a){paper(c);rr(c,14,44,60,20,4,K.shirt);text(c,'0~8초',44,54,{col:'#fff',size:9});if(a){rr(c,76,44,60,20,4,'#7c5cf0');text(c,'8~16초',106,54,{col:'#fff',size:9});rr(c,138,44,44,20,4,K.pink);text(c,'16~',160,54,{col:'#fff',size:9});}}},
+{cat:'ai',lv:2,ko:'플랫폼과 모델',en:'Platform vs Model',b:'같은 것으로 착각',a:'작업 공간 안에 AI 엔진',
+ d:'플랫폼은 우리가 쓰는 작업 공간(Flow, Gemini 앱), 모델은 결과물을 만드는 AI 엔진(Veo 3.1, 나노바나나)입니다. 한 플랫폼에서 여러 모델을 골라 쓸 수 있어요.',
+ draw(c,a){paper(c);if(!a){rr(c,46,30,100,46,6,K.shirt);text(c,'Flow = Veo ?',96,53,{col:'#fff'});return;}rr(c,16,14,160,80,8,'#e6eeff');text(c,'플랫폼 · Flow',96,24,{size:10,col:K.shirt});[['Veo 3.1',36],['나노바나나',96],['Omni',156]].forEach(([s,x])=>{rr(c,x-26,40,52,40,6,'#7c5cf0');text(c,s,x,60,{size:9,col:'#fff'});});}},
+{cat:'ai',lv:2,ko:'업스케일',en:'Upscale',b:'작은 해상도',a:'크게 다시 그려 선명하게',
+ d:'낮은 해상도로 만든 결과를 AI로 더 크고 선명하게 다시 그리는 작업입니다. 생성은 작게 빠르게, 완성본만 업스케일하면 시간과 크레딧을 아껴요.',
+ draw(c,a){if(a){view(c,96,46,3.2,()=>scene(c));return;}const s=mk(32,18),g=s.getContext('2d');g.scale(32/CW,18/CH);view(g,96,46,3.2,()=>scene(g));c.imageSmoothingEnabled=false;c.drawImage(s,0,0,CW,CH);c.imageSmoothingEnabled=true;}},
+{cat:'ai',lv:2,ko:'깜빡임, 모핑',en:'Flicker / Morphing',b:'형태가 녹아내림',a:'안정된 형태',anim:1,
+ d:'AI 영상에서 프레임마다 세부가 미세하게 바뀌어 깜빡이거나, 손·얼굴이 녹듯이 변형되는 현상입니다. 동작을 하나로 줄이고 카메라를 고정하면 줄어들어요.',
+ draw(c,a,t){room(c);const k=a?0:1;const j=n=>(hash(Math.floor(t*8)+n)-.5)*k;c.save();c.translate(96+j(1)*3,100);c.scale(1+j(2)*.12,1+j(3)*.08);person(c,0,0,70,{col:a?K.shirt:`hsl(${220+j(4)*80},70%,55%)`});c.restore();}},
+
+/* ---------- 애니메이션·코드 영상 ---------- */
+{cat:'code',lv:1,ko:'키프레임',en:'Keyframe',b:'시작만 정함',a:'중요한 순간을 정하고 사이를 채움',anim:1,
+ d:'움직임에서 중요한 순간(시작, 가장 높은 점, 끝)의 자세나 위치입니다. 키프레임만 정하면 그 사이는 편집 앱이나 코드가 채워 줘요.',
+ draw(c,a,t){paper(c);rect(c,0,84,CW,24,'#ddd6c8');const k=[[24,74],[96,24],[168,74]];if(a){k.forEach(([x,y])=>{circ(c,x,y,9,'rgba(236,95,155,.25)');c.strokeStyle=K.pink;c.setLineDash([2,2]);c.strokeRect(x-10,y-10,20,20);c.setLineDash([]);});const u=tri(t,3);const x=lerp(24,168,u),y=74-Math.sin(u*Math.PI)*50;ball(c,x,y,7);}else{ball(c,24,74,7);}}},
+{cat:'code',lv:1,ko:'이징',en:'Easing',b:'일정한 속도 (기계적)',a:'천천히 출발·천천히 멈춤',anim:1,
+ d:'움직임의 속도 변화입니다. 처음부터 끝까지 같은 속도면 기계처럼 보이고, 천천히 출발해서 천천히 멈추면 자연스러워요.',
+ draw(c,a,t){paper(c);const u=tri(t,3);const x=lerp(20,172,a?ease(u):u);for(let i=0;i<9;i++){const v=i/8;circ(c,lerp(20,172,a?ease(v):v),86,1.8,K.mute);}rect(c,0,70,CW,1,'#ddd6c8');ball(c,x,56,10);}},
+{cat:'code',lv:1,ko:'루프',en:'Loop',b:'끝에서 툭 튐',a:'끝과 처음이 이어짐',anim:1,
+ d:'끝나면 처음으로 돌아가 반복되는 영상입니다. 마지막 프레임이 첫 프레임과 자연스럽게 이어지면 끝없이 이어지는 것처럼 보여요. 움직이는 이모티콘이 대표적입니다.',
+ draw(c,a,t){paper(c);rect(c,0,84,CW,24,'#ddd6c8');const u=saw(t,2);const x=a?96+Math.sin(u*Math.PI*2)*60:lerp(30,162,u);ball(c,x,74-(a?Math.abs(Math.sin(u*Math.PI*2))*26:0),8);}},
+{cat:'code',lv:2,ko:'투스, 2프레임 작화',en:'On Twos',b:'매 프레임 (매끈함)',a:'2프레임마다 새 그림 (손그림 느낌)',anim:1,
+ d:'초당 24프레임 중 2프레임마다 새 그림을 그려 실제로는 초당 12장으로 움직이는 방식입니다. 손그림 셀 애니메이션 특유의 리듬이 생겨요.',
+ draw(c,a,t){const f=a?12:24;const tt=Math.floor(t*f)/f;ballScene(c,30+tri(tt,2.4)*132);text(c,a?'12장/초':'24장/초',168,14,{size:10,col:K.pink});}},
+{cat:'code',lv:2,ko:'셀, 셀 채색',en:'Cel',b:'부드러운 그라데이션',a:'단색 면 + 그림자 1~2단 + 선',
+ d:'투명한 필름(셀) 위에 그려 배경 위에 겹쳐 찍던 전통 애니메이션 방식, 또는 그 채색 방법입니다. 단색 면과 딱 떨어지는 그림자, 잉크 선이 특징이에요.',
+ draw(c,a){paper(c);if(!a){const g=c.createRadialGradient(84,44,4,96,54,34);g.addColorStop(0,'#bfe0ff');g.addColorStop(1,'#2c4f8a');c.fillStyle=g;c.beginPath();c.arc(96,54,32,0,7);c.fill();return;}circ(c,96,54,32,'#6ea3d8');c.fillStyle='#3f6a9e';c.beginPath();c.arc(96,54,32,-.4,2.4);c.arc(84,46,30,2.2,-.2,true);c.fill();c.fillStyle='#2c4f7a';c.beginPath();c.arc(96,54,32,.3,1.9);c.arc(90,50,30,1.8,.35,true);c.fill();c.strokeStyle=K.ink;c.lineWidth=2.4;c.beginPath();c.arc(96,54,32,0,7);c.stroke();c.strokeStyle='#ff9a44';c.lineWidth=1.2;c.beginPath();c.arc(96,54,30,-2.6,-1.4);c.stroke();}},
+{cat:'code',lv:2,ko:'홀드',en:'Hold',b:'계속 같은 속도',a:'멈췄다가 다시 움직임',anim:1,
+ d:'움직임 중간에 잠깐 멈추는 것입니다. 무거운 물체는 움직임 사이에 홀드를 넣으면 무게감이 생기고, 감정이 담긴 순간을 강조할 수 있어요.',
+ draw(c,a,t){paper(c);rect(c,0,84,CW,24,'#ddd6c8');const u=saw(t,3);let p=u;if(a){p=u<.25?ease(u/.25)*.4:u<.5?.4:u<.75?.4+ease((u-.5)/.25)*.6:1;}rr(c,lerp(20,140,p),56,32,28,3,'#6d5a3a');}},
+{cat:'code',lv:2,ko:'스미어',en:'Smear Frame',b:'빠른데 그대로',a:'늘어난 한 장으로 속도감',anim:1,
+ d:'아주 빠른 동작을 한두 프레임 동안 길게 늘어난 모양으로 그려 속도감을 주는 기법입니다.',
+ draw(c,a,t){paper(c);const u=saw(t,1.6);const x=lerp(10,182,u);if(a&&u>.3&&u<.7){c.fillStyle=K.pink;c.beginPath();c.ellipse(x,54,30,7,0,0,7);c.fill();}else ball(c,x,54,9);}},
+{cat:'code',lv:2,ko:'할레이션',en:'Halation',b:'빛이 딱 끊김',a:'빛 주변이 번짐',
+ d:'필름에서 밝은 빛 주변으로 붉은 기운이 번지는 현상입니다. 코드 영상에서 일부러 넣으면 옛날 필름처럼 따뜻한 느낌이 나요.',
+ draw(c,a){flat(c,'#141a2e');for(const [x,y] of [[60,40],[120,58],[150,30]]){if(a){circ(c,x,y,20,'rgba(255,130,70,.22)');circ(c,x,y,11,'rgba(255,190,120,.4)');}circ(c,x,y,5,'#fff2c8');}}},
+{cat:'code',lv:2,ko:'필름 그레인',en:'Film Grain',b:'깨끗한 디지털',a:'자글자글한 필름 입자',anim:1,
+ d:'필름 특유의 미세한 입자입니다. 매 프레임 조금씩 달라져서 살아 있는 느낌을 주고, 디지털 그림을 덜 차갑게 만들어요.',
+ draw(c,a,t){view(c,96,50,1.5,()=>scene(c));if(a){const f=Math.floor(t*12);for(let i=0;i<500;i++){const x=hash(i*1.3+f)*CW,y=hash(i*2.7+f)*CH;c.fillStyle=hash(i+f)>.5?'rgba(255,255,255,.35)':'rgba(0,0,0,.3)';c.fillRect(x,y,1,1);}}}},
+{cat:'code',lv:2,ko:'패럴랙스, 시차',en:'Parallax',b:'모든 층이 같은 속도',a:'가까울수록 빠르게',anim:1,
+ d:'가까운 것은 빠르게, 먼 것은 느리게 움직여 깊이감을 만드는 효과입니다. 배경을 여러 층으로 나눠 다른 속도로 움직이면 돼요.',
+ draw(c,a,t){const u=saw(t,5)*-120;c.save();sky(c);c.translate(a?u*.2:u,0);mountains(c);c.translate(a?-u*.2+u*.5:0,0);house(c,40,78);house(c,180,78);c.restore();c.save();c.translate(u,0);for(let i=0;i<5;i++)tree(c,30+i*70,92,40);c.restore();}},
+{cat:'code',lv:2,ko:'라인 보일',en:'Line Boil',b:'선이 완전히 고정',a:'선이 미세하게 꿈틀',anim:1,
+ d:'손으로 다시 그린 선이 프레임마다 아주 조금씩 달라 꿈틀거리는 현상입니다. 일부러 넣으면 손그림 느낌이 살아나요.',
+ draw(c,a,t){paper(c);const f=a?Math.floor(t*12):0;c.strokeStyle=K.ink;c.lineWidth=2.4;c.lineJoin='round';c.beginPath();for(let i=0;i<=40;i++){const ang=i/40*Math.PI*2;const r=32+(hash(i*3.1+f)-.5)*(a?2.4:0);const x=96+Math.cos(ang)*r,y=54+Math.sin(ang)*r;i?c.lineTo(x,y):c.moveTo(x,y);}c.stroke();}},
+];
+
+/* =====================================================================
+   화면 구성
+   ===================================================================== */
+function mk(w,h){const c=document.createElement('canvas');c.width=w;c.height=h;return c;}
+const DPR=Math.min(2,window.devicePixelRatio||1);
+const main=document.getElementById('main'),cats=document.getElementById('cats');
+const cards=[],anims=[];
+function paintCanvas(cv,term,after,t){const c=cv.getContext('2d');c.setTransform(DPR,0,0,DPR,0,0);c.clearRect(0,0,CW,CH);c.save();c.beginPath();c.rect(0,0,CW,CH);c.clip();try{term.draw(c,after,t);}catch(e){console.error(term.ko,e);}c.restore();}
+CATS.forEach(cat=>{
+  const sec=document.createElement('section');sec.className='gsec';sec.id=cat.id;
+  sec.innerHTML=`<h2>${cat.name}<small>${cat.en}</small></h2><div class="ggrid"></div>`;
+  const grid=sec.querySelector('.ggrid');
+  TERMS.filter(t=>t.cat===cat.id).sort((a,b)=>a.lv-b.lv).forEach(t=>{
+    const el=document.createElement('article');el.className='term'+(t.lv===2?' adv':'');
+    el.innerHTML=`<h3><span>${t.ko}<span class="en">${t.en}</span></span>${t.lv===2?'<span class="badge-adv">심화</span>':''}</h3>
+      <div class="pair"><figure><canvas role="img" aria-label="${t.ko} 적용 전"></canvas><figcaption><b>BEFORE</b>${t.b}</figcaption></figure>
+      <figure class="after"><canvas role="img" aria-label="${t.ko} 적용 후"></canvas><figcaption><b>AFTER</b>${t.a}</figcaption></figure></div>
+      <p>${t.d}</p>${t.t?`<p class="tip"><strong>팁</strong> ${t.t}</p>`:''}${t.x?`<p class="more">${t.x}</p>`:''}`;
+    const [c0,c1]=el.querySelectorAll('canvas');for(const cv of [c0,c1]){cv.width=CW*DPR;cv.height=CH*DPR;}
+    paintCanvas(c0,t,false,.9);paintCanvas(c1,t,true,.9);
+    if(t.anim)anims.push({el,c0,c1,t,vis:false});
+    cards.push({el,t,sec});grid.appendChild(el);
+  });
+  main.appendChild(sec);
+});
+/* 움직이는 그림: 화면에 보이는 카드만 그림, 움직임 줄이기 설정이면 멈춤 */
+const still=matchMedia('(prefers-reduced-motion: reduce)').matches;
+if(!still&&anims.length){
+  const io=new IntersectionObserver(es=>es.forEach(e=>{const a=anims.find(v=>v.el===e.target);if(a)a.vis=e.isIntersecting;}),{rootMargin:'100px'});
+  anims.forEach(a=>io.observe(a.el));
+  let last=0;(function tick(now){if(now-last>40){last=now;const t=now/1000;for(const a of anims){if(!a.vis||a.el.offsetParent===null)continue;paintCanvas(a.c0,a.t,false,t);paintCanvas(a.c1,a.t,true,t);}}requestAnimationFrame(tick);})(0);
+}
+/* 기초 / 심화 */
+const nB=TERMS.filter(t=>t.lv===1).length,nA=TERMS.filter(t=>t.lv===2).length,nX=TERMS.filter(t=>t.x).length;
+document.getElementById('cBasic').textContent=nB;document.getElementById('cAdv').textContent='+'+nA;
+let level='basic';
+try{if(localStorage.getItem('vg:glossLevel')==='adv')level='adv';}catch(e){}
+function setLevel(l){level=l;document.body.classList.toggle('adv',l==='adv');
+  document.getElementById('bBasic').setAttribute('aria-pressed',l==='basic');document.getElementById('bAdv').setAttribute('aria-pressed',l==='adv');
+  document.getElementById('lvnote').innerHTML=l==='adv'?`기초 ${nB}개에 <b>심화 용어 ${nA}개</b>가 더해지고, 기초 카드 ${nX}개에 <b>"한 걸음 더"</b> 설명이 붙었어요.`:`연수에서 꼭 쓰는 기초 용어 ${nB}개입니다. <b>심화</b>를 누르면 여기에 내용이 더해져요.`;
+  try{localStorage.setItem('vg:glossLevel',l);}catch(e){}filter();}
+document.getElementById('bBasic').onclick=()=>setLevel('basic');document.getElementById('bAdv').onclick=()=>setLevel('adv');
+/* 분류 칩 + 찾기 */
+const q=document.getElementById('q');
+function filter(){const s=q.value.trim().toLowerCase();
+  for(const c of cards){const txt=(c.t.ko+' '+c.t.en+' '+c.t.d+' '+(c.t.x||'')).toLowerCase();c.el.classList.toggle('hit-none',!!s&&!txt.includes(s));}
+  cats.innerHTML='';CATS.forEach(cat=>{const sec=document.getElementById(cat.id);const vis=cards.filter(c=>c.t.cat===cat.id&&!c.el.classList.contains('hit-none')&&(level==='adv'||c.t.lv===1)).length;sec.classList.toggle('empty',vis===0);
+    if(vis){const a=document.createElement('a');a.href='#'+cat.id;a.innerHTML=`${cat.name}<span class="n">${vis}</span>`;cats.appendChild(a);}});}
+q.addEventListener('input',filter);
+setLevel(level);
+</script>
+</body>
+</html>
