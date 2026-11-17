@@ -1,0 +1,2826 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>月光の終着線 — The Moonlight Branch Line (1993 OVA LaserDisc Transfer)</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@600;700;900&family=Noto+Sans+KR:wght@400;500;700&family=Share+Tech+Mono&display=swap');
+
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  :root {
+    --bg: #04050a;
+    --ink: #e8e2d5;
+    --sodium: #ff9e44;
+    --cyan-wet: #5ce1e6;
+    --teal-tram: #2d5a68;
+    --cream-tram: #d8ceb8;
+    --charcoal-ink: #14121d;
+  }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Noto Sans KR', sans-serif;
+    overflow: hidden;
+    user-select: none;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background:
+      radial-gradient(ellipse 88% 68% at 50% 46%, rgba(45, 90, 104, 0.16) 0%, rgba(12, 18, 32, 0.08) 55%, transparent 82%),
+      #030408;
+  }
+
+  /* Ambient CRT / LaserDisc Backglow */
+  #ambient-glow {
+    position: absolute;
+    width: min(96vw, calc(90vh * (1920 / 1040)));
+    aspect-ratio: 1920 / 1040;
+    border-radius: 14px;
+    filter: blur(72px);
+    opacity: 0.42;
+    pointer-events: none;
+    transition: background 0.6s ease;
+    background: radial-gradient(circle at 50% 50%, rgba(255, 158, 68, 0.25), rgba(45, 90, 104, 0.32), transparent 75%);
+    z-index: 0;
+  }
+
+  /* 1993 OVA LaserDisc 1920:1040 Widescreen Viewport */
+  #frame {
+    position: relative;
+    width: min(96vw, calc(90vh * (1920 / 1040)));
+    aspect-ratio: 1920 / 1040;
+    background: #05070e;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.08) inset,
+      0 0 0 1px rgba(255, 255, 255, 0.07),
+      0 32px 95px rgba(0, 0, 0, 0.96),
+      0 10px 30px rgba(0, 0, 0, 0.85);
+    z-index: 1;
+    cursor: none;
+  }
+
+  #frame.ui-visible {
+    cursor: default;
+  }
+
+  /* Camera Stand Gate Weave Container (1-2px stepped 12fps drift) */
+  #camera-stand {
+    position: absolute;
+    inset: -4px;
+    width: calc(100% + 8px);
+    height: calc(100% + 8px);
+    transform-origin: center center;
+    will-change: transform;
+  }
+
+  /* Layer 0: Hand-Painted Poster Color & Acrylic Sky/Town Backdrop */
+  #bg-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    z-index: 1;
+  }
+
+  /* Layer 1: Three.js Custom GLSL Cel Shader & Colored Held Ink Outline Renderer */
+  #webgl-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    z-index: 2;
+    /* Subtle cel-layer separation from background as real acetate cels had under the camera stand */
+    filter: contrast(1.04) saturate(1.05);
+  }
+
+  /* Layer 2: Hybrid 2D Hand-Drawn Cel Overlay (#cel-overlay) */
+  #cel-overlay {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    pointer-events: none;
+    z-index: 3;
+  }
+
+  /* Layer 3: Optical Film Halation / Highlight Bleed into Rain */
+  #halation-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
+    pointer-events: none;
+    mix-blend-mode: screen;
+    opacity: 0.56;
+    filter: blur(8px);
+    z-index: 4;
+  }
+
+  /* Layer 4: 35mm Film Grain & Subtle Color Transfer Shift */
+  #grain-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    opacity: 0.14;
+    z-index: 5;
+  }
+
+  /* 35mm Camera Gate Vignette & Analog Warm/Cyan Tint */
+  #film-matte {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    box-shadow:
+      inset 0 0 85px rgba(2, 3, 9, 0.76),
+      inset 0 0 0 2px rgba(8, 10, 16, 0.92);
+    background: linear-gradient(
+      180deg,
+      rgba(255, 158, 68, 0.03) 0%,
+      transparent 32%,
+      transparent 72%,
+      rgba(92, 225, 230, 0.035) 100%
+    );
+    z-index: 6;
+  }
+
+  /* Minimal Atmospheric Start Veil */
+  #veil {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse 75% 70% at 50% 48%, rgba(8, 13, 24, 0.38) 0%, rgba(3, 5, 10, 0.82) 100%);
+    backdrop-filter: blur(2px);
+    z-index: 12;
+    transition: opacity 0.6s ease, visibility 0.6s;
+    cursor: pointer;
+  }
+
+  #veil.hidden-veil {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .play-ring {
+    width: 74px;
+    height: 74px;
+    border-radius: 50%;
+    background: rgba(12, 17, 28, 0.72);
+    border: 1.5px solid rgba(255, 195, 115, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffe8c2;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.75), 0 0 28px rgba(255, 158, 68, 0.28);
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  }
+
+  #veil:hover .play-ring {
+    transform: scale(1.07);
+    border-color: rgba(255, 215, 150, 0.9);
+    background: rgba(255, 158, 68, 0.22);
+  }
+
+  /* Minimal Auto-Hiding Bottom Control Bar (#bar) */
+  #bar {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 46px;
+    padding: 0 16px;
+    background: linear-gradient(to top, rgba(3, 5, 10, 0.82) 0%, rgba(3, 5, 10, 0.35) 68%, transparent 100%);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 9;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.35s ease;
+  }
+
+  #frame.ui-visible #bar {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .ctrl-btn {
+    background: transparent;
+    border: none;
+    color: rgba(232, 226, 213, 0.85);
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: color 0.15s ease, transform 0.15s ease;
+    flex-shrink: 0;
+  }
+
+  .ctrl-btn:hover {
+    color: #ffffff;
+    transform: scale(1.08);
+  }
+
+  #seek {
+    -webkit-appearance: none;
+    appearance: none;
+    flex: 1;
+    height: 3px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.22);
+    outline: none;
+    cursor: pointer;
+    transition: height 0.15s ease;
+  }
+
+  #seek:hover {
+    height: 5px;
+  }
+
+  #seek::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: #ffe0b2;
+    box-shadow: 0 0 8px rgba(255, 158, 68, 0.85);
+    cursor: pointer;
+  }
+
+  #tcur {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11.5px;
+    letter-spacing: 0.04em;
+    color: rgba(232, 226, 213, 0.78);
+    min-width: 74px;
+    text-align: right;
+  }
+</style>
+</head>
+<body>
+
+  <div id="ambient-glow"></div>
+
+  <div id="frame" class="ui-visible">
+    <!-- Camera Stand Gate Weave Container (12fps stepped 1-2px drift) -->
+    <div id="camera-stand">
+      <canvas id="bg-canvas" width="1280" height="720"></canvas>
+      <canvas id="webgl-canvas" width="1280" height="720"></canvas>
+      <canvas id="cel-overlay" width="1280" height="720"></canvas>
+      <canvas id="halation-canvas" width="320" height="180"></canvas>
+    </div>
+
+    <canvas id="grain-canvas" width="256" height="256"></canvas>
+    <div id="film-matte"></div>
+
+    <!-- Minimal Start Overlay -->
+    <div id="veil">
+      <div class="play-ring" id="start-sound-btn" title="재생 (Play)">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" style="margin-left:3px"><path d="M8 5v14l11-7z"/></svg>
+      </div>
+    </div>
+
+    <!-- Clean Minimal Auto-Hiding Bottom Control Bar -->
+    <div id="bar">
+      <button class="ctrl-btn" id="pbtn" title="Play / Pause (Space)">
+        <svg id="play-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      </button>
+
+      <input id="seek" type="range" min="0" max="80" step="0.02" value="0">
+
+      <span id="tcur">0:00 / 1:20</span>
+
+      <button class="ctrl-btn" id="mbtn" title="Mute / Unmute (M)">
+        <svg id="vol-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+        </svg>
+      </button>
+
+      <button class="ctrl-btn" id="fsbtn" title="Fullscreen (F)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+<script>
+(() => {
+  'use strict';
+
+  // ============================================================================
+  // 1. MASTER TIMELINE CONSTANTS & MATH HELPERS (80.0s)
+  // ============================================================================
+  const DURATION = 80.0;
+  const CW = 1280;
+  const CH = 720;
+
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const lerp = (a, b, t) => a + (b - a) * clamp(t, 0, 1);
+  const smoothstep = (e0, e1, x) => {
+    const t = clamp((x - e0) / (e1 - e0), 0, 1);
+    return t * t * (3 - 2 * t);
+  };
+  const easeInQuad = (x) => {
+    const t = clamp(x, 0, 1);
+    return t * t;
+  };
+  const easeOutCubic = (x) => 1 - Math.pow(1 - clamp(x, 0, 1), 3);
+
+  // Deterministic pseudo-random hash for repeatable hand-drawn brushwork & cel strokes
+  const hash = (n) => {
+    const s = Math.sin(n * 127.1 + 311.7) * 43758.5453123;
+    return s - Math.floor(s);
+  };
+
+  // Strict Stepped Animation Timing ("On Twos" = 12fps, "On Threes" = 8fps)
+  const quantizeTwos = (t) => Math.floor(t * 12.0 + 1e-5) / 12.0;
+  const quantizeThrees = (t) => Math.floor(t * 8.0 + 1e-5) / 8.0;
+
+  // ============================================================================
+  // 2. DOM REFERENCES & PLAYER STATE
+  // ============================================================================
+  const frame = document.getElementById('frame');
+  const cameraStand = document.getElementById('camera-stand');
+  const bgCanvas = document.getElementById('bg-canvas');
+  const bgCtx = bgCanvas.getContext('2d');
+  const webglCanvas = document.getElementById('webgl-canvas');
+  const celCanvas = document.getElementById('cel-overlay');
+  const celCtx = celCanvas.getContext('2d');
+  const halationCanvas = document.getElementById('halation-canvas');
+  const halCtx = halationCanvas.getContext('2d');
+  const grainCanvas = document.getElementById('grain-canvas');
+  const grainCtx = grainCanvas.getContext('2d');
+
+  const veil = document.getElementById('veil');
+  const pbtn = document.getElementById('pbtn');
+  const playIcon = document.getElementById('play-icon');
+  const seek = document.getElementById('seek');
+  const tcur = document.getElementById('tcur');
+  const mbtn = document.getElementById('mbtn');
+  const volIcon = document.getElementById('vol-icon');
+  const fsbtn = document.getElementById('fsbtn');
+
+  let currentTime = 0.0;
+  let isPlaying = false;
+  let isScrubbing = false;
+  let isMuted = false;
+  let lastWallTime = performance.now();
+  let lastRenderedSteppedFrame = -1;
+  let hideUiTimer = null;
+
+  // ============================================================================
+  // 3. PROCEDURAL HAND-PAINTED GOUACHE / ACRYLIC TEXTURE GENERATORS
+  // ============================================================================
+  // 3A. Streetcar Weathered Two-Tone Paint Texture (#d8ceb8 Cream & #2d5a68 Faded Teal)
+  // Includes riveted seams, vertical rust streaks running down from every rivet, moss in seams, chipped paint
+  function createStreetcarPaintedTexture() {
+    const c = document.createElement('canvas');
+    c.width = 1024;
+    c.height = 512;
+    const g = c.getContext('2d');
+
+    // Upper body: weathered cream (#d8ceb8), Lower body: faded teal (#2d5a68)
+    g.fillStyle = '#d8ceb8';
+    g.fillRect(0, 0, 1024, 240);
+    g.fillStyle = '#2d5a68';
+    g.fillRect(0, 240, 1024, 272);
+
+    // Opaque cel/gouache brushstroke variation
+    for (let i = 0; i < 950; i++) {
+      const bx = hash(i * 3.1) * 1024;
+      const by = hash(i * 7.3) * 512;
+      const bw = 16 + hash(i * 5.7) * 54;
+      const bh = 4 + hash(i * 2.3) * 11;
+      const isUpper = by < 240;
+      g.fillStyle = isUpper
+        ? (i % 2 === 0 ? 'rgba(198, 184, 156, 0.24)' : 'rgba(236, 228, 210, 0.18)')
+        : (i % 2 === 0 ? 'rgba(28, 62, 74, 0.30)' : 'rgba(60, 108, 122, 0.18)');
+      g.fillRect(bx, by, bw, bh);
+    }
+
+    // Oxidized crimson beltline trim & dark underframe skirt
+    g.fillStyle = '#6b3329';
+    g.fillRect(0, 232, 1024, 14);
+    g.fillStyle = '#162830';
+    g.fillRect(0, 466, 1024, 46);
+
+    // Vertical riveted panel seams
+    g.strokeStyle = '#14121d';
+    g.lineWidth = 2.6;
+    for (let x = 64; x < 1024; x += 128) {
+      g.beginPath();
+      g.moveTo(x, 8);
+      g.lineTo(x, 504);
+      g.stroke();
+    }
+
+    // Rivets along beltline, window sills, and skirt + vertical rust streaks below every single rivet
+    const rivetRows = [225, 252, 358, 460];
+    rivetRows.forEach((ry) => {
+      for (let rx = 14; rx < 1024; rx += 22) {
+        const seed = hash(rx * 13.7 + ry * 7.1);
+        const rustLen = 16 + seed * 72;
+        const rustGrad = g.createLinearGradient(rx, ry, rx, ry + rustLen);
+        rustGrad.addColorStop(0, 'rgba(132, 54, 26, 0.82)');
+        rustGrad.addColorStop(0.55, 'rgba(152, 70, 34, 0.45)');
+        rustGrad.addColorStop(1, 'rgba(132, 54, 26, 0)');
+        g.fillStyle = rustGrad;
+        g.fillRect(rx - 2.3, ry + 2, 4.6, rustLen);
+
+        // Rivet head dark shadow + warm highlight dot
+        g.fillStyle = '#14121d';
+        g.beginPath();
+        g.arc(rx, ry, 3.2, 0, Math.PI * 2);
+        g.fill();
+        g.fillStyle = '#94a8b3';
+        g.beginPath();
+        g.arc(rx - 0.8, ry - 0.8, 1.4, 0, Math.PI * 2);
+        g.fill();
+      }
+    });
+
+    // Chipped & layered paint patches exposing dark primer
+    for (let cIdx = 0; cIdx < 75; cIdx++) {
+      const cx = hash(cIdx * 19.3) * 1024;
+      const cy = 235 + hash(cIdx * 23.1) * 265;
+      const cw = 8 + hash(cIdx * 11.7) * 25;
+      const ch = 4 + hash(cIdx * 17.9) * 12;
+      g.fillStyle = cIdx % 3 === 0 ? '#4f271b' : '#192329';
+      g.fillRect(cx, cy, cw, ch);
+    }
+
+    // Moss & damp coastal lichen growing in the lower panel seams
+    for (let m = 0; m < 155; m++) {
+      const mx = hash(m * 31.1) * 1024;
+      const my = 436 + hash(m * 29.7) * 72;
+      const mr = 5 + hash(m * 14.3) * 16;
+      g.fillStyle = m % 2 === 0 ? 'rgba(38, 72, 44, 0.68)' : 'rgba(62, 96, 50, 0.52)';
+      g.beginPath();
+      g.arc(mx, my, mr, 0, Math.PI * 2);
+      g.fill();
+    }
+
+    const tex = new THREE.CanvasTexture(c);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.ClampToEdgeWrapping;
+    return tex;
+  }
+
+  // 3B. Unique Non-Repeating Shuttered Coastal Shop & Building Facade Textures (Illegible Painted Signage)
+  function createBuildingFacadeTexture(seedOffset) {
+    const c = document.createElement('canvas');
+    c.width = 512;
+    c.height = 512;
+    const g = c.getContext('2d');
+
+    const baseTones = ['#101625', '#131b2b', '#0e1522', '#151c29', '#111827'];
+    g.fillStyle = baseTones[seedOffset % baseTones.length];
+    g.fillRect(0, 0, 512, 512);
+
+    // Painterly vertical acrylic/poster-color strokes
+    for (let i = 0; i < 320; i++) {
+      const x = hash(i * 3.7 + seedOffset * 11) * 512;
+      const y = hash(i * 5.3 + seedOffset * 7) * 512;
+      g.fillStyle = i % 2 === 0 ? 'rgba(26, 38, 60, 0.45)' : 'rgba(7, 10, 18, 0.48)';
+      g.fillRect(x, y, 6 + hash(i) * 22, 26 + hash(i * 2) * 75);
+    }
+
+    // Upper floor dark lattice windows (varying per building so buildings never look cloned)
+    const winCount = 2 + (seedOffset % 3);
+    const winSpan = 420 / winCount;
+    for (let w = 0; w < winCount; w++) {
+      const wx = 46 + w * winSpan + 10;
+      const ww = winSpan - 24;
+      g.fillStyle = '#070a12';
+      g.fillRect(wx, 76, ww, 112);
+      g.strokeStyle = '#243148';
+      g.lineWidth = 3;
+      g.strokeRect(wx, 76, ww, 112);
+      g.beginPath();
+      g.moveTo(wx + ww * 0.5, 76);
+      g.lineTo(wx + ww * 0.5, 188);
+      g.moveTo(wx, 132);
+      g.lineTo(wx + ww, 132);
+      g.stroke();
+    }
+
+    // Ground floor shuttered shopfront
+    g.fillStyle = seedOffset % 2 === 0 ? '#162033' : '#1b2434';
+    g.fillRect(34, 278, 444, 214);
+    g.strokeStyle = '#090d16';
+    g.lineWidth = 2;
+    for (let sy = 284; sy < 490; sy += 10) {
+      g.beginPath();
+      g.moveTo(34, sy);
+      g.lineTo(478, sy);
+      g.stroke();
+    }
+
+    // Illegible hand-painted signboard (abstract painted shapes, zero readable text or real brands)
+    const signPalettes = ['#3a231e', '#1c323a', '#2c2638', '#332b1d', '#1f2d24'];
+    g.fillStyle = signPalettes[seedOffset % signPalettes.length];
+    g.fillRect(50, 210, 412, 50);
+    g.strokeStyle = '#6e5239';
+    g.lineWidth = 3;
+    g.strokeRect(50, 210, 412, 50);
+
+    // Abstract brushstroke glyphs (illegible)
+    g.strokeStyle = 'rgba(226, 212, 184, 0.62)';
+    g.lineWidth = 4;
+    const glyphCount = 4 + (seedOffset % 3);
+    for (let k = 0; k < glyphCount; k++) {
+      const kx = 85 + k * (340 / glyphCount);
+      const ky = 224;
+      g.beginPath();
+      g.moveTo(kx, ky + (hash(k + seedOffset) - 0.5) * 6);
+      g.lineTo(kx + 22, ky + (hash(k * 3 + seedOffset) - 0.5) * 8);
+      g.moveTo(kx + 11, ky - 4);
+      g.lineTo(kx + 9, ky + 22);
+      g.moveTo(kx + 3, ky + 17);
+      g.lineTo(kx + 24, ky + 15);
+      g.stroke();
+    }
+
+    return new THREE.CanvasTexture(c);
+  }
+
+  // ============================================================================
+  // 4. CUSTOM GLSL OVA CEL SHADER & COLORED HELD INK OUTLINES (IRO-TRESU)
+  // ============================================================================
+  const CEL_VERTEX_SHADER = `
+    varying vec3 vNormal;
+    varying vec3 vWorldPos;
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      vNormal = normalize(mat3(modelMatrix) * normal);
+      vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+      vWorldPos = worldPosition.xyz;
+      gl_Position = projectionMatrix * viewMatrix * worldPosition;
+    }
+  `;
+
+  // Strictly quantized 3-band flat cel shading + separate airbrushed highlight pass + strong rim light
+  const CEL_FRAGMENT_SHADER = `
+    uniform vec3 uBaseColor;
+    uniform vec3 uShadowColor1;
+    uniform vec3 uShadowColor2;
+    uniform vec3 uSodiumPos;
+    uniform float uSodiumIntensity;
+    uniform vec3 uMoonDir;
+    uniform float uMoonIntensity;
+    uniform float uLightningFlash;
+    uniform float uHeadlampGlow;
+    uniform vec3 uHeadlampPos;
+    uniform float uSpecStrength;
+    uniform sampler2D uMap;
+    uniform float uUseMap;
+
+    varying vec3 vNormal;
+    varying vec3 vWorldPos;
+    varying vec2 vUv;
+
+    void main() {
+      vec3 N = normalize(vNormal);
+      vec3 V = normalize(cameraPosition - vWorldPos);
+
+      vec3 baseCol = uBaseColor;
+      if (uUseMap > 0.5) {
+        baseCol = texture2D(uMap, vUv).rgb;
+      }
+
+      // 1. Strict 3-Band Quantized Cel Shading (Base Paint, 1st Hard-Edged Deep Shadow, 2nd Near-Black Shadow)
+      float ndlMoon = dot(N, normalize(uMoonDir));
+      vec3 celCol = uShadowColor2;
+      if (ndlMoon > 0.36) {
+        celCol = baseCol;
+      } else if (ndlMoon > -0.14) {
+        celCol = mix(uShadowColor1, baseCol, 0.34);
+      } else {
+        celCol = mix(uShadowColor2, baseCol, 0.12);
+      }
+
+      // 2. Warm Sodium Streetlamp Hard-Edged Cel Banding (#ff9e44)
+      vec3 toSodium = uSodiumPos - vWorldPos;
+      float distSodium = length(toSodium);
+      vec3 Lsodium = normalize(toSodium);
+      float attenSodium = clamp(1.0 - distSodium / 28.0, 0.0, 1.0);
+      float ndlSodium = dot(N, Lsodium) * attenSodium * uSodiumIntensity;
+      if (ndlSodium > 0.22) {
+        celCol = mix(celCol, vec3(1.0, 0.62, 0.27) * baseCol * 1.65, 0.74);
+      } else if (ndlSodium > 0.06) {
+        celCol = mix(celCol, vec3(0.95, 0.48, 0.18) * baseCol * 1.25, 0.38);
+      }
+
+      // 3. Brass Headlamp & Golden Rail Glow
+      vec3 toHead = uHeadlampPos - vWorldPos;
+      float distHead = length(toHead);
+      float attenHead = clamp(1.0 - distHead / 19.0, 0.0, 1.0) * uHeadlampGlow;
+      if (dot(N, normalize(toHead)) * attenHead > 0.18) {
+        celCol += vec3(1.0, 0.78, 0.32) * 0.38 * attenHead;
+      }
+
+      // 4. Strong Rim Light along every silhouette edge (Sodium Orange #ff9e44 vs Wet Cyan #5ce1e6)
+      float rim = 1.0 - max(dot(N, V), 0.0);
+      if (rim > 0.73) {
+        float sodiumSide = max(dot(N, Lsodium), 0.0) * attenSodium * uSodiumIntensity;
+        float wetTop = max(N.y, 0.0);
+        vec3 rimColor = mix(vec3(0.36, 0.88, 0.90), vec3(1.0, 0.62, 0.27), clamp(sodiumSide * 2.2, 0.0, 1.0));
+        rimColor = mix(rimColor, vec3(1.0, 0.88, 0.52), uMoonIntensity * 0.68);
+        celCol = mix(celCol, rimColor, (0.48 + 0.34 * wetTop));
+      }
+
+      // 5. Separate Airbrushed Highlight Pass on Wet Metal & Glass
+      if (uSpecStrength > 0.01) {
+        vec3 H = normalize(normalize(vec3(0.32, 0.82, 0.48)) + V);
+        float spec = pow(max(dot(N, H), 0.0), 24.0);
+        if (spec > 0.44) {
+          float airbrushSoft = smoothstep(0.44, 0.86, spec);
+          celCol += vec3(0.86, 0.95, 1.0) * uSpecStrength * airbrushSoft * 0.62;
+        }
+      }
+
+      // 6. Stark Angular Lightning Flash Override
+      if (uLightningFlash > 0.05) {
+        float lRim = step(0.22, dot(N, normalize(vec3(-0.4, 0.82, 0.4))));
+        celCol = mix(celCol, mix(vec3(0.05, 0.05, 0.12), vec3(0.95, 0.98, 1.0), lRim), uLightningFlash * 0.88);
+      }
+
+      gl_FragColor = vec4(celCol, 1.0);
+    }
+  `;
+
+  // Colored Held Ink Outlines (Iro-Tresu):
+  // Orange (#ff9e44) where facing warm sodium/gold light, Cyan (#5ce1e6) on wet top edges, Deep Charcoal Ink (#14121d) in shadow
+  const OUTLINE_VERTEX_SHADER = `
+    uniform float uThickness;
+    varying vec3 vWorldNormal;
+    varying vec3 vWorldPos;
+    void main() {
+      vWorldNormal = normalize(mat3(modelMatrix) * normal);
+      // Hand-inked pressure variation
+      float inkVar = 0.80 + 0.38 * sin(position.x * 7.1 + position.y * 11.3 + position.z * 5.9);
+      vec3 displaced = position + normal * (uThickness * inkVar);
+      vec4 worldPosition = modelMatrix * vec4(displaced, 1.0);
+      vWorldPos = worldPosition.xyz;
+      gl_Position = projectionMatrix * viewMatrix * worldPosition;
+    }
+  `;
+
+  const OUTLINE_FRAGMENT_SHADER = `
+    uniform vec3 uSodiumPos;
+    uniform float uSodiumIntensity;
+    uniform float uMoonIntensity;
+    varying vec3 vWorldNormal;
+    varying vec3 vWorldPos;
+    void main() {
+      vec3 N = normalize(vWorldNormal);
+      vec3 toSodium = uSodiumPos - vWorldPos;
+      float atten = clamp(1.0 - length(toSodium) / 26.0, 0.0, 1.0) * uSodiumIntensity;
+      float sodiumHit = max(dot(N, normalize(toSodium)), 0.0) * atten;
+      float wetHit = clamp(N.y * 0.85 + max(dot(N, normalize(vec3(-0.3, 0.72, 0.5))), 0.0) * 0.4, 0.0, 1.0);
+
+      // Default interior/shadow charcoal ink line (#14121d)
+      vec3 lineCol = vec3(0.078, 0.071, 0.114);
+      // Cold rain/sky edge held line glows cyan (#5ce1e6)
+      if (wetHit > 0.50) {
+        lineCol = mix(lineCol, vec3(0.361, 0.882, 0.902), 0.82);
+      }
+      // Warm sodium/gold edge held line glows orange (#ff9e44)
+      if (sodiumHit > 0.20) {
+        lineCol = vec3(1.0, 0.620, 0.267);
+      } else if (uMoonIntensity > 0.38 && wetHit > 0.44) {
+        lineCol = mix(lineCol, vec3(1.0, 0.82, 0.42), uMoonIntensity * 0.78);
+      }
+      gl_FragColor = vec4(lineCol, 1.0);
+    }
+  `;
+
+  const sharedUniforms = {
+    uSodiumPos: { value: new THREE.Vector3(-3.8, 5.9, 3.2) },
+    uSodiumIntensity: { value: 1.0 },
+    uMoonDir: { value: new THREE.Vector3(0.4, 0.75, -0.5) },
+    uMoonIntensity: { value: 0.15 },
+    uLightningFlash: { value: 0.0 },
+    uHeadlampGlow: { value: 0.0 },
+    uHeadlampPos: { value: new THREE.Vector3(4.4, 1.72, 0.0) }
+  };
+
+  function makeCelMaterial(baseHex, shadow1Hex, shadow2Hex, specStrength = 0.0, mapTex = null) {
+    return new THREE.ShaderMaterial({
+      vertexShader: CEL_VERTEX_SHADER,
+      fragmentShader: CEL_FRAGMENT_SHADER,
+      uniforms: {
+        uBaseColor: { value: new THREE.Color(baseHex) },
+        uShadowColor1: { value: new THREE.Color(shadow1Hex) },
+        uShadowColor2: { value: new THREE.Color(shadow2Hex) },
+        uSodiumPos: sharedUniforms.uSodiumPos,
+        uSodiumIntensity: sharedUniforms.uSodiumIntensity,
+        uMoonDir: sharedUniforms.uMoonDir,
+        uMoonIntensity: sharedUniforms.uMoonIntensity,
+        uLightningFlash: sharedUniforms.uLightningFlash,
+        uHeadlampGlow: sharedUniforms.uHeadlampGlow,
+        uHeadlampPos: sharedUniforms.uHeadlampPos,
+        uSpecStrength: { value: specStrength },
+        uMap: { value: mapTex },
+        uUseMap: { value: mapTex ? 1.0 : 0.0 }
+      }
+    });
+  }
+
+  function addMeshWithHeldOutline(parent, geometry, material, outlineThickness = 0.032) {
+    const group = new THREE.Group();
+    const mesh = new THREE.Mesh(geometry, material);
+    group.add(mesh);
+
+    if (outlineThickness > 0) {
+      const outMat = new THREE.ShaderMaterial({
+        vertexShader: OUTLINE_VERTEX_SHADER,
+        fragmentShader: OUTLINE_FRAGMENT_SHADER,
+        uniforms: {
+          uThickness: { value: outlineThickness },
+          uSodiumPos: sharedUniforms.uSodiumPos,
+          uSodiumIntensity: sharedUniforms.uSodiumIntensity,
+          uMoonIntensity: sharedUniforms.uMoonIntensity
+        },
+        side: THREE.BackSide
+      });
+      const outMesh = new THREE.Mesh(geometry, outMat);
+      group.add(outMesh);
+    }
+    parent.add(group);
+    return group;
+  }
+
+  // ============================================================================
+  // 5. THREE.JS SCENE CONSTRUCTION (THE STREETCAR, COASTAL TOWN, RAILS OF LIGHT)
+  // ============================================================================
+  const renderer = new THREE.WebGLRenderer({
+    canvas: webglCanvas,
+    alpha: true,
+    antialias: true
+  });
+  renderer.setSize(CW, CH, false);
+  renderer.setPixelRatio(1);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(35, CW / CH, 0.2, 320);
+  const worldRoot = new THREE.Group();
+  scene.add(worldRoot);
+
+  const tramTex = createStreetcarPaintedTexture();
+  const matTramBody = makeCelMaterial('#2d5a68', '#152b34', '#060a0f', 0.68, tramTex);
+  const matTramRoof = makeCelMaterial('#3a4852', '#1b242b', '#080c12', 0.76);
+  const matBrass = makeCelMaterial('#c8963e', '#6e4c1b', '#1c1206', 0.92);
+  const matIronDark = makeCelMaterial('#1e242d', '#0f1319', '#05070a', 0.45);
+  const matRustIron = makeCelMaterial('#4a2c22', '#261510', '#0a0605', 0.28);
+
+  const matWindowGlass = new THREE.MeshBasicMaterial({
+    color: 0x152636,
+    transparent: true,
+    opacity: 0.88
+  });
+  const matHeadlampLens = new THREE.MeshBasicMaterial({ color: 0x1e222a });
+  const matDestRoller = new THREE.MeshBasicMaterial({ color: 0x0d121c });
+
+  // ----------------------------------------------------------------------------
+  // 5A. BUILD THE ARTICULATED VINTAGE STREETCAR ("ON-MODEL" FROM EVERY ANGLE)
+  // ----------------------------------------------------------------------------
+  const streetcarRoot = new THREE.Group();
+  const streetcarChassis = new THREE.Group(); // Rocks heavily on its coil springs
+  const streetcarBogies = new THREE.Group();
+  streetcarRoot.add(streetcarChassis);
+  streetcarRoot.add(streetcarBogies);
+  worldRoot.add(streetcarRoot);
+
+  const wheelMeshes = [];
+  let pantographLowerArm = null;
+  let pantographUpperArm = null;
+  let pantographContactBar = null;
+  let roofBellMesh = null;
+  let headlampBeamCone = null;
+
+  function buildStreetcar() {
+    // 1. Main Two-Tone Body Shell (#d8ceb8 weathered cream & #2d5a68 faded teal)
+    const centerGeo = new THREE.BoxGeometry(6.2, 2.32, 2.28);
+    const centerBody = addMeshWithHeldOutline(streetcarChassis, centerGeo, matTramBody, 0.036);
+    centerBody.position.set(0, 2.15, 0);
+
+    // Rounded front and rear noses
+    const noseGeo = new THREE.CylinderGeometry(1.14, 1.14, 2.30, 16);
+    const frontNose = addMeshWithHeldOutline(streetcarChassis, noseGeo, matTramBody, 0.036);
+    frontNose.position.set(3.1, 2.15, 0);
+    const rearNose = addMeshWithHeldOutline(streetcarChassis, noseGeo, matTramBody, 0.036);
+    rearNose.position.set(-3.1, 2.15, 0);
+
+    // Heavy riveted steel bumpers & front boarding step (where the stray cat shelters)
+    const bumperGeo = new THREE.BoxGeometry(0.45, 0.28, 2.36);
+    const frontBumper = addMeshWithHeldOutline(streetcarChassis, bumperGeo, matRustIron, 0.03);
+    frontBumper.position.set(4.15, 0.96, 0);
+    const rearBumper = addMeshWithHeldOutline(streetcarChassis, bumperGeo, matRustIron, 0.03);
+    rearBumper.position.set(-4.15, 0.96, 0);
+
+    const stepGeo = new THREE.BoxGeometry(0.88, 0.14, 0.54);
+    const boardingStep = addMeshWithHeldOutline(streetcarChassis, stepGeo, matRustIron, 0.028);
+    boardingStep.position.set(2.55, 0.72, 1.22);
+
+    // 2. Arched Clerestory Roof
+    const roofGeo = new THREE.CylinderGeometry(1.12, 1.16, 7.8, 14, 1, false, 0, Math.PI);
+    roofGeo.rotateZ(Math.PI / 2);
+    const roof = addMeshWithHeldOutline(streetcarChassis, roofGeo, matTramRoof, 0.034);
+    roof.position.set(0, 3.25, 0);
+
+    // 3. Single Central Brass Headlamp ("Its Expressive Eye")
+    const lampHousingGeo = new THREE.CylinderGeometry(0.28, 0.32, 0.38, 16);
+    lampHousingGeo.rotateZ(Math.PI / 2);
+    const lampHousing = addMeshWithHeldOutline(streetcarChassis, lampHousingGeo, matBrass, 0.025);
+    lampHousing.position.set(4.24, 1.72, 0);
+
+    const lensGeo = new THREE.CircleGeometry(0.25, 16);
+    lensGeo.rotateY(Math.PI / 2);
+    const lampLens = new THREE.Mesh(lensGeo, matHeadlampLens);
+    lampLens.position.set(4.44, 1.72, 0);
+    streetcarChassis.add(lampLens);
+
+    // Volumetric Warm Headlamp Beam Cone
+    const coneGeo = new THREE.ConeGeometry(2.6, 13.8, 20, 1, true);
+    coneGeo.translate(0, -6.9, 0);
+    coneGeo.rotateZ(Math.PI / 2);
+    const coneMat = new THREE.MeshBasicMaterial({
+      color: 0xffc65c,
+      transparent: true,
+      opacity: 0.0,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending
+    });
+    headlampBeamCone = new THREE.Mesh(coneGeo, coneMat);
+    headlampBeamCone.position.set(4.42, 1.72, 0);
+    streetcarChassis.add(headlampBeamCone);
+
+    // 4. Brass Route Number Plate & Front Destination Roller Box
+    const plateGeo = new THREE.BoxGeometry(0.08, 0.34, 0.56);
+    const routePlate = addMeshWithHeldOutline(streetcarChassis, plateGeo, matBrass, 0.02);
+    routePlate.position.set(4.25, 1.26, 0.48);
+
+    const destBoxGeo = new THREE.BoxGeometry(0.18, 0.36, 0.92);
+    const destBox = addMeshWithHeldOutline(streetcarChassis, destBoxGeo, matIronDark, 0.022);
+    destBox.position.set(4.12, 2.96, 0);
+
+    const destScreen = new THREE.Mesh(new THREE.PlaneGeometry(0.82, 0.26), matDestRoller);
+    destScreen.rotation.y = Math.PI / 2;
+    destScreen.position.set(4.22, 2.96, 0);
+    streetcarChassis.add(destScreen);
+
+    // 5. Side & Front Windows with Cracked Window Linework
+    const sideWinGeo = new THREE.PlaneGeometry(0.76, 0.72);
+    for (let side of [-1, 1]) {
+      for (let i = -3; i <= 3; i++) {
+        const win = new THREE.Mesh(sideWinGeo, matWindowGlass);
+        win.position.set(i * 0.88, 2.48, side * 1.155);
+        if (side < 0) win.rotation.y = Math.PI;
+        streetcarChassis.add(win);
+      }
+    }
+    [-0.56, 0, 0.56].forEach((wz, idx) => {
+      const fWin = new THREE.Mesh(new THREE.PlaneGeometry(0.46, 0.68), matWindowGlass);
+      fWin.position.set(idx === 1 ? 4.25 : 4.08, 2.46, wz);
+      fWin.rotation.y = Math.PI / 2 - wz * 0.42;
+      streetcarChassis.add(fWin);
+    });
+
+    // 6. Small Brass Roof Bell
+    const bellDomeGeo = new THREE.SphereGeometry(0.19, 12, 10, 0, Math.PI * 2, 0, Math.PI * 0.65);
+    roofBellMesh = addMeshWithHeldOutline(streetcarChassis, bellDomeGeo, matBrass, 0.02);
+    roofBellMesh.position.set(2.85, 3.82, 0);
+
+    // 7. Folding Diamond Pantograph on the Roof
+    const pantoBase = addMeshWithHeldOutline(streetcarChassis, new THREE.BoxGeometry(1.1, 0.14, 1.2), matIronDark, 0.025);
+    pantoBase.position.set(-0.4, 3.78, 0);
+
+    pantographLowerArm = new THREE.Group();
+    pantographLowerArm.position.set(-0.4, 3.84, 0);
+    streetcarChassis.add(pantographLowerArm);
+
+    const armBarGeo = new THREE.BoxGeometry(1.45, 0.06, 0.06);
+    [-0.45, 0.45].forEach((zOff) => {
+      const lowerBar = addMeshWithHeldOutline(pantographLowerArm, armBarGeo, matIronDark, 0.018);
+      lowerBar.position.set(0.65, 0, zOff);
+    });
+
+    pantographUpperArm = new THREE.Group();
+    pantographUpperArm.position.set(1.3, 0, 0);
+    pantographLowerArm.add(pantographUpperArm);
+
+    [-0.45, 0.45].forEach((zOff) => {
+      const upperBar = addMeshWithHeldOutline(pantographUpperArm, armBarGeo, matIronDark, 0.018);
+      upperBar.position.set(-0.65, 0, zOff);
+    });
+
+    pantographContactBar = addMeshWithHeldOutline(
+      pantographUpperArm,
+      new THREE.BoxGeometry(0.24, 0.07, 1.55),
+      matBrass,
+      0.02
+    );
+    pantographContactBar.position.set(-1.3, 0.06, 0);
+
+    // 8. Heavy Iron Bogie Trucks, Coil Springs & Spoked Steel Wheels
+    const wheelGeo = new THREE.CylinderGeometry(0.46, 0.46, 0.22, 16);
+    wheelGeo.rotateX(Math.PI / 2);
+    const wheelPositions = [
+      [-2.1, 0.48,  0.88], [-0.9, 0.48,  0.88],
+      [ 0.9, 0.48,  0.88], [ 2.1, 0.48,  0.88],
+      [-2.1, 0.48, -0.88], [-0.9, 0.48, -0.88],
+      [ 0.9, 0.48, -0.88], [ 2.1, 0.48, -0.88]
+    ];
+    wheelPositions.forEach(([wx, wy, wz]) => {
+      const wGroup = addMeshWithHeldOutline(streetcarBogies, wheelGeo, matRustIron, 0.026);
+      wGroup.position.set(wx, wy, wz);
+      const spoke = new THREE.Mesh(new THREE.BoxGeometry(0.76, 0.10, 0.25), matBrass);
+      wGroup.add(spoke);
+      wheelMeshes.push(wGroup);
+    });
+
+    [-1.5, 1.5].forEach((bx) => {
+      [-0.92, 0.92].forEach((bz) => {
+        const truckFrame = addMeshWithHeldOutline(
+          streetcarBogies,
+          new THREE.BoxGeometry(2.1, 0.28, 0.16),
+          matIronDark,
+          0.025
+        );
+        truckFrame.position.set(bx, 0.56, bz);
+      });
+    });
+  }
+  buildStreetcar();
+
+  // ----------------------------------------------------------------------------
+  // 5B. BUILD SLEEPING COASTAL TOWN, DEAD BRANCH RAIL END, PUDDLE & RAILS OF LIGHT
+  // ----------------------------------------------------------------------------
+  const matGround = makeCelMaterial('#0a0e18', '#060810', '#030408', 0.15);
+  const matSleeperWood = makeCelMaterial('#281c16', '#140d0a', '#070403', 0.0);
+  const matSteelRail = makeCelMaterial('#475569', '#1e293b', '#090d16', 0.7);
+  const sodiumBulbMat = new THREE.MeshBasicMaterial({ color: 0xffaa44 });
+
+  // Curving 3D spline path for the Streetcar & the Stitching Rails of Light
+  function getTrackTransform(s) {
+    if (s <= 5.2) {
+      return {
+        pos: new THREE.Vector3(s, 0, 0),
+        pitch: 0,
+        yaw: 0
+      };
+    }
+    const u = s - 5.2;
+    const x = 5.2 + u * 0.92;
+    const y = Math.pow(u, 1.52) * 0.24;
+    const z = -Math.sin(u * 0.085) * 3.8;
+    const dy = 1.52 * Math.pow(Math.max(0.01, u), 0.52) * 0.24;
+    const dz = -0.085 * Math.cos(u * 0.085) * 3.8;
+    const pitch = Math.atan2(dy, 0.92);
+    const yaw = -Math.atan2(dz, 0.92);
+    return {
+      pos: new THREE.Vector3(x, y, z),
+      pitch,
+      yaw
+    };
+  }
+
+  const lightSleeperMeshes = [];
+
+  function buildEnvironment() {
+    // 1. Wet Coastal Street Ground & Puddle Mirror
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(150, 100), matGround);
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.set(14, 0.0, 0);
+    worldRoot.add(ground);
+
+    const puddleGeo = new THREE.CircleGeometry(4.9, 28);
+    puddleGeo.scale(1.65, 0.72, 1.0);
+    const puddleMat = new THREE.MeshBasicMaterial({
+      color: 0x0e1a2c,
+      transparent: true,
+      opacity: 0.76
+    });
+    const puddleMirror = new THREE.Mesh(puddleGeo, puddleMat);
+    puddleMirror.rotation.x = -Math.PI / 2;
+    puddleMirror.position.set(1.2, 0.02, 4.3);
+    worldRoot.add(puddleMirror);
+
+    // 2. Rusted Iron Branch Line Rails & Wooden Sleepers Snapping Off into Weeds at x = 5.2
+    for (let x = -14; x <= 5.0; x += 0.72) {
+      const sleeper = addMeshWithHeldOutline(
+        worldRoot,
+        new THREE.BoxGeometry(0.32, 0.10, 2.45),
+        matSleeperWood,
+        0.018
+      );
+      sleeper.position.set(x, 0.05, 0);
+      sleeper.rotation.y = (hash(x * 11) - 0.5) * 0.08;
+    }
+
+    [-0.88, 0.88].forEach((rz) => {
+      const rail = addMeshWithHeldOutline(
+        worldRoot,
+        new THREE.BoxGeometry(19.2, 0.14, 0.10),
+        matSteelRail,
+        0.018
+      );
+      rail.position.set(-4.4, 0.14, rz);
+      // Bent jagged rail ends snapping off into weeds
+      const snappedEnd = addMeshWithHeldOutline(
+        worldRoot,
+        new THREE.BoxGeometry(0.95, 0.13, 0.10),
+        matRustIron,
+        0.018
+      );
+      snappedEnd.position.set(5.45, 0.18, rz + (rz > 0 ? 0.06 : -0.04));
+      snappedEnd.rotation.z = rz > 0 ? 0.14 : -0.09;
+      snappedEnd.rotation.y = rz > 0 ? -0.12 : 0.08;
+    });
+
+    // Weeds choking the dead end
+    const weedMat = makeCelMaterial('#1b3326', '#0d1c14', '#050b08', 0.0);
+    for (let w = 0; w < 42; w++) {
+      const wx = 3.8 + hash(w * 7.1) * 6.8;
+      const wz = (hash(w * 13.3) - 0.5) * 5.4;
+      const wh = 0.35 + hash(w * 5.9) * 0.80;
+      const tuft = new THREE.Mesh(new THREE.ConeGeometry(0.28, wh, 5), weedMat);
+      tuft.position.set(wx, wh * 0.5, wz);
+      tuft.rotation.z = (hash(w * 3.1) - 0.5) * 0.35;
+      worldRoot.add(tuft);
+    }
+
+    // 3. Flickering Sodium Streetlamp & Utility Poles with Overhead Wire
+    [-6.5, 4.6].forEach((px) => {
+      const pole = addMeshWithHeldOutline(
+        worldRoot,
+        new THREE.CylinderGeometry(0.11, 0.15, 7.2, 8),
+        matIronDark,
+        0.025
+      );
+      pole.position.set(px, 3.6, -2.1);
+
+      const arm = addMeshWithHeldOutline(
+        worldRoot,
+        new THREE.BoxGeometry(0.12, 0.12, 2.6),
+        matIronDark,
+        0.02
+      );
+      arm.position.set(px, 5.15, -0.9);
+    });
+
+    const lampPole = addMeshWithHeldOutline(
+      worldRoot,
+      new THREE.CylinderGeometry(0.09, 0.13, 6.2, 8),
+      matIronDark,
+      0.024
+    );
+    lampPole.position.set(-3.8, 3.1, 3.6);
+    const lampArm = addMeshWithHeldOutline(
+      worldRoot,
+      new THREE.BoxGeometry(0.1, 0.1, 1.5),
+      matIronDark,
+      0.02
+    );
+    lampArm.position.set(-3.8, 6.05, 3.0);
+    const lampHood = addMeshWithHeldOutline(
+      worldRoot,
+      new THREE.ConeGeometry(0.38, 0.24, 10),
+      matIronDark,
+      0.02
+    );
+    lampHood.position.set(-3.8, 5.98, 2.35);
+    const sodiumBulb = new THREE.Mesh(new THREE.SphereGeometry(0.16, 10, 10), sodiumBulbMat);
+    sodiumBulb.position.set(-3.8, 5.86, 2.35);
+    worldRoot.add(sodiumBulb);
+
+    const wireGeo = new THREE.CylinderGeometry(0.022, 0.022, 21.0, 6);
+    wireGeo.rotateZ(Math.PI / 2);
+    const catenaryWire = new THREE.Mesh(wireGeo, matIronDark);
+    catenaryWire.position.set(-3.5, 4.98, 0);
+    worldRoot.add(catenaryWire);
+
+    // 4. Unique Non-Repeating Coastal Town Buildings with Layered Rooftops
+    const buildingSpecs = [
+      { x: -10.5, z: -7.5, w: 5.4, h: 6.2, d: 4.8, roofH: 1.6, seed: 1 },
+      { x:  -4.2, z: -6.8, w: 6.0, h: 5.0, d: 4.5, roofH: 1.3, seed: 2 },
+      { x:   2.6, z: -7.2, w: 5.8, h: 7.4, d: 5.0, roofH: 1.8, seed: 3 },
+      { x:   9.4, z: -6.5, w: 6.4, h: 5.5, d: 4.6, roofH: 1.4, seed: 4 },
+      { x:  16.8, z: -7.8, w: 7.2, h: 6.8, d: 5.2, roofH: 1.7, seed: 5 },
+      { x:  25.0, z: -8.5, w: 6.6, h: 5.2, d: 5.0, roofH: 1.5, seed: 6 },
+      { x:  33.5, z: -9.2, w: 7.5, h: 6.0, d: 5.4, roofH: 1.6, seed: 7 }
+    ];
+
+    const matRoofTile = makeCelMaterial('#162032', '#0b101b', '#04060b', 0.55);
+    buildingSpecs.forEach((b) => {
+      const bTex = createBuildingFacadeTexture(b.seed);
+      const bMat = makeCelMaterial('#182234', '#0c121e', '#05080f', 0.2, bTex);
+      const bGroup = addMeshWithHeldOutline(
+        worldRoot,
+        new THREE.BoxGeometry(b.w, b.h, b.d),
+        bMat,
+        0.04
+      );
+      bGroup.position.set(b.x, b.h * 0.5, b.z);
+
+      const roofCone = new THREE.ConeGeometry(b.w * 0.78, b.roofH, 4);
+      roofCone.rotateY(Math.PI / 4);
+      const roofMesh = addMeshWithHeldOutline(worldRoot, roofCone, matRoofTile, 0.038);
+      roofMesh.position.set(b.x, b.h + b.roofH * 0.5, b.z);
+    });
+
+    // 5. The Stitching "Rails of Light" (Glowing Cels that build piece by piece beyond x = 5.2)
+    const totalSleepers = 68;
+    for (let i = 0; i < totalSleepers; i++) {
+      const s = 5.6 + i * 0.95;
+      const tr = getTrackTransform(s);
+
+      const sleeperGroup = new THREE.Group();
+      sleeperGroup.position.copy(tr.pos);
+      sleeperGroup.rotation.order = 'YXZ';
+      sleeperGroup.rotation.y = tr.yaw;
+      sleeperGroup.rotation.z = tr.pitch;
+
+      const matGlowSleeper = new THREE.MeshBasicMaterial({
+        color: 0xffdf7a,
+        transparent: true,
+        opacity: 0.0,
+        blending: THREE.AdditiveBlending
+      });
+      const matGlowRail = new THREE.MeshBasicMaterial({
+        color: 0x5ce1e6,
+        transparent: true,
+        opacity: 0.0,
+        blending: THREE.AdditiveBlending
+      });
+
+      const slMesh = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.08, 2.55), matGlowSleeper);
+      sleeperGroup.add(slMesh);
+
+      [-0.88, 0.88].forEach((rz) => {
+        const rlMesh = new THREE.Mesh(new THREE.BoxGeometry(1.02, 0.10, 0.12), matGlowRail);
+        rlMesh.position.set(0, 0.06, rz);
+        sleeperGroup.add(rlMesh);
+      });
+
+      worldRoot.add(sleeperGroup);
+      lightSleeperMeshes.push({
+        group: sleeperGroup,
+        index: i,
+        s,
+        matSleeper: matGlowSleeper,
+        matRail: matGlowRail
+      });
+    }
+  }
+  buildEnvironment();
+
+  // ============================================================================
+  // 6. HAND-PAINTED POSTER-COLOR / ACRYLIC BACKGROUND RENDERER (#bg-canvas)
+  // ============================================================================
+  const offscreenSky = document.createElement('canvas');
+  offscreenSky.width = CW;
+  offscreenSky.height = CH;
+  const skyCtx = offscreenSky.getContext('2d');
+
+  function bakeHandPaintedSkyBackdrop() {
+    const grad = skyCtx.createLinearGradient(0, 0, 0, CH);
+    grad.addColorStop(0.0, '#040712');
+    grad.addColorStop(0.45, '#0b152a');
+    grad.addColorStop(0.78, '#152642');
+    grad.addColorStop(1.0, '#1d324c');
+    skyCtx.fillStyle = grad;
+    skyCtx.fillRect(0, 0, CW, CH);
+
+    // Visible poster-color / gouache dry-brush strokes
+    for (let i = 0; i < 700; i++) {
+      const x = hash(i * 4.1) * CW;
+      const y = hash(i * 7.9) * (CH * 0.84);
+      const w = 42 + hash(i * 2.3) * 165;
+      const h = 8 + hash(i * 9.1) * 28;
+      skyCtx.fillStyle = i % 3 === 0
+        ? 'rgba(26, 44, 74, 0.17)'
+        : (i % 3 === 1 ? 'rgba(8, 13, 26, 0.22)' : 'rgba(44, 66, 96, 0.11)');
+      skyCtx.beginPath();
+      skyCtx.ellipse(x, y, w, h, (hash(i) - 0.5) * 0.25, 0, Math.PI * 2);
+      skyCtx.fill();
+    }
+
+    // Distant coastal headland & harbor silhouettes + tangled background power lines
+    skyCtx.fillStyle = '#060a14';
+    skyCtx.beginPath();
+    skyCtx.moveTo(0, CH * 0.72);
+    for (let x = 0; x <= CW; x += 28) {
+      const ridge = Math.sin(x * 0.0042) * 44 + Math.cos(x * 0.014) * 19 + hash(x) * 9;
+      skyCtx.lineTo(x, CH * 0.68 - ridge);
+    }
+    skyCtx.lineTo(CW, CH);
+    skyCtx.lineTo(0, CH);
+    skyCtx.closePath();
+    skyCtx.fill();
+
+    // Distant tangled power lines painted into the poster-color backdrop
+    skyCtx.strokeStyle = 'rgba(10, 15, 26, 0.72)';
+    skyCtx.lineWidth = 1.4;
+    for (let w = 0; w < 5; w++) {
+      skyCtx.beginPath();
+      skyCtx.moveTo(0, 320 + w * 26);
+      skyCtx.quadraticCurveTo(CW * 0.5, 365 + w * 22, CW, 305 + w * 28);
+      skyCtx.stroke();
+    }
+  }
+  bakeHandPaintedSkyBackdrop();
+
+  function renderGouacheBackground(t) {
+    bgCtx.drawImage(offscreenSky, 0, 0);
+
+    // Moon emergence factor: breaks through clouds from 46s onward, huge in Shot 9 (64-72s), serene in Shot 10
+    const moonReveal = smoothstep(45.0, 56.0, t);
+    if (moonReveal > 0.01) {
+      let moonX = CW * 0.78;
+      let moonY = CH * 0.24;
+      let moonR = 76;
+
+      if (t >= 54.0 && t < 64.0) {
+        const p8 = (t - 54.0) / 10.0;
+        moonX = lerp(CW * 0.76, CW * 0.70, p8);
+        moonY = lerp(CH * 0.28, CH * 0.22, p8);
+        moonR = 96;
+      } else if (t >= 64.0 && t < 72.0) {
+        // Shot 9: Huge luminous full moon revealed by parting cumulonimbus clouds
+        const p9 = (t - 64.0) / 8.0;
+        moonX = lerp(CW * 0.66, CW * 0.60, p9);
+        moonY = lerp(CH * 0.26, CH * 0.22, p9);
+        moonR = 148;
+      } else if (t >= 72.0) {
+        moonX = CW * 0.74;
+        moonY = CH * 0.19;
+        moonR = 68;
+      }
+
+      bgCtx.save();
+      const halo = bgCtx.createRadialGradient(moonX, moonY, moonR * 0.35, moonX, moonY, moonR * 3.8);
+      halo.addColorStop(0.0, `rgba(255, 236, 175, ${0.72 * moonReveal})`);
+      halo.addColorStop(0.35, `rgba(255, 190, 95, ${0.34 * moonReveal})`);
+      halo.addColorStop(0.7, `rgba(92, 145, 195, ${0.14 * moonReveal})`);
+      halo.addColorStop(1.0, 'rgba(10, 18, 36, 0)');
+      bgCtx.fillStyle = halo;
+      bgCtx.fillRect(0, 0, CW, CH);
+
+      // Luminous Full Moon Disc
+      bgCtx.fillStyle = `rgba(255, 248, 218, ${0.97 * moonReveal})`;
+      bgCtx.beginPath();
+      bgCtx.arc(moonX, moonY, moonR, 0, Math.PI * 2);
+      bgCtx.fill();
+
+      // Hand-painted lunar maria craters
+      bgCtx.fillStyle = `rgba(214, 188, 132, ${0.42 * moonReveal})`;
+      bgCtx.beginPath();
+      bgCtx.ellipse(moonX - moonR * 0.25, moonY - moonR * 0.15, moonR * 0.32, moonR * 0.22, -0.3, 0, Math.PI * 2);
+      bgCtx.ellipse(moonX + moonR * 0.22, moonY + moonR * 0.18, moonR * 0.26, moonR * 0.18, 0.4, 0, Math.PI * 2);
+      bgCtx.ellipse(moonX + moonR * 0.05, moonY - moonR * 0.35, moonR * 0.18, moonR * 0.12, 0.1, 0, Math.PI * 2);
+      bgCtx.fill();
+
+      // Parting towering cumulonimbus clouds painted in deep indigo and silver-gold rim light
+      const partSpread = lerp(10, moonR * 1.18, moonReveal);
+      [-1, 1].forEach((dir) => {
+        const cy = moonY + dir * partSpread;
+        bgCtx.fillStyle = `rgba(255, 222, 138, ${0.62 * moonReveal})`;
+        bgCtx.beginPath();
+        bgCtx.ellipse(moonX + dir * 22, cy - dir * 7, moonR * 2.0, 26, 0, 0, Math.PI * 2);
+        bgCtx.fill();
+
+        bgCtx.fillStyle = '#0b1426';
+        bgCtx.beginPath();
+        bgCtx.ellipse(moonX + dir * 30, cy, moonR * 2.2, 30, 0, 0, Math.PI * 2);
+        bgCtx.fill();
+      });
+      bgCtx.restore();
+    }
+  }
+
+  // ============================================================================
+  // 7. CLASSIC ANIME "HARMONY CEL" (止め絵) PAINTED FREEZE-FRAMES
+  // ============================================================================
+  // Harmony Cut #1 (16.0s – 17.8s): Lightning Strike & Headlamp Awakening
+  function renderHarmonyCut1_Lightning(c, t) {
+    c.save();
+    const bg = c.createLinearGradient(0, 0, CW, CH);
+    bg.addColorStop(0, '#070612');
+    bg.addColorStop(0.5, '#171236');
+    bg.addColorStop(1, '#080b18');
+    c.fillStyle = bg;
+    c.fillRect(0, 0, CW, CH);
+
+    // Dense visible dry-brush cross-hatched poster-color texture
+    for (let i = 0; i < 280; i++) {
+      const x = hash(i * 3.3) * CW;
+      const y = hash(i * 7.1) * CH;
+      c.strokeStyle = i % 3 === 0 ? 'rgba(185, 220, 255, 0.22)' : 'rgba(18, 22, 48, 0.58)';
+      c.lineWidth = 2 + hash(i * 5) * 9;
+      c.beginPath();
+      c.moveTo(x, y);
+      c.lineTo(x - 70, y + 95);
+      c.stroke();
+    }
+
+    // Sharp angular 1980s/90s anime lightning bolt
+    c.strokeStyle = '#ffffff';
+    c.shadowColor = '#5ce1e6';
+    c.shadowBlur = 34;
+    c.lineWidth = 9;
+    c.lineJoin = 'miter';
+    c.beginPath();
+    c.moveTo(295, 0);
+    c.lineTo(235, 130);
+    c.lineTo(315, 165);
+    c.lineTo(195, 340);
+    c.lineTo(265, 368);
+    c.lineTo(145, 590);
+    c.stroke();
+    c.shadowBlur = 0;
+
+    // Dramatic high-contrast painted silhouette of the streetcar nose
+    c.fillStyle = '#060811';
+    c.beginPath();
+    c.moveTo(420, 720);
+    c.lineTo(445, 205);
+    c.quadraticCurveTo(560, 122, 890, 135);
+    c.lineTo(1170, 175);
+    c.lineTo(1170, 720);
+    c.closePath();
+    c.fill();
+
+    // Cyan & white lightning rim-light brushstrokes along the riveted nose
+    c.strokeStyle = '#5ce1e6';
+    c.lineWidth = 6;
+    c.beginPath();
+    c.moveTo(448, 685);
+    c.lineTo(465, 218);
+    c.quadraticCurveTo(565, 136, 865, 145);
+    c.stroke();
+
+    c.fillStyle = '#e0f2fe';
+    for (let ry = 255; ry < 645; ry += 32) {
+      c.fillRect(475, ry, 7, 4);
+      c.fillRect(585, ry + 8, 6, 4);
+    }
+
+    // THE AWAKENED BRASS HEADLAMP EYE (Warm Amber Airbrushed Cross-Flare)
+    const eyeX = 560;
+    const eyeY = 445;
+    const eyeGlow = c.createRadialGradient(eyeX, eyeY, 8, eyeX, eyeY, 300);
+    eyeGlow.addColorStop(0.0, '#ffffff');
+    eyeGlow.addColorStop(0.18, '#fde047');
+    eyeGlow.addColorStop(0.48, 'rgba(255, 158, 68, 0.68)');
+    eyeGlow.addColorStop(1.0, 'rgba(255, 158, 68, 0)');
+    c.fillStyle = eyeGlow;
+    c.beginPath();
+    c.arc(eyeX, eyeY, 300, 0, Math.PI * 2);
+    c.fill();
+
+    c.fillStyle = 'rgba(255, 248, 210, 0.94)';
+    c.beginPath();
+    c.ellipse(eyeX, eyeY, 250, 9, -0.08, 0, Math.PI * 2);
+    c.ellipse(eyeX, eyeY, 100, 6, 1.48, 0, Math.PI * 2);
+    c.fill();
+
+    // Startled stray cat silhouette arched in foreground left
+    c.fillStyle = '#04050a';
+    c.strokeStyle = '#5ce1e6';
+    c.lineWidth = 3;
+    c.beginPath();
+    c.arc(285, 615, 24, 0, Math.PI * 2);
+    c.ellipse(335, 635, 48, 28, -0.35, 0, Math.PI * 2);
+    c.fill();
+    c.stroke();
+    c.fillStyle = '#fde047';
+    c.beginPath();
+    c.arc(276, 612, 4, 0, Math.PI * 2);
+    c.arc(292, 610, 4, 0, Math.PI * 2);
+    c.fill();
+
+    c.restore();
+  }
+
+  // Harmony Cut #2 (52.0s – 53.8s): The Moment of Liftoff onto the Rails of Light
+  function renderHarmonyCut2_Liftoff(c, t) {
+    c.save();
+    const bg = c.createLinearGradient(0, 0, CW, CH);
+    bg.addColorStop(0, '#070b1c');
+    bg.addColorStop(0.45, '#1b2848');
+    bg.addColorStop(0.8, '#5a3838');
+    bg.addColorStop(1, '#d97706');
+    c.fillStyle = bg;
+    c.fillRect(0, 0, CW, CH);
+
+    // Dense diagonal gouache speed-brush strokes (theatrical anime Harmony impact frame)
+    for (let i = 0; i < 340; i++) {
+      const sx = hash(i * 5.1) * CW;
+      const sy = hash(i * 8.7) * CH;
+      const len = 85 + hash(i * 3.9) * 265;
+      c.strokeStyle = i % 4 === 0
+        ? 'rgba(255, 225, 130, 0.44)'
+        : (i % 4 === 1 ? 'rgba(92, 225, 230, 0.36)' : 'rgba(12, 20, 42, 0.50)');
+      c.lineWidth = 2 + hash(i * 2.1) * 7;
+      c.beginPath();
+      c.moveTo(sx, sy);
+      c.lineTo(sx + len, sy - len * 0.42);
+      c.stroke();
+    }
+
+    // Glowing Golden-Cyan Ribbon of Light curving skyward
+    const railGrad = c.createLinearGradient(110, 690, 1180, 155);
+    railGrad.addColorStop(0, '#ff9e44');
+    railGrad.addColorStop(0.5, '#fde047');
+    railGrad.addColorStop(1, '#5ce1e6');
+    c.strokeStyle = railGrad;
+    c.shadowColor = '#fde047';
+    c.shadowBlur = 30;
+    c.lineWidth = 15;
+    c.beginPath();
+    c.moveTo(80, 700);
+    c.quadraticCurveTo(560, 480, 1220, 140);
+    c.stroke();
+
+    // Hand-painted Heroic Low-Angle Cel of the Streetcar Leaving the Earth
+    c.save();
+    c.translate(640, 392);
+    c.rotate(-0.36);
+
+    c.fillStyle = '#0c1824';
+    c.strokeStyle = '#ff9e44';
+    c.lineWidth = 5;
+    c.fillRect(-260, -110, 520, 175);
+    c.strokeRect(-260, -110, 520, 175);
+
+    c.fillStyle = '#d8ceb8';
+    c.fillRect(-254, -102, 508, 76);
+    c.fillStyle = '#fbbf24';
+    for (let wx = -215; wx <= 175; wx += 68) {
+      c.fillRect(wx, -88, 48, 48);
+    }
+
+    // Pantograph throwing jagged spark burst
+    c.strokeStyle = '#5ce1e6';
+    c.lineWidth = 4;
+    c.beginPath();
+    c.moveTo(-80, -110);
+    c.lineTo(-30, -175);
+    c.lineTo(-80, -230);
+    c.lineTo(-130, -175);
+    c.closePath();
+    c.stroke();
+
+    // Headlamp beam cutting into the night
+    const beam = c.createLinearGradient(260, 0, 720, 0);
+    beam.addColorStop(0, 'rgba(255, 245, 190, 0.95)');
+    beam.addColorStop(1, 'rgba(255, 200, 90, 0)');
+    c.fillStyle = beam;
+    c.beginPath();
+    c.moveTo(260, -15);
+    c.lineTo(720, -160);
+    c.lineTo(720, 130);
+    c.closePath();
+    c.fill();
+    c.restore();
+
+    // Raindrops lit molten gold around the hull
+    c.shadowBlur = 12;
+    c.shadowColor = '#fbbf24';
+    for (let r = 0; r < 100; r++) {
+      const rx = hash(r * 11.3) * CW;
+      const ry = hash(r * 17.7) * CH;
+      const rad = 2.5 + hash(r * 4.3) * 6.5;
+      c.fillStyle = r % 2 === 0 ? '#fef08a' : '#5ce1e6';
+      c.beginPath();
+      c.arc(rx, ry, rad, 0, Math.PI * 2);
+      c.fill();
+    }
+    c.restore();
+  }
+
+  // ============================================================================
+  // 8. 2D HAND-DRAWN CEL OVERLAY & INSERT SHOTS (#cel-overlay)
+  // ============================================================================
+  // 8A. Stray Cat Cel Renderer (Sheltering in Shot 1/2, Bolting in Shot 3, Watching Sky in Shot 10)
+  function drawStrayCatCel(c, x, y, scale, state, stepT) {
+    c.save();
+    c.translate(x, y);
+    c.scale(scale, scale);
+
+    c.lineWidth = 2.8;
+    c.strokeStyle = '#14121d';
+    c.fillStyle = '#141824';
+
+    if (state === 'shelter') {
+      const earTwitch = (Math.floor(stepT * 6) % 5 === 0) ? -0.25 : 0;
+      // Body huddled dry under the rusted step
+      c.beginPath();
+      c.ellipse(0, 12, 36, 21, 0, 0, Math.PI * 2);
+      c.fill();
+      c.stroke();
+
+      // Cyan wet rim line on back
+      c.strokeStyle = '#5ce1e6';
+      c.lineWidth = 2.2;
+      c.beginPath();
+      c.arc(0, 10, 34, Math.PI * 1.1, Math.PI * 1.85);
+      c.stroke();
+
+      // White chest & front paws
+      c.fillStyle = '#d8ceb8';
+      c.beginPath();
+      c.ellipse(18, 18, 12, 10, 0, 0, Math.PI * 2);
+      c.ellipse(24, 28, 8, 5, 0, 0, Math.PI * 2);
+      c.fill();
+
+      // Head
+      c.strokeStyle = '#14121d';
+      c.fillStyle = '#141824';
+      c.beginPath();
+      c.arc(22, -4, 16, 0, Math.PI * 2);
+      c.fill();
+      c.stroke();
+
+      // Pointed ears (twitching on twos)
+      c.beginPath();
+      c.moveTo(12, -14);
+      c.lineTo(8, -31);
+      c.lineTo(20, -18);
+      c.moveTo(24, -16);
+      c.lineTo(30 + earTwitch * 20, -32);
+      c.lineTo(35, -12);
+      c.fill();
+      c.stroke();
+
+      // Glowing amber eyes watching raindrops
+      const blink = (Math.floor(stepT * 4) % 13 === 0) ? 0.15 : 1.0;
+      c.fillStyle = '#fbbf24';
+      c.beginPath();
+      c.ellipse(20, -4, 3.8, 3.3 * blink, 0, 0, Math.PI * 2);
+      c.ellipse(30, -4, 3.8, 3.3 * blink, 0, 0, Math.PI * 2);
+      c.fill();
+    } else if (state === 'bolt') {
+      // Stepped 12fps dash cycle into the right-side weeds
+      const phase = Math.floor(stepT * 12) % 2;
+      const stretch = phase === 0 ? 1.30 : 0.90;
+      c.scale(stretch, 1 / stretch);
+      c.fillStyle = '#141824';
+      c.strokeStyle = '#ff9e44';
+      c.beginPath();
+      c.ellipse(0, 0, 44, 14, -0.18, 0, Math.PI * 2);
+      c.fill();
+      c.stroke();
+      c.lineWidth = 5;
+      c.beginPath();
+      c.moveTo(-36, 4);
+      c.lineTo(-70, -15);
+      c.moveTo(28, 8);
+      c.lineTo(56, 22);
+      c.moveTo(-24, 8);
+      c.lineTo(-50, 24);
+      c.stroke();
+    } else if (state === 'watch_sky') {
+      // Sitting quietly by the puddle in Shot 10, looking up at the moon & star trail
+      c.fillStyle = '#141824';
+      c.strokeStyle = '#5ce1e6';
+      c.beginPath();
+      c.ellipse(0, 14, 18, 28, -0.1, 0, Math.PI * 2);
+      c.fill();
+      c.stroke();
+      c.beginPath();
+      c.arc(6, -16, 14, 0, Math.PI * 2);
+      c.fill();
+      c.stroke();
+      // Ears pointed skyward
+      c.beginPath();
+      c.moveTo(-2, -26);
+      c.lineTo(-6, -42);
+      c.lineTo(5, -28);
+      c.moveTo(8, -28);
+      c.lineTo(14, -43);
+      c.lineTo(18, -24);
+      c.fill();
+      c.stroke();
+      // Curled tail
+      c.lineWidth = 5;
+      c.beginPath();
+      c.moveTo(-14, 36);
+      c.quadraticCurveTo(-38, 28, -28, 10);
+      c.stroke();
+    }
+    c.restore();
+  }
+
+  // 8B. Shot 2 (00:09 – 00:15): Close Insert Under the Rusted Boarding Step (Cat + Puddle Drips)
+  function renderShot2_CatCloseInsert(c, t, stepT) {
+    c.save();
+    // Framing the rusted iron boarding step & ivy hanging down in the upper-left, wet puddle on the right
+    c.fillStyle = 'rgba(6, 9, 16, 0.52)';
+    c.fillRect(0, 0, CW, CH);
+
+    // Rusted boarding step overhang cel in upper-left foreground
+    c.fillStyle = '#221512';
+    c.strokeStyle = '#ff9e44';
+    c.lineWidth = 4;
+    c.beginPath();
+    c.moveTo(0, 0);
+    c.lineTo(760, 0);
+    c.lineTo(680, 210);
+    c.lineTo(0, 265);
+    c.closePath();
+    c.fill();
+    c.stroke();
+
+    // Vertical rust streaks & rivets on the boarding step
+    for (let rx = 70; rx < 650; rx += 64) {
+      c.fillStyle = '#6e321e';
+      c.fillRect(rx - 4, 115, 8, 85);
+      c.fillStyle = '#14121d';
+      c.beginPath();
+      c.arc(rx, 115, 6, 0, Math.PI * 2);
+      c.fill();
+    }
+
+    // Hanging wet ivy leaves dripping water
+    c.fillStyle = '#163024';
+    c.strokeStyle = '#5ce1e6';
+    c.lineWidth = 2.5;
+    for (let iv = 0; iv < 7; iv++) {
+      const ix = 140 + iv * 82;
+      const iy = 195 + Math.sin(stepT * 4 + iv) * 5;
+      c.beginPath();
+      c.moveTo(ix, iy);
+      c.lineTo(ix - 18, iy + 36);
+      c.lineTo(ix + 4, iy + 52);
+      c.lineTo(ix + 20, iy + 32);
+      c.closePath();
+      c.fill();
+      c.stroke();
+    }
+
+    // Puddle reflection surface in lower-right
+    const pudGrad = c.createRadialGradient(860, 560, 20, 860, 560, 420);
+    pudGrad.addColorStop(0, 'rgba(255, 158, 68, 0.36)');
+    pudGrad.addColorStop(0.5, 'rgba(45, 90, 104, 0.28)');
+    pudGrad.addColorStop(1, 'rgba(8, 12, 22, 0.85)');
+    c.fillStyle = pudGrad;
+    c.beginPath();
+    c.ellipse(840, 575, 430, 130, 0, 0, Math.PI * 2);
+    c.fill();
+
+    // Stepped concentric puddle splash rings where droplets hit
+    for (let r = 0; r < 5; r++) {
+      const phase = ((stepT * 1.4 + r * 0.23) % 1.0);
+      const rx = 640 + r * 95;
+      const ry = 535 + (r % 2) * 45;
+      c.strokeStyle = `rgba(92, 225, 230, ${(1 - phase) * 0.85})`;
+      c.lineWidth = 2.5;
+      c.beginPath();
+      c.ellipse(rx, ry, phase * 68, phase * 19, 0, 0, Math.PI * 2);
+      c.stroke();
+    }
+
+    // Close-up Stray Cat huddled dry under the step
+    drawStrayCatCel(c, 330, 470, 3.6, 'shelter', stepT);
+    c.restore();
+  }
+
+  // 8C. Shot 5 (00:30 – 00:38): Interior Cutaway — Tungsten Tubes, Swaying Straps & Crescent Moon Destination Roller
+  function renderShot5_InteriorAndRoller(c, t, stepT) {
+    c.save();
+    const localT = t - 30.0;
+
+    // Warm tungsten interior tubes stuttering on one by one (0.0s to 3.8s of Shot 5)
+    const tube1 = localT > 0.4 ? (Math.sin(stepT * 28) > -0.2 || localT > 1.2 ? 1.0 : 0.2) : 0.0;
+    const tube2 = localT > 1.4 ? (Math.sin(stepT * 22) > -0.1 || localT > 2.3 ? 1.0 : 0.15) : 0.0;
+    const tube3 = localT > 2.4 ? 1.0 : 0.0;
+    const ambientWarmth = (tube1 + tube2 + tube3) / 3.0;
+
+    // Interior ceiling & wooden paneling background painted in warm amber & deep shadow
+    const bgGrad = c.createLinearGradient(0, 0, 0, CH);
+    bgGrad.addColorStop(0, `rgb(${Math.floor(24 + ambientWarmth * 65)}, ${Math.floor(20 + ambientWarmth * 45)}, ${Math.floor(28 + ambientWarmth * 25)})`);
+    bgGrad.addColorStop(1, '#090b14');
+    c.fillStyle = bgGrad;
+    c.fillRect(0, 0, CW, CH);
+
+    // Ceiling wooden ribs & glowing tungsten light tubes
+    [260, 640, 1020].forEach((tx, idx) => {
+      const lit = idx === 0 ? tube1 : (idx === 1 ? tube2 : tube3);
+      c.fillStyle = '#14121d';
+      c.fillRect(tx - 140, 36, 280, 22);
+      if (lit > 0.05) {
+        c.fillStyle = `rgba(255, 232, 168, ${lit})`;
+        c.shadowColor = '#ff9e44';
+        c.shadowBlur = 28 * lit;
+        c.fillRect(tx - 125, 42, 250, 12);
+        c.shadowBlur = 0;
+      }
+    });
+
+    // Horizontal steel grab rail running across upper cabin
+    c.fillStyle = '#788696';
+    c.strokeStyle = '#14121d';
+    c.lineWidth = 3;
+    c.fillRect(0, 118, CW, 14);
+    c.strokeRect(0, 118, CW, 14);
+
+    // Hanging commuters' leather straps swaying in overlapping motion on twos
+    for (let i = 0; i < 7; i++) {
+      const sx = 135 + i * 165;
+      // Overlapping phase lag per strap
+      const swayAngle = Math.sin(stepT * 3.4 - i * 0.45) * 0.22 * smoothstep(0.0, 2.5, localT);
+      c.save();
+      c.translate(sx, 130);
+      c.rotate(swayAngle);
+
+      // Leather strap
+      c.fillStyle = '#5c3422';
+      c.strokeStyle = '#14121d';
+      c.lineWidth = 3;
+      c.fillRect(-7, 0, 14, 115);
+      c.strokeRect(-7, 0, 14, 115);
+
+      // White/cream Bakelite triangular hand ring with orange held line highlight
+      c.beginPath();
+      c.arc(0, 142, 28, 0, Math.PI * 2);
+      c.strokeStyle = ambientWarmth > 0.4 ? '#ff9e44' : '#5ce1e6';
+      c.lineWidth = 7;
+      c.stroke();
+      c.strokeStyle = '#14121d';
+      c.lineWidth = 2.5;
+      c.stroke();
+      c.restore();
+    }
+
+    // Mechanical Destination Roller Close-Up Insert Box (lower half of frame, clicking & locking onto Crescent Moon 🌙)
+    const boxX = 250;
+    const boxY = 335;
+    const boxW = 780;
+    const boxH = 310;
+
+    // Riveted brass & teal housing around the destination roller
+    c.fillStyle = '#1c3842';
+    c.strokeStyle = '#ff9e44';
+    c.lineWidth = 5;
+    c.fillRect(boxX, boxY, boxW, boxH);
+    c.strokeRect(boxX, boxY, boxW, boxH);
+
+    // Glass aperture window of the destination roller
+    const winX = boxX + 55;
+    const winY = boxY + 48;
+    const winW = boxW - 110;
+    const winH = boxH - 96;
+
+    c.save();
+    c.beginPath();
+    c.rect(winX, winY, winW, winH);
+    c.clip();
+
+    // Dark navy roller cloth canvas
+    c.fillStyle = '#090e1c';
+    c.fillRect(winX, winY, winW, winH);
+
+    // From localT 0.0 to 5.2s the roller spins rapidly through blurred painted destination plates,
+    // then at localT = 5.2s (t = 35.2s) it locks with a heavy mechanical clunk onto the Crescent Moon panel!
+    if (localT < 5.2) {
+      const scrollOffset = (stepT * 920) % 220;
+      for (let p = -1; p <= 2; p++) {
+        const py = winY + p * 110 - (scrollOffset % 110);
+        // Divider line between roller panels
+        c.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+        c.lineWidth = 2;
+        c.beginPath();
+        c.moveTo(winX, py);
+        c.lineTo(winX + winW, py);
+        c.stroke();
+
+        // Motion-blurred illegible painted kanji shapes
+        c.fillStyle = 'rgba(216, 206, 184, 0.45)';
+        for (let b = 0; b < 4; b++) {
+          c.fillRect(winX + 140 + b * 110, py + 22, 58, 65);
+        }
+      }
+    } else {
+      // Locked settle bounce (clunk!)
+      const lockBounce = Math.exp(-(localT - 5.2) * 7.0) * Math.sin((localT - 5.2) * 28.0) * 18.0;
+      const cx = winX + winW * 0.5;
+      const cy = winY + winH * 0.5 + lockBounce;
+
+      // Subtle warm back-illumination behind the roller cloth
+      const moonBack = c.createRadialGradient(cx, cy, 10, cx, cy, 220);
+      moonBack.addColorStop(0, 'rgba(255, 215, 110, 0.38)');
+      moonBack.addColorStop(1, 'rgba(9, 14, 28, 0)');
+      c.fillStyle = moonBack;
+      c.fillRect(winX, winY, winW, winH);
+
+      // Glowing Golden Crescent Moon (🌙) emblem painted on the blank dark navy panel
+      c.fillStyle = '#fde047';
+      c.shadowColor = '#ff9e44';
+      c.shadowBlur = 24;
+      c.beginPath();
+      c.arc(cx, cy, 54, 0, Math.PI * 2);
+      c.fill();
+
+      c.globalCompositeOperation = 'destination-out';
+      c.beginPath();
+      c.arc(cx + 22, cy - 12, 46, 0, Math.PI * 2);
+      c.fill();
+      c.globalCompositeOperation = 'source-over';
+      c.shadowBlur = 0;
+
+      // Re-fill the cutout with the navy cloth color so the crescent is crisp
+      c.fillStyle = '#0a1020';
+      c.beginPath();
+      c.arc(cx + 22, cy - 12, 45, 0, Math.PI * 2);
+      c.fill();
+    }
+
+    // Airbrushed diagonal glass reflection band across the roller window
+    c.fillStyle = 'rgba(255, 255, 255, 0.08)';
+    c.beginPath();
+    c.moveTo(winX + 60, winY);
+    c.lineTo(winX + 150, winY);
+    c.lineTo(winX + 70, winY + winH);
+    c.lineTo(winX - 20, winY + winH);
+    c.closePath();
+    c.fill();
+    c.restore();
+
+    c.restore();
+  }
+
+  // 8D. Hand-Drawn 1980s Anime Jagged Sparks, Cracking Rust Flakes & Tearing Ivy Vines
+  function drawJaggedAnimeSparks(c, originX, originY, intensity, stepT) {
+    if (intensity <= 0.01) return;
+    c.save();
+    const burstCount = Math.floor(5 + intensity * 9);
+    for (let i = 0; i < burstCount; i++) {
+      const seed = hash(i * 17.3 + stepT * 120.0);
+      const angle = -Math.PI * 0.9 + seed * Math.PI * 1.4;
+      const len = (28 + hash(i * 9.1 + stepT * 90) * 95) * intensity;
+
+      const x1 = originX + Math.cos(angle) * (12 + seed * 24);
+      const y1 = originY + Math.sin(angle) * (12 + seed * 24);
+      const midX = originX + Math.cos(angle + 0.22) * (len * 0.58);
+      const midY = originY + Math.sin(angle + 0.22) * (len * 0.58);
+      const x2 = originX + Math.cos(angle - 0.14) * len;
+      const y2 = originY + Math.sin(angle - 0.14) * len;
+
+      c.strokeStyle = i % 2 === 0 ? '#5ce1e6' : '#ff9e44';
+      c.lineWidth = i % 3 === 0 ? 4.2 : 2.5;
+      c.beginPath();
+      c.moveTo(x1, y1);
+      c.lineTo(midX, midY);
+      c.lineTo(x2, y2);
+      c.stroke();
+
+      // Core white hot smear frame star
+      if (i % 3 === 0) {
+        c.fillStyle = '#ffffff';
+        c.fillRect(x2 - 3, y2 - 3, 6, 6);
+      }
+    }
+    c.restore();
+  }
+
+  function drawIvyAndRustOverlay(c, t, stepT) {
+    // In Shot 1 (0-9s), Shot 3 (18-22s), and Shot 6 (38-46s), draw ivy vines wrapped around bogies/wheels
+    if (t >= 38.0 && t < 46.0) {
+      // Shot 6: Low Tracking Shot alongside the wheels — rust flakes cracking off & ivy vines stretching taut and snapping!
+      const localT = t - 38.0;
+      const snapProgress = smoothstep(1.5, 6.8, localT);
+
+      c.save();
+      // Jagged orange/brown rust flakes cracking off the turning iron wheels on twos
+      const flakeCount = 26;
+      for (let f = 0; f < flakeCount; f++) {
+        const fAge = ((stepT * 2.4 + hash(f * 7.7)) % 1.0);
+        const fx = 240 + (f % 4) * 210 - fAge * 140;
+        const fy = 470 + Math.sin(f * 3.1) * 60 + fAge * fAge * 165;
+        c.fillStyle = f % 2 === 0 ? '#b45309' : '#7c2d12';
+        c.strokeStyle = '#14121d';
+        c.lineWidth = 1.8;
+        c.beginPath();
+        c.moveTo(fx, fy);
+        c.lineTo(fx + 12, fy - 5);
+        c.lineTo(fx + 8, fy + 11);
+        c.closePath();
+        c.fill();
+        c.stroke();
+      }
+
+      // Wheel-rail friction sparks
+      drawJaggedAnimeSparks(c, 420, 565, 0.85, stepT);
+      drawJaggedAnimeSparks(c, 820, 565, 0.95, stepT);
+
+      // Thick dark green ivy vines stretching taut and snapping loose in whip-like strands
+      for (let v = 0; v < 8; v++) {
+        const anchorX = 180 + v * 135;
+        const anchorY = 590;
+        const isSnapped = snapProgress > (v / 8.0);
+
+        c.strokeStyle = '#1b3b2b';
+        c.lineWidth = 6.5;
+        c.beginPath();
+        c.moveTo(anchorX, anchorY);
+        if (!isSnapped) {
+          // Stretched taut between ground and wheel bogie
+          const wheelX = anchorX + localT * 24;
+          c.quadraticCurveTo(anchorX + 20, 500, wheelX, 420);
+        } else {
+          // Snapped! Recoiling and trailing in overlapping whip curves on twos
+          const whip = Math.sin(stepT * 14 + v) * 38;
+          c.quadraticCurveTo(anchorX - 45, 510 + whip, anchorX - 110, 445 - whip);
+        }
+        c.stroke();
+
+        // Cyan wet held line on ivy strand
+        c.strokeStyle = '#5ce1e6';
+        c.lineWidth = 1.8;
+        c.stroke();
+      }
+      c.restore();
+    }
+  }
+
+  // 8E. Hand-Drawn Rain Streaks on Twos, Golden Floating Rain Embers, and Shot 10 Star Trail Reflection
+  function renderCelOverlay(t) {
+    celCtx.clearRect(0, 0, CW, CH);
+
+    const stepT = quantizeTwos(t);
+
+    // 1. Check for Classic Anime "Harmony Cel" (止め絵) Painted Still Cuts!
+    // Harmony Cut #1: 16.0s – 17.8s (Lightning Flash Awakening)
+    if (t >= 16.0 && t <= 17.8) {
+      renderHarmonyCut1_Lightning(celCtx, t);
+      return;
+    }
+    // Harmony Cut #2: 52.0s – 53.8s (The Moment of Liftoff)
+    if (t >= 52.0 && t <= 53.8) {
+      renderHarmonyCut2_Liftoff(celCtx, t);
+      return;
+    }
+
+    // 2. Check for 2D Cel Close-Up Insert Shots (Shot 2: 9-15s, Shot 5: 30-38s)
+    if (t >= 9.0 && t < 15.0) {
+      renderShot2_CatCloseInsert(celCtx, t, stepT);
+    } else if (t >= 30.0 && t < 38.0) {
+      renderShot5_InteriorAndRoller(celCtx, t, stepT);
+    }
+
+    // 3. Stray Cat in Shot 1 (0-9s), Shot 3 Bolt (18.0-21.0s), and Shot 10 Epilogue (72-80s)
+    if (t < 9.0) {
+      drawStrayCatCel(celCtx, 745, 488, 0.85, 'shelter', stepT);
+    } else if (t >= 18.0 && t < 21.2) {
+      const boltProg = (stepT - 18.0) / 3.2;
+      const catX = lerp(745, 1340, boltProg);
+      const catY = 492 - Math.abs(Math.sin(stepT * 12)) * 26;
+      drawStrayCatCel(celCtx, catX, catY, 1.05, 'bolt', stepT);
+    } else if (t >= 72.0) {
+      const walkOut = smoothstep(72.4, 74.8, stepT);
+      const catX = lerp(1080, 860, walkOut);
+      drawStrayCatCel(celCtx, catX, 555, 1.35, 'watch_sky', stepT);
+    }
+
+    // 4. Pantograph Sparks in Shot 4 (22-30s), Shot 7 (46-52s), Shot 8 (54-64s)
+    if (t >= 23.2 && t < 30.0) {
+      const sparkInt = smoothstep(23.2, 24.5, t);
+      drawJaggedAnimeSparks(celCtx, 585, 225, sparkInt * 1.25, stepT);
+    } else if (t >= 46.0 && t < 52.0) {
+      drawJaggedAnimeSparks(celCtx, 510, 260, 0.75, stepT);
+    } else if (t >= 54.0 && t < 64.0) {
+      const p8 = (t - 54.0) / 10.0;
+      const sx = lerp(460, 680, p8);
+      const sy = lerp(390, 250, p8);
+      drawJaggedAnimeSparks(celCtx, sx, sy, 0.9, stepT);
+    }
+
+    // 5. Ivy Vines & Wheel Rust Flakes in Shot 6 (38-46s)
+    drawIvyAndRustOverlay(celCtx, t, stepT);
+
+    // 6. Shot 10 (72-80s): Puddle Reflection of the Fading Line of Stars & Sky
+    if (t >= 72.0) {
+      const epilogueP = (t - 72.0) / 8.0;
+      celCtx.save();
+      // Skyward star trail where the golden rails dissolved into stars
+      for (let s = 0; s < 28; s++) {
+        const u = s / 27.0;
+        const starX = lerp(380, CW * 0.74, u);
+        const starY = lerp(390, CH * 0.19, Math.pow(u, 0.85)) + Math.sin(u * 6.0) * 18;
+        const twinkle = 0.45 + 0.55 * Math.sin(stepT * 8.0 + s * 2.3);
+
+        celCtx.fillStyle = s % 3 === 0 ? `rgba(255, 235, 150, ${twinkle})` : `rgba(185, 245, 255, ${twinkle})`;
+        celCtx.beginPath();
+        celCtx.arc(starX, starY, (1.8 + (1 - u) * 2.2), 0, Math.PI * 2);
+        celCtx.fill();
+
+        // Reflected star line shimmering in the wet street puddle below!
+        const refX = lerp(430, 820, u) + Math.sin(stepT * 6 + s) * 3;
+        const refY = lerp(575, 650, u);
+        celCtx.fillStyle = `rgba(255, 220, 130, ${twinkle * 0.78})`;
+        celCtx.fillRect(refX - 3, refY - 1, 6, 2.5);
+      }
+      celCtx.restore();
+    }
+
+    // 7. Hand-Drawn Rain Streaks Changing on Twos (plus Golden Lit Raindrops in Shots 7, 8, 9)
+    celCtx.save();
+    const isGoldenRain = (t >= 46.0 && t < 72.0);
+    const rainCount = t >= 72.0 ? 45 : 135; // Rain softens to a gentle mist in the final epilogue
+
+    for (let i = 0; i < rainCount; i++) {
+      // Positions regenerate every 2 frames (stepT) so rain reads as hand-drawn streaks on twos
+      const rx = hash(i * 13.7 + stepT * 37.1) * (CW + 160) - 80;
+      const ry = hash(i * 29.3 + stepT * 53.7) * CH;
+      const rLen = 34 + hash(i * 7.1) * 46;
+
+      if (isGoldenRain && i % 3 === 0) {
+        // Raindrops lit gold around the ascending streetcar
+        celCtx.fillStyle = 'rgba(255, 224, 115, 0.88)';
+        celCtx.shadowColor = '#ff9e44';
+        celCtx.shadowBlur = 10;
+        celCtx.beginPath();
+        celCtx.ellipse(rx, ry, 3.2, 6.5, 0.22, 0, Math.PI * 2);
+        celCtx.fill();
+        celCtx.shadowBlur = 0;
+      } else {
+        celCtx.strokeStyle = isGoldenRain
+          ? 'rgba(255, 215, 145, 0.34)'
+          : 'rgba(155, 215, 235, 0.36)';
+        celCtx.lineWidth = i % 4 === 0 ? 2.0 : 1.2;
+        celCtx.beginPath();
+        celCtx.moveTo(rx, ry);
+        celCtx.lineTo(rx - rLen * 0.24, ry + rLen);
+        celCtx.stroke();
+      }
+    }
+    celCtx.restore();
+  }
+
+  // ============================================================================
+  // 9. 3D WORLD & CAMERA CHOREOGRAPHY ACROSS ALL 10 SHOTS (STEPPED ON TWOS)
+  // ============================================================================
+  function updateSceneAndCamera(t) {
+    const stepT = quantizeTwos(t);
+
+    // 1. Sodium Streetlamp Flicker & Lightning Flash Uniforms
+    const sodiumFlicker = (Math.floor(stepT * 12) % 19 === 0) ? 0.58 : (0.94 + 0.06 * Math.sin(stepT * 8));
+    sharedUniforms.uSodiumIntensity.value = sodiumFlicker;
+    sodiumBulbMat.color.setHex(sodiumFlicker < 0.7 ? 0x995522 : 0xffaa44);
+
+    // Sharp angular lightning flash right at 15.2s – 16.0s (leading into Harmony Cut #1)
+    const isLightning = (t >= 15.2 && t < 16.0) || (t >= 17.8 && t < 18.1);
+    sharedUniforms.uLightningFlash.value = isLightning ? 1.0 : 0.0;
+
+    // 2. Streetcar Headlamp ("Its Eye") & Interior Window Glow
+    const headlampAwake = smoothstep(15.5, 18.2, stepT);
+    sharedUniforms.uHeadlampGlow.value = headlampAwake;
+    if (headlampAwake > 0.05) {
+      matHeadlampLens.color.setHex(0xffdf7a);
+      headlampBeamCone.material.opacity = 0.24 * headlampAwake;
+    } else {
+      matHeadlampLens.color.setHex(0x1e222a);
+      headlampBeamCone.material.opacity = 0.0;
+    }
+
+    const interiorLit = smoothstep(30.2, 33.5, stepT);
+    if (interiorLit > 0.05) {
+      matWindowGlass.color.setRGB(
+        lerp(0.08, 1.0, interiorLit),
+        lerp(0.15, 0.76, interiorLit),
+        lerp(0.22, 0.34, interiorLit)
+      );
+      matDestRoller.color.setHex(stepT > 35.2 ? 0xfde047 : 0x22304a);
+    } else {
+      matWindowGlass.color.setRGB(0.08, 0.15, 0.22);
+      matDestRoller.color.setHex(0x0d121c);
+    }
+
+    // 3. Pantograph Lifting Like a Raised Head in Shot 4 (22.0s – 26.5s)
+    const pantoLift = easeOutCubic(smoothstep(22.4, 26.2, stepT));
+    if (pantographLowerArm && pantographUpperArm) {
+      pantographLowerArm.rotation.z = lerp(0.08, 0.68, pantoLift);
+      pantographUpperArm.rotation.z = lerp(-0.12, -1.24, pantoLift);
+    }
+
+    // 4. Streetcar Track Position, Heavy Spring Rocking & Wheel Rotation
+    let trackS = 0.0;
+    if (stepT >= 38.0 && stepT < 46.0) {
+      // Shot 6: Slow heavy start, groaning forward as wheels catch and ivy snaps
+      const p6 = (stepT - 38.0) / 8.0;
+      trackS = easeInQuad(p6) * 4.8;
+    } else if (stepT >= 46.0 && stepT < 72.0) {
+      // Shots 7, 8, 9: Rolling onto the rails of light, lifting off at 52s, climbing into the clouds
+      const pAscent = (stepT - 46.0) / 26.0;
+      trackS = 4.8 + Math.pow(pAscent, 1.38) * 62.0;
+    } else if (stepT >= 72.0) {
+      // Shot 10: Streetcar has ascended into the moonlit heavens (hide mesh in street-level wide shot)
+      trackS = 85.0;
+    }
+
+    streetcarRoot.visible = (t < 72.0);
+    const tr = getTrackTransform(trackS);
+    streetcarRoot.position.copy(tr.pos);
+    streetcarRoot.rotation.order = 'YXZ';
+    streetcarRoot.rotation.y = tr.yaw;
+    streetcarRoot.rotation.z = tr.pitch;
+
+    // Expressive body leaning and settling on its coil springs before and during acceleration
+    let springPitch = 0;
+    let springRoll = 0;
+    let springHeave = 0;
+    if (stepT >= 22.5 && stepT < 26.5) {
+      // Shudder as pantograph hits wire
+      springRoll = Math.sin(stepT * 18) * 0.025;
+    } else if (stepT >= 38.0 && stepT < 46.0) {
+      // Heavy rocking on springs before the wheels catch
+      springPitch = Math.sin(stepT * 7.5) * 0.038;
+      springRoll = Math.cos(stepT * 5.5) * 0.032;
+      springHeave = Math.abs(Math.sin(stepT * 7.5)) * 0.06;
+    } else if (stepT >= 46.0 && stepT < 54.0) {
+      // Squatting on springs at liftoff
+      springPitch = -0.035 * Math.sin((stepT - 46.0) * 3.0);
+    }
+    streetcarChassis.position.y = springHeave;
+    streetcarChassis.rotation.z = springPitch;
+    streetcarChassis.rotation.x = springRoll;
+
+    // Update headlamp world position for shader lighting
+    sharedUniforms.uHeadlampPos.value.set(
+      tr.pos.x + Math.cos(tr.pitch) * 4.4,
+      tr.pos.y + 1.72 + Math.sin(tr.pitch) * 4.4,
+      tr.pos.z
+    );
+
+    // Rotate spoked wheels proportionally to distance traveled
+    wheelMeshes.forEach((w) => {
+      w.rotation.z = -trackS * 2.15;
+    });
+
+    // 5. Stitching the Rails of Light Piece by Piece (from t = 45.5s onward)
+    const stitchProgress = smoothstep(45.5, 66.0, stepT) * lightSleeperMeshes.length;
+    const epilogueFade = 1.0 - smoothstep(71.5, 76.5, stepT);
+    lightSleeperMeshes.forEach((item, idx) => {
+      const appear = clamp(stitchProgress - idx, 0.0, 1.0) * epilogueFade;
+      item.matSleeper.opacity = appear * 0.88;
+      item.matRail.opacity = appear * 0.92;
+      item.group.visible = appear > 0.01;
+    });
+
+    // Moonlight intensity uniform
+    sharedUniforms.uMoonIntensity.value = smoothstep(45.0, 64.0, stepT);
+
+    // 6. 10-Shot Camera Direction (Quantized to 12fps Twos)
+    if (t < 9.0) {
+      // Shot 1 (00:00–00:09): Quiet Low Wide Shot in the rain across the puddle
+      camera.fov = 34;
+      camera.position.set(lerp(5.8, 5.2, stepT / 9.0), 1.35, 9.2);
+      camera.lookAt(0.8, 1.95, 0.0);
+    } else if (t < 15.0) {
+      // Shot 2 (00:09–00:15): Close Insert of the Stray Cat under the boarding step
+      camera.fov = 26;
+      camera.position.set(3.4, 0.62, 3.1);
+      camera.lookAt(2.4, 0.68, 0.8);
+    } else if (t < 22.0) {
+      // Shot 3 (00:15–00:22): Dramatic Low-Angle on the Streetcar Nose & Awakening Headlamp
+      const p3 = (stepT - 15.0) / 7.0;
+      camera.fov = 32;
+      camera.position.set(lerp(6.8, 6.1, p3), 1.42, lerp(3.4, 2.7, p3));
+      camera.lookAt(3.2, 1.85, 0.0);
+    } else if (t < 30.0) {
+      // Shot 4 (00:22–00:30): Slow Tilt Up the wet cream-and-teal body to the lifting Pantograph
+      const p4 = easeOutCubic((stepT - 22.0) / 8.0);
+      camera.fov = 30;
+      camera.position.set(1.8, lerp(1.6, 3.8, p4), 5.2);
+      camera.lookAt(-0.3, lerp(1.8, 4.45, p4), 0.0);
+    } else if (t < 38.0) {
+      // Shot 5 (00:30–00:38): Interior Insert (2D Cel Overlay takes center stage, 3D framed close to windows)
+      camera.fov = 30;
+      camera.position.set(0.0, 2.45, 3.4);
+      camera.lookAt(0.0, 2.45, 0.0);
+    } else if (t < 46.0) {
+      // Shot 6 (00:38–00:46): Low Tracking Shot alongside the wheels, cracking rust & snapping ivy
+      camera.fov = 32;
+      camera.position.set(tr.pos.x + 1.1, 0.72, 3.65);
+      camera.lookAt(tr.pos.x + 0.6, 0.78, 0.0);
+    } else if (t < 54.0) {
+      // Shot 7 (00:46–00:54): Stitching the Rails of Light beyond the broken rail end & Liftoff
+      const p7 = (stepT - 46.0) / 8.0;
+      camera.fov = 36;
+      camera.position.set(lerp(9.5, 13.5, p7), lerp(1.8, 3.2, p7), lerp(6.8, 8.2, p7));
+      camera.lookAt(lerp(5.2, tr.pos.x + 2.0, p7), lerp(1.5, tr.pos.y + 2.2, p7), 0.0);
+    } else if (t < 64.0) {
+      // Shot 8 (00:54–01:04): Towering Pan Up — Skyward Ascent over the sleeping coastal town rooftops
+      const p8 = (stepT - 54.0) / 10.0;
+      camera.fov = 38;
+      camera.position.set(lerp(12.0, 18.0, p8), lerp(2.2, 4.8, p8), 13.5);
+      camera.lookAt(tr.pos.x, tr.pos.y + 1.8, tr.pos.z);
+    } else if (t < 72.0) {
+      // Shot 9 (01:04–01:12): High-Altitude Tracking Shot — Threading the Parting Clouds toward the Full Moon
+      camera.fov = 34;
+      camera.position.set(tr.pos.x - 6.5, tr.pos.y + 1.4, tr.pos.z + 7.2);
+      camera.lookAt(tr.pos.x + 4.0, tr.pos.y + 3.2, tr.pos.z - 1.5);
+    } else {
+      // Shot 10 (01:12–01:20): Final Wide Street-Level Epilogue with puddle reflection & cat
+      const p10 = (stepT - 72.0) / 8.0;
+      camera.fov = 36;
+      camera.position.set(2.2, 1.15, 8.8);
+      camera.lookAt(lerp(4.5, 8.5, p10), lerp(2.8, 5.5, p10), 0.0);
+    }
+    camera.updateProjectionMatrix();
+
+    // 7. Subtle 35mm Camera Stand Gate Weave (1-2px stepped drift on twos so it never shimmers at 60fps)
+    const weaveX = (hash(stepT * 43.1) - 0.5) * 1.6;
+    const weaveY = (hash(stepT * 71.7) - 0.5) * 1.4;
+    cameraStand.style.transform = `translate3d(${weaveX.toFixed(2)}px, ${weaveY.toFixed(2)}px, 0)`;
+  }
+
+  // ============================================================================
+  // 10. OPTICAL HALATION BLOOM & 35MM FILM GRAIN PASSES
+  // ============================================================================
+  function renderHalationAndGrain(t) {
+    // Halation bloom pass: downsample bright background + WebGL + cel overlay into blurred screen layer
+    halCtx.clearRect(0, 0, 320, 180);
+    halCtx.globalAlpha = 0.65;
+    halCtx.drawImage(bgCanvas, 0, 0, 320, 180);
+    halCtx.drawImage(webglCanvas, 0, 0, 320, 180);
+    halCtx.drawImage(celCanvas, 0, 0, 320, 180);
+
+    // 35mm Film Grain regenerated on twos (12fps)
+    const imgData = grainCtx.createImageData(256, 256);
+    const data = imgData.data;
+    const seedBase = Math.floor(t * 12) * 997;
+    for (let i = 0; i < data.length; i += 4) {
+      const n = ((i * 1103515245 + seedBase) & 0x7fffffff) % 255;
+      data[i] = n;
+      data[i + 1] = Math.max(0, n - 6);
+      data[i + 2] = Math.min(255, n + 8);
+      data[i + 3] = 255;
+    }
+    grainCtx.putImageData(imgData, 0, 0);
+  }
+
+  // ============================================================================
+  // 11. PROCEDURAL WEB AUDIO API SOUNDTRACK & FOLEY ENGINE (100% CODE-GENERATED)
+  // ============================================================================
+  let audioCtx = null;
+  let masterGain = null;
+  let rainGain = null;
+  let motorOsc = null;
+  let motorGain = null;
+  const triggeredEvents = new Set();
+
+  function initAudioEngine() {
+    if (audioCtx) {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      return;
+    }
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+
+    audioCtx = new AudioContextClass();
+    masterGain = audioCtx.createGain();
+    masterGain.gain.value = isMuted ? 0.0 : 0.85;
+    masterGain.connect(audioCtx.destination);
+
+    // 1. Continuous Filtered Rain Ambiance Generator
+    const bufSize = audioCtx.sampleRate * 3;
+    const noiseBuf = audioCtx.createBuffer(1, bufSize, audioCtx.sampleRate);
+    const out = noiseBuf.getChannelData(0);
+    let b0 = 0, b1 = 0, b2 = 0;
+    for (let i = 0; i < bufSize; i++) {
+      const white = Math.random() * 2 - 1;
+      b0 = 0.997 * b0 + white * 0.029;
+      b1 = 0.985 * b1 + white * 0.032;
+      b2 = 0.950 * b2 + white * 0.048;
+      out[i] = (b0 + b1 + b2 + white * 0.04) * 0.35;
+    }
+    const rainNode = audioCtx.createBufferSource();
+    rainNode.buffer = noiseBuf;
+    rainNode.loop = true;
+
+    const rainFilter = audioCtx.createBiquadFilter();
+    rainFilter.type = 'bandpass';
+    rainFilter.frequency.value = 1150;
+    rainFilter.Q.value = 0.7;
+
+    rainGain = audioCtx.createGain();
+    rainGain.gain.value = 0.28;
+    rainNode.connect(rainFilter);
+    rainFilter.connect(rainGain);
+    rainGain.connect(masterGain);
+    rainNode.start();
+
+    // 2. Traction Motor Hum / Groan Oscillator (modulated dynamically by timeline)
+    motorOsc = audioCtx.createOscillator();
+    motorOsc.type = 'sawtooth';
+    motorOsc.frequency.value = 55;
+
+    const motorFilter = audioCtx.createBiquadFilter();
+    motorFilter.type = 'lowpass';
+    motorFilter.frequency.value = 210;
+
+    motorGain = audioCtx.createGain();
+    motorGain.gain.value = 0.0;
+
+    motorOsc.connect(motorFilter);
+    motorFilter.connect(motorGain);
+    motorGain.connect(masterGain);
+    motorOsc.start();
+  }
+
+  // Individual Procedural Foley & Musical Cues
+  function playThunderClap() {
+    if (!audioCtx || isMuted) return;
+    const now = audioCtx.currentTime;
+    const dur = 3.6;
+    const buf = audioCtx.createBuffer(1, audioCtx.sampleRate * dur, audioCtx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) {
+      d[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioCtx.sampleRate * 1.1));
+    }
+    const src = audioCtx.createBufferSource();
+    src.buffer = buf;
+
+    const filt = audioCtx.createBiquadFilter();
+    filt.type = 'lowpass';
+    filt.frequency.setValueAtTime(420, now);
+    filt.frequency.exponentialRampToValueAtTime(65, now + dur);
+
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(0.95, now);
+    g.gain.exponentialRampToValueAtTime(0.01, now + dur);
+
+    src.connect(filt);
+    filt.connect(g);
+    g.connect(masterGain);
+    src.start(now);
+  }
+
+  function playPantographScreechAndSparks() {
+    if (!audioCtx || isMuted) return;
+    const now = audioCtx.currentTime;
+    // Metallic FM screech
+    const car = audioCtx.createOscillator();
+    const mod = audioCtx.createOscillator();
+    const modG = audioCtx.createGain();
+    const outG = audioCtx.createGain();
+
+    car.type = 'sawtooth';
+    car.frequency.setValueAtTime(620, now);
+    car.frequency.linearRampToValueAtTime(1480, now + 0.9);
+    mod.frequency.value = 89;
+    modG.gain.value = 420;
+
+    outG.gain.setValueAtTime(0.01, now);
+    outG.gain.linearRampToValueAtTime(0.22, now + 0.15);
+    outG.gain.exponentialRampToValueAtTime(0.005, now + 1.3);
+
+    mod.connect(modG);
+    modG.connect(car.frequency);
+    car.connect(outG);
+    outG.connect(masterGain);
+    car.start(now);
+    mod.start(now);
+    car.stop(now + 1.35);
+    mod.stop(now + 1.35);
+  }
+
+  function playRollerClickAndLock() {
+    if (!audioCtx || isMuted) return;
+    const now = audioCtx.currentTime;
+    // Rapid mechanical clicks followed by heavy clunk at +2.2s
+    for (let i = 0; i < 14; i++) {
+      const t = now + i * 0.14;
+      const osc = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(240 + (i % 3) * 60, t);
+      g.gain.setValueAtTime(0.16, t);
+      g.gain.exponentialRampToValueAtTime(0.005, t + 0.05);
+      osc.connect(g);
+      g.connect(masterGain);
+      osc.start(t);
+      osc.stop(t + 0.06);
+    }
+    // Final heavy lock clunk onto the Crescent Moon panel
+    const lockT = now + 2.1;
+    const lockOsc = audioCtx.createOscillator();
+    const lockG = audioCtx.createGain();
+    lockOsc.type = 'sine';
+    lockOsc.frequency.setValueAtTime(135, lockT);
+    lockOsc.frequency.exponentialRampToValueAtTime(42, lockT + 0.22);
+    lockG.gain.setValueAtTime(0.45, lockT);
+    lockG.gain.exponentialRampToValueAtTime(0.005, lockT + 0.25);
+    lockOsc.connect(lockG);
+    lockG.connect(masterGain);
+    lockOsc.start(lockT);
+    lockOsc.stop(lockT + 0.26);
+  }
+
+  function playBrassTramBell() {
+    if (!audioCtx || isMuted) return;
+    const now = audioCtx.currentTime;
+    // Authentic resonant brass streetcar bell ("Ding-ding! / チン、チン！")
+    [0.0, 0.34].forEach((offset) => {
+      const t = now + offset;
+      [1180, 2365, 3420].forEach((freq, idx) => {
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, t);
+        g.gain.setValueAtTime(0.24 / (idx + 1), t);
+        g.gain.exponentialRampToValueAtTime(0.002, t + 1.15);
+        osc.connect(g);
+        g.connect(masterGain);
+        osc.start(t);
+        osc.stop(t + 1.2);
+      });
+    });
+  }
+
+  function playSynthPadChord(freqs, duration) {
+    if (!audioCtx || isMuted) return;
+    const now = audioCtx.currentTime;
+    freqs.forEach((f) => {
+      const osc1 = audioCtx.createOscillator();
+      const osc2 = audioCtx.createOscillator();
+      const filt = audioCtx.createBiquadFilter();
+      const g = audioCtx.createGain();
+
+      osc1.type = 'sawtooth';
+      osc2.type = 'triangle';
+      osc1.frequency.setValueAtTime(f, now);
+      osc2.frequency.setValueAtTime(f * 1.004, now); // lush 1990s analog chorus detune
+
+      filt.type = 'lowpass';
+      filt.frequency.setValueAtTime(1450, now);
+
+      g.gain.setValueAtTime(0.005, now);
+      g.gain.linearRampToValueAtTime(0.065, now + 0.8);
+      g.gain.exponentialRampToValueAtTime(0.003, now + duration);
+
+      osc1.connect(filt);
+      osc2.connect(filt);
+      filt.connect(g);
+      g.connect(masterGain);
+
+      osc1.start(now);
+      osc2.start(now);
+      osc1.stop(now + duration + 0.1);
+      osc2.stop(now + duration + 0.1);
+    });
+  }
+
+  function playCrystallineArpeggio(baseFreq) {
+    if (!audioCtx || isMuted) return;
+    const now = audioCtx.currentTime;
+    const ratios = [1, 1.25, 1.5, 1.875, 2.0, 2.5];
+    ratios.forEach((r, idx) => {
+      const t = now + idx * 0.11;
+      const osc = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(baseFreq * r, t);
+      g.gain.setValueAtTime(0.11, t);
+      g.gain.exponentialRampToValueAtTime(0.002, t + 0.75);
+      osc.connect(g);
+      g.connect(masterGain);
+      osc.start(t);
+      osc.stop(t + 0.8);
+    });
+  }
+
+  function updateAudioTimeline(t) {
+    if (!audioCtx || !isPlaying) return;
+
+    // Modulate traction motor groan & hum between 37s and 70s
+    if (motorGain && motorOsc) {
+      if (t >= 37.5 && t < 71.0) {
+        const mLevel = smoothstep(37.5, 41.0, t) * (1.0 - smoothstep(66.0, 71.0, t));
+        motorGain.gain.setTargetAtTime(mLevel * 0.18, audioCtx.currentTime, 0.1);
+        const pitch = 48 + smoothstep(38.0, 62.0, t) * 145;
+        motorOsc.frequency.setTargetAtTime(pitch, audioCtx.currentTime, 0.1);
+      } else {
+        motorGain.gain.setTargetAtTime(0.0, audioCtx.currentTime, 0.1);
+      }
+    }
+
+    // Trigger discrete foley & 1990s OVA synth-orchestral cues once per pass
+    const cues = [
+      { time: 15.2, key: 'thunder1', fn: () => playThunderClap() },
+      { time: 23.0, key: 'panto1',   fn: () => playPantographScreechAndSparks() },
+      { time: 33.0, key: 'roller1',  fn: () => playRollerClickAndLock() },
+      { time: 46.2, key: 'arp1',     fn: () => { playCrystallineArpeggio(523.25); playSynthPadChord([261.63, 329.63, 392.00, 493.88], 6.0); } },
+      { time: 51.8, key: 'bell1',    fn: () => { playBrassTramBell(); playSynthPadChord([293.66, 369.99, 440.00, 554.37], 6.5); } },
+      { time: 54.2, key: 'arp2',     fn: () => playCrystallineArpeggio(659.25) },
+      { time: 58.0, key: 'chord3',   fn: () => { playBrassTramBell(); playSynthPadChord([349.23, 440.00, 523.25, 659.25], 6.5); } },
+      { time: 64.2, key: 'chord4',   fn: () => { playCrystallineArpeggio(783.99); playSynthPadChord([392.00, 493.88, 587.33, 783.99], 8.0); } },
+      { time: 72.2, key: 'chord5',   fn: () => playSynthPadChord([261.63, 329.63, 392.00, 523.25], 7.5) }
+    ];
+
+    cues.forEach((c) => {
+      if (t >= c.time && t < c.time + 0.35 && !triggeredEvents.has(c.key)) {
+        triggeredEvents.add(c.key);
+        c.fn();
+      }
+    });
+  }
+
+  // ============================================================================
+  // 12. UI HUD, SUBTITLES, SHOT SELECTOR PILLS & FRAME-BY-FRAME CEL INSPECTOR
+  // ============================================================================
+  function formatTime(sec) {
+    const s = Math.floor(clamp(sec, 0, DURATION));
+    const mm = String(Math.floor(s / 60)).padStart(2, '0');
+    const ss = String(s % 60).padStart(2, '0');
+    const celFrame = String(Math.floor(sec * 12)).padStart(3, '0');
+    return `${mm}:${ss} / 01:20 [F${celFrame}]`;
+  }
+
+  function updateUI(t) {
+    if (!isScrubbing) {
+      seek.value = t.toFixed(2);
+    }
+    tcur.textContent = formatTime(t);
+
+    // Current Shot Pill & Top HUD Badge
+    let activeShot = SHOTS[0];
+    for (const s of SHOTS) {
+      if (t >= s.start && t < s.end) {
+        activeShot = s;
+        break;
+      }
+    }
+    const isHarmony = (t >= 16.0 && t <= 17.8) || (t >= 52.0 && t <= 53.8);
+    hudShotTitle.textContent = isHarmony
+      ? `★ HARMONY PAINTED STILL CUT (止め絵) · ${activeShot.label}`
+      : `CAV LASERDISC · ${activeShot.label}`;
+
+    shotButtons.forEach((btn, idx) => {
+      btn.classList.toggle('active', idx + 1 === activeShot.id);
+    });
+
+    // Bilingual Subtitles
+    if (!showSubtitles) {
+      subtitleLayer.style.opacity = '0';
+    } else {
+      const sub = SUBTITLES.find((item) => t >= item.start && t <= item.end);
+      if (sub) {
+        subJp.textContent = sub.jp;
+        subKo.textContent = sub.ko;
+        subtitleLayer.style.opacity = '1';
+      } else {
+        subtitleLayer.style.opacity = '0';
+      }
+    }
+  }
+
+  function renderFrameAtTime(t, forceRender = false) {
+    const steppedFrameIdx = Math.floor(t * 12.0 + 1e-5);
+    // Because the entire film is animated on 12fps twos, we only re-render the canvas when the 12fps cel frame index changes or when scrubbing/forced
+    if (steppedFrameIdx !== lastRenderedSteppedFrame || forceRender) {
+      lastRenderedSteppedFrame = steppedFrameIdx;
+      const stepT = quantizeTwos(t);
+      renderGouacheBackground(stepT);
+      updateSceneAndCamera(stepT);
+      renderer.render(scene, camera);
+      renderCelOverlay(stepT);
+      renderHalationAndGrain(stepT);
+    }
+    updateUI(t);
+  }
+
+  // ============================================================================
+  // 13. PLAYER EVENT LISTENERS & ANIMATION LOOP
+  // ============================================================================
+  // 12. MINIMAL BOTTOM BAR & AUTO-HIDE UI CONTROLLER
+  // ============================================================================
+  function formatTime(sec) {
+    const s = Math.floor(clamp(sec, 0, DURATION));
+    const m = Math.floor(s / 60);
+    const rem = String(s % 60).padStart(2, '0');
+    return `${m}:${rem} / 1:20`;
+  }
+
+  function updateUI(t) {
+    if (!isScrubbing) {
+      seek.value = t.toFixed(2);
+    }
+    const pct = (clamp(t, 0, DURATION) / DURATION) * 100;
+    seek.style.background = `linear-gradient(to right, rgba(255, 190, 105, 0.85) 0%, rgba(255, 190, 105, 0.85) ${pct}%, rgba(255, 255, 255, 0.22) ${pct}%, rgba(255, 255, 255, 0.22) 100%)`;
+    tcur.textContent = formatTime(t);
+  }
+
+  function scheduleUiHide() {
+    frame.classList.add('ui-visible');
+    clearTimeout(hideUiTimer);
+    if (isPlaying) {
+      hideUiTimer = setTimeout(() => {
+        frame.classList.remove('ui-visible');
+      }, 1800);
+    }
+  }
+
+  function renderFrameAtTime(t, forceRender = false) {
+    const steppedFrameIdx = Math.floor(t * 12.0 + 1e-5);
+    if (steppedFrameIdx !== lastRenderedSteppedFrame || forceRender) {
+      lastRenderedSteppedFrame = steppedFrameIdx;
+      const stepT = quantizeTwos(t);
+      renderGouacheBackground(stepT);
+      updateSceneAndCamera(stepT);
+      renderer.render(scene, camera);
+      renderCelOverlay(stepT);
+      renderHalationAndGrain(stepT);
+    }
+    updateUI(t);
+  }
+
+  // ============================================================================
+  // 13. PLAYER EVENT LISTENERS & ANIMATION LOOP
+  // ============================================================================
+  function setPlaying(playState) {
+    isPlaying = playState;
+    lastWallTime = performance.now();
+    if (isPlaying) {
+      playIcon.innerHTML = '<path d="M6 4h4v16H6zm8 0h4v16h-4z"/>';
+      veil.classList.add('hidden-veil');
+      scheduleUiHide();
+    } else {
+      playIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+      clearTimeout(hideUiTimer);
+      frame.classList.add('ui-visible');
+      if (motorGain && audioCtx) {
+        motorGain.gain.setTargetAtTime(0.0, audioCtx.currentTime, 0.05);
+      }
+    }
+  }
+
+  function stepByOneCelFrame(direction) {
+    setPlaying(false);
+    const currentCelIndex = Math.round(currentTime * 12.0);
+    const nextCelIndex = clamp(currentCelIndex + direction, 0, DURATION * 12);
+    currentTime = nextCelIndex / 12.0;
+    renderFrameAtTime(currentTime, true);
+  }
+
+  function updateVolumeIcon() {
+    if (isMuted) {
+      volIcon.innerHTML = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line>';
+    } else {
+      volIcon.innerHTML = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>';
+    }
+  }
+
+  veil.addEventListener('click', () => {
+    initAudioEngine();
+    if (masterGain && audioCtx) {
+      masterGain.gain.setValueAtTime(isMuted ? 0.0 : 0.85, audioCtx.currentTime);
+    }
+    setPlaying(true);
+  });
+
+  webglCanvas.addEventListener('click', () => {
+    pbtn.click();
+  });
+
+  pbtn.addEventListener('click', () => {
+    initAudioEngine();
+    if (currentTime >= DURATION) {
+      currentTime = 0;
+      triggeredEvents.clear();
+    }
+    setPlaying(!isPlaying);
+  });
+
+  seek.addEventListener('input', () => {
+    isScrubbing = true;
+    currentTime = parseFloat(seek.value);
+    triggeredEvents.clear();
+    renderFrameAtTime(currentTime, true);
+    scheduleUiHide();
+  });
+
+  seek.addEventListener('change', () => {
+    isScrubbing = false;
+  });
+
+  mbtn.addEventListener('click', () => {
+    initAudioEngine();
+    isMuted = !isMuted;
+    updateVolumeIcon();
+    if (masterGain && audioCtx) {
+      masterGain.gain.setValueAtTime(isMuted ? 0.0 : 0.85, audioCtx.currentTime);
+    }
+  });
+
+  fsbtn.addEventListener('click', () => {
+    if (!document.fullscreenElement) {
+      frame.requestFullscreen().catch(() => {});
+    } else {
+      document.exitFullscreen().catch(() => {});
+    }
+  });
+
+  frame.addEventListener('mousemove', scheduleUiHide);
+  frame.addEventListener('mouseleave', () => {
+    if (isPlaying) {
+      clearTimeout(hideUiTimer);
+      frame.classList.remove('ui-visible');
+    }
+  });
+
+  window.addEventListener('keydown', (e) => {
+    if (e.code === 'Space') {
+      e.preventDefault();
+      pbtn.click();
+    } else if (e.key === '[') {
+      e.preventDefault();
+      stepByOneCelFrame(-1);
+    } else if (e.key === ']') {
+      e.preventDefault();
+      stepByOneCelFrame(1);
+    } else if (e.code === 'ArrowLeft') {
+      e.preventDefault();
+      currentTime = clamp(currentTime - 3.0, 0, DURATION);
+      triggeredEvents.clear();
+      renderFrameAtTime(currentTime, true);
+      scheduleUiHide();
+    } else if (e.code === 'ArrowRight') {
+      e.preventDefault();
+      currentTime = clamp(currentTime + 3.0, 0, DURATION);
+      triggeredEvents.clear();
+      renderFrameAtTime(currentTime, true);
+      scheduleUiHide();
+    } else if (e.key === 'f' || e.key === 'F') {
+      fsbtn.click();
+    } else if (e.key === 'm' || e.key === 'M') {
+      mbtn.click();
+    }
+  });
+
+  function masterLoop(now) {
+    const dt = (now - lastWallTime) / 1000.0;
+    lastWallTime = now;
+
+    if (isPlaying && !isScrubbing) {
+      currentTime += dt;
+      if (currentTime >= DURATION) {
+        currentTime = DURATION;
+        setPlaying(false);
+      }
+      updateAudioTimeline(currentTime);
+    }
+
+    renderFrameAtTime(currentTime, false);
+    requestAnimationFrame(masterLoop);
+  }
+
+  window.onload = function () {
+    renderFrameAtTime(0.0, true);
+    requestAnimationFrame(masterLoop);
+  };
+})();
+</script>
+</body>
+</html>
