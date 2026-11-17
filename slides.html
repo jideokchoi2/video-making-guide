@@ -74,20 +74,16 @@ h1,h2,h3,p{margin:0}
 .btn{display:inline-flex;align-items:center;gap:12px;padding:20px 36px;border-radius:999px;background:var(--blue);color:#fff;text-decoration:none;font-size:28px;font-weight:800}
 .btn.ghost{background:#fff;color:var(--blue);border:3px solid var(--blue)}
 .slide > a.btn{align-self:flex-start}
-.prof{width:430px;height:540px;object-fit:cover;border-radius:36px;box-shadow:0 14px 40px rgba(60,70,140,.22)}
-.creds{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}
-.creds span{background:#fff;border:2px solid var(--line);border-radius:999px;padding:10px 22px;font-size:25px;font-weight:700}
-.creds span.on{background:var(--blue);border-color:var(--blue);color:#fff}
-.works{display:grid;grid-template-columns:repeat(5,1fr);gap:16px}
-.works figure,.lects figure{margin:0;background:#fff;border-radius:22px;overflow:hidden;box-shadow:0 6px 20px rgba(80,90,160,.10)}
-.works img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}
-.works figcaption{padding:12px 14px 14px;font-size:21px;font-weight:800;line-height:1.3}
-.works figcaption small{display:block;font-size:17px;font-weight:500;color:var(--sub);margin-top:4px}
-.lects{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
-.lects figure{display:flex;align-items:center}
-.lects img{width:230px;height:150px;object-fit:cover;display:block;flex:none}
-.lects figcaption{padding:16px 22px;font-size:23px;font-weight:800;line-height:1.35}
-.lects figcaption small{display:block;font-size:19px;font-weight:500;color:var(--sub);margin-top:6px}
+.prof{width:300px;height:300px;object-fit:cover;object-position:50% 30%;border-radius:50%;box-shadow:0 10px 30px rgba(60,70,140,.18);border:8px solid #fff}
+.intro h2{font-size:96px;font-weight:900;margin:22px 0 4px;letter-spacing:-.02em}
+.intro .role{font-size:34px;color:var(--sub);margin:0 0 34px}
+.intro ul{list-style:none;margin:0;padding:0;border-top:2px solid var(--line)}
+.intro li{font-size:30px;padding:16px 0;border-bottom:2px solid var(--line)}
+.intro .link{margin-top:28px;font-size:26px;font-weight:700;color:var(--blue)}
+.works{display:grid;grid-template-columns:repeat(5,1fr);gap:22px}
+.works figure{margin:0}
+.works img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block;border-radius:20px;box-shadow:0 6px 20px rgba(80,90,160,.12)}
+.works figcaption{padding-top:16px;font-size:26px;font-weight:800;text-align:center}
 .stills{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;width:1340px;align-self:center}
 .stills figure{margin:0;background:#16161D;border-radius:20px;overflow:hidden}
 .stills img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover}
@@ -196,27 +192,27 @@ img.char{border-radius:30px;box-shadow:0 10px 30px rgba(60,70,140,.18);display:b
 
 <!-- ════════════════════ 들어가며: 왜 영상을 만들까 ════════════════════ -->
 <section class="slide" data-s="표지" data-t="강사 소개">
-  <div class="row" style="height:100%;align-items:center;gap:70px">
+  <div class="row" style="height:100%;align-items:center;justify-content:center;gap:90px">
     <img class="prof" src="assets/instructor/profile.jpg" alt="강사 최진성 사진">
-    <div style="flex:1">
+    <div class="intro">
       <span class="tag on">강사 소개</span>
-      <h2 class="h1" style="margin-top:22px">안녕하세요, <span class="grad">최진성</span>입니다</h2>
-      <p class="lead" style="margin-top:10px">광명초등학교 6학년 담임 · 사랑으로 학생을 품기 위해 도약하는 교사</p>
-      <div class="creds"><span class="on">2026 인공지능 활용 선도교사</span><span class="on">2026 경기도 과학 선도교원</span><span>중앙대 교육대학원 인공지능융합교육 석사 과정</span><span>경인교대 컴퓨터교육과</span></div>
-      <div class="quote" style="margin-top:30px;font-size:30px;padding:30px 40px">"학생 개개인이 사회와 의미 있게 관계 맺도록 돕는 것"<br><span class="small">그림을 몰라도 웹툰 작가가 되고, 코딩을 몰라도 게임을 출시하는 시대. 교실에서 가장 힘주어 말하는 건 <b>"너희는 뭐든 할 수 있다"</b>는 자신감입니다.</span></div>
-      <p class="small" style="margin-top:22px">🏆 2025 GTPC(경기도 교원 프로그래밍 챌린지) 팀 1위 · 2026 인공지능 활용 선도교사 우수 수업 사례 선정</p>
+      <h2>최진성</h2>
+      <p class="role">광명초등학교 교사</p>
+      <ul>
+        <li>2026 인공지능 활용 선도교사</li>
+        <li>2026 경기도 과학 선도교원</li>
+        <li>중앙대 교육대학원 인공지능융합교육 석사 과정</li>
+        <li>2025 경기도 교원 프로그래밍 챌린지 팀 1위</li>
+      </ul>
+      <p class="link">jideokchoi2.github.io</p>
     </div>
   </div>
 </section>
 
-<section class="slide" data-s="표지" data-t="교실에서 만들고 나눈 것들">
-  <div class="head" style="margin-bottom:26px"><h2 class="h2" style="font-size:62px">교실에서 <span class="grad">만들고 나눈 것들</span></h2><p class="lead" style="font-size:30px">교실에 필요한 건 선생님이 직접 만들 수 있다 — 직접 만든 웹앱을 수업에 쓰고 있어요</p></div>
-  <div class="works"><figure><img src="assets/instructor/work-rpg.jpg" alt="성장 RPG 화면"><figcaption>성장 RPG<small>학생 성장을 게임처럼 기록·인증하는 학급 운영</small></figcaption></figure><figure><img src="assets/instructor/work-moon.jpg" alt="달의 위상 관측소 화면"><figcaption>달의 위상 관측소<small>태양·지구·달을 돌려 보는 과학 웹앱</small></figcaption></figure><figure><img src="assets/instructor/work-planet.jpg" alt="행성 크기 그리기 화면"><figcaption>행성 크기 그리기<small>실시간 멀티플레이 태양계 비교 게임</small></figcaption></figure><figure><img src="assets/instructor/work-battleship.jpg" alt="World Battleship 화면"><figcaption>World Battleship<small>위도·경도를 배우는 사회 웹앱</small></figcaption></figure><figure><img src="assets/instructor/work-eraser.jpg" alt="사라진 지우개 찾기 화면"><figcaption>사라진 지우개 찾기<small>3D 멀티플레이 교실 게임으로 업그레이드</small></figcaption></figure></div>
-  <div class="lects" style="margin-top:22px">
-    <figure><img src="assets/instructor/lecture-gunpo.jpg" alt="군포의왕교육지원청 연수 사진"><figcaption>평가 관련 에듀테크 연수<small>군포의왕교육지원청 · 하이러닝 서논술형 평가 워크숍</small></figcaption></figure>
-    <figure><img src="assets/instructor/lecture-gwangmyeong.jpg" alt="광명교육지원청 바이브코딩 연수 사진"><figcaption>2026 진로·과학 바이브코딩 연수<small>광명교육지원청 · 웹앱 수업 사례, 바이브 코딩과 호스팅</small></figcaption></figure>
-  </div>
-  <p class="foot" style="bottom:66px">🔗 포트폴리오 <b>jideokchoi2.github.io</b> · 오늘 자료 <b>jideokchoi2.github.io/video-making-guide</b> · 인스타그램 @jideokchoi</p>
+<section class="slide" data-s="표지" data-t="직접 만들어 수업에 쓰는 것들">
+  <div class="head" style="margin-bottom:40px"><h2 class="h2" style="font-size:62px">직접 만들어 <span class="grad">수업에 쓰는 웹앱</span></h2></div>
+  <div class="works"><figure><img src="assets/instructor/work-rpg.jpg" alt="성장 RPG 화면"><figcaption>성장 RPG</figcaption></figure><figure><img src="assets/instructor/work-moon.jpg" alt="달의 위상 관측소 화면"><figcaption>달의 위상 관측소</figcaption></figure><figure><img src="assets/instructor/work-planet.jpg" alt="행성 크기 그리기 화면"><figcaption>행성 크기 그리기</figcaption></figure><figure><img src="assets/instructor/work-battleship.jpg" alt="World Battleship 화면"><figcaption>World Battleship</figcaption></figure><figure><img src="assets/instructor/work-eraser.jpg" alt="사라진 지우개 찾기 화면"><figcaption>사라진 지우개 찾기</figcaption></figure></div>
+  <p class="lead" style="margin-top:44px;font-size:28px">강의 · 군포의왕교육지원청 평가 에듀테크 연수 · 광명교육지원청 진로·과학 바이브코딩 연수</p>
 </section>
 
 <section class="slide" data-s="들어가며" data-t="왜 영상을 만들까요?">
