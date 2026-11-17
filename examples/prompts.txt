@@ -1,0 +1,73 @@
+하단의 레퍼런스 프롬프트를 이용해서 다음의 내용으로 제작을 해볼게.
+
+Effects
+Hand-drawn effects in cel language. Falling snow as drawn streaks and flakes, gusts as painted spindrift sheets, snow bursting from the arms as drawn chunks and puffs, the searchlight as a soft painted cone, cracks as ink lines spreading across the rim, the collapse as drawn billowing snow, and the lamps as painted glows with gentle bloom. No particle system look.
+
+Animation
+Hand-drawn character animation, mostly on twos, with long held poses and motion that comes from strong redrawn key drawings rather than smooth interpolation. Every moving part is redrawn, never transformed. Add overlapping motion in falling snow, sliding snow caps, swinging hoses, and fluttering feathers. The robot must feel immense, stiff from years of stillness, and careful, moving in heavy stages with holds between them. The birds are quick and light, a deliberate contrast.
+
+Direction
+Compose each shot like a frame from a theatrical feature. Open on a still wide shot of the buried robot in the storm, then the nest under its chin, the chick falling into the pit, the chick crying at the bottom seen from above, the parent pecking the lamp in close-up, the eye lighting up in extreme close-up, the arms breaking out of the snow, the searchlight over the pit, the finger and the chick in close-up, the collapse, the return to the nest, the dawn landing, and the final wide shot at sunrise. Start cold and silent, build tension around the pit, and end in a quiet, warm release.
+
+Do not let it look like
+3D: no plastic materials, CGI shading, visible polygons, game engine lighting, or computer-perfect perspective.
+Vector or SVG art: no clean geometric shapes, perfect curves, uniform outlines, flat corporate illustration, or default digital gradients.
+Web animation: no sliding cutouts, constant bobbing, floating parts, smooth software easing, or puppet-like joint rotation.
+AI art: no warped shapes, melted details, flicker, or a robot or birds that change design between shots.
+Wrong style: no glossy modern anime shading, no Western cartoon design, no photoreal rendering, and no generic digital painting.
+Amateur work: no stiff poses, empty backgrounds, repeated rocks or snowdrifts, muddy colors, clip art, placeholders, or unfinished details.
+
+The result should feel cold, lonely, and then tender, like a small kindness that wakes something that has been asleep for a very long time. Before finishing, inspect random frames as still images. If any frame does not look like a genuine frame from a hand-painted theatrical cel animation, keep refining. Do not stop until every frame could be printed and framed as a production cel over its background.
+
+1990년대 일본 OVA 셀 애니메이션 느낌으로, 비 오는 밤 버려진 노면전차가 다시 깨어나 빛의 선로를 타고 달까지 올라가는 80초짜리 장면을 만들어줘. 브라우저에서 바로 열리는 HTML 파일 하나로, 그림과 움직임, 소리까지 전부 코드로 직접 만들어줘.
+
+Create a 2D animated scene for the web that looks exactly like an excerpt from a finished late 1980s to mid 1990s Japanese OVA, the kind released on laserdisc and photographed on film. It must read as traditional hand-drawn cel animation shot under a camera stand, not 3D, not motion graphics, and not an animated illustration.
+
+Deliver the final result as a single self-contained HTML file. Use any tools, libraries, techniques, or references you need, including 3D or procedural methods for layout, perspective, and lighting, as long as every final frame looks 100% hand-drawn and hand-painted.
+
+Style reference
+Use the general visual language of that OVA era as the art direction reference, not any specific film. That means airbrushed highlight cels, deep saturated shadows that fall almost to black, wet reflective streets, strong rim light along every edge, lamplight and signage glow bleeding into the rain, and the slight softness, grain, and color shift of a film transfer. The main character is an original vehicle: a single-car streetcar abandoned for decades at the end of a dead branch line. No humans appear in the scene.
+
+Scene
+A rainy night on the edge of a sleeping coastal town. At the end of an abandoned branch line, where the rails snap off into weeds, a one-car streetcar sits buried in ivy. Its windows are cracked, its paint is faded, and a puddle beneath it reflects a single flickering streetlamp. A stray cat shelters under its boarding step. Lightning flashes across the sky, and in the afterimage the streetcar's headlamp is glowing. The cat bolts. The pantograph lifts with a shriek and scrapes a dead overhead wire, throwing sparks. The interior lights stutter on one by one, the hanging straps sway, and the destination roller clicks and spins until it stops on a blank panel showing only a small crescent moon. The motor groans, rust cracks off the wheels, and the ivy tears loose in long strands. Beyond the broken rail end, light begins stitching new track out of the falling rain, one sleeper at a time, curving up over the rooftops toward a tear in the clouds where the full moon appears. The streetcar rolls forward, gathers speed, and lifts off the ground riding the rails of light over the town, its bell ringing, sparks trailing from the pantograph, raindrops lit gold around it. It threads into the clouds, which glow and part around it. In the final wide shot from street level, the puddle reflects the sky as the trail of light fades into a line of stars, and the cat steps back out from the weeds to watch.
+
+The streetcar
+Design an original, heavy, characterful streetcar with a rounded nose, a single brass headlamp that acts as its eye, a two-tone body in faded teal and cream, a route number plate, riveted panels, a folding pantograph, and a small bell on the roof. Weather it believably with rust streaks running down from every rivet, chipped and layered paint, cracked glass, moss in the seams, and ivy wrapped through the wheels. It has no face, so express emotion only through the headlamp brightening and dimming, the pantograph lifting like a raised head, and the body leaning and settling on its springs. Keep it fully on model from every angle.
+
+Linework
+Confident, hand-inked cel lines with subtle variation in weight and pressure, thicker on the outer silhouette and finer inside. Use colored held lines instead of black where light hits, so lit edges glow orange and wet edges glow cyan.
+
+Coloring
+Traditional cel painting with clean flat color areas, two hard-edged shadow tones, and separate airbrushed highlight passes on the metal and glass, the way OVA cels were finished by hand. The cel layer should sit very slightly apart in color from the background, as real cels did under the camera.
+
+Backgrounds
+Richly detailed hand-painted backgrounds in opaque poster color and acrylic, with visible brushwork, natural color variation, layered rooftops, tangled power lines, shuttered shops, wet tiles, and real depth. All signage must be illegible painted shapes with no real brands or readable text. Never repeat buildings or trees.
+
+Lighting
+Cold blue night and rain, broken by warm sodium streetlamps, the flicker of lightning, the streetcar's interior glow, and finally gold moonlight breaking through the clouds. Every light source must reflect in the puddles and the wet streetcar body, tying character and background together.
+
+Effects
+
+Create a 2D animated scene for the web that looks exactly like an excerpt from a finished Japanese theatrical animated film from the late 1980s and 1990s, made with hand-painted cels over hand-painted background art. It must read as hand-drawn, hand-painted artwork brought to life frame by frame, not 3D, not motion graphics, and not an animated illustration.
+
+Deliver the final result as a single self-contained HTML file. Use any tools, libraries, techniques, or references you need, including 3D or procedural methods for layout, staging, and timing, as long as every final frame looks completely hand-made on cels and paper.
+
+Style reference
+Use the broader tradition of hand-painted theatrical cel animation from that era as the art direction reference, not any specific film, studio, or series. That means poster-color background paintings with visible brush strokes, flat cel paint with one or two hard shadow tones, warm held lines, subtle film grain, gentle gate weave, soft halation around light sources, and slightly lifted blacks. The main character is an original machine: an old, boxy rescue robot, long abandoned. Besides the robot, the only living things in the film are a family of small mountain birds. No humans appear in the scene.
+
+Scene
+A blizzard at night over a wide, open snowfield. In the middle of it sits what looks like a snowdrift with a head and shoulders sticking out: an old rescue robot, kneeling, buried to the chest, its arms half sunk in the snow, icicles hanging from its head. Tucked under its chin is a nest with three tiny chicks. A gust tears across the field and one chick tumbles out, rolls down the drift, and drops into a deep snow pit in front of the robot, where it cries up at the dark sky. The parent bird returns, sees it, and cannot reach it. It flies to the robot's dark chest lamp, clings to it, and pecks at the glass three times. Each peck makes the lamp flicker faintly and die again, a little brighter and a little longer each time, until on the third peck it stays on with a warm glow. The bird startles back, then flies toward the pit as if showing the way. In extreme close-up, the robot's single eye lamp slowly fills with light over several seconds. The head lifts, snow and icicles sliding off. One arm breaks out of the drift in a burst of snow and steadies the nest from below. The other arm tears free and reaches over the pit. The eye lamp becomes a searchlight shining down into it. Cracks spread across the rim as an enormous finger lowers with great care, and the chick climbs onto the open palm. The instant the hand lifts, the pit collapses behind it. The hand carries the chick back to the nest, the chest lamp glows brighter to warm the family, and the robot bows its head over them like a roof against the wind. At dawn the parent lands on the robot's fingertip, then hops home to the nest. In the final shot, the same drift in sunrise light, the robot bent over the nest, its eye slowly going dark.
+
+The robot
+Design an original, boxy, industrial rescue robot. A black mechanical frame under white armor plates with chamfered edges, exposed hydraulic cylinders and hoses, a low square sensor head with a single round eye lamp, and a round lamp on its chest. Faded orange rescue stripes are the only color accent, with no logos, numbers, or lettering. It is weathered, dented, and frosted, and it should feel heavy, gentle, and old. Express emotion only through the slow brightening of its eye, the tilt of its head, and the care in every movement of its hands. Keep it fully on model from every angle, and keep the nest, chicks, and parent bird identical in every shot.
+
+Linework
+Hand-drawn pencil-and-ink cel lines with natural swells and tapers, heavier on silhouettes and finer on interior mechanical detail. Shadow and light edges on the cels use colored held lines, cool blue in shadow and warm amber where the lamps reach.
+
+Coloring
+Flat cel paint with one or two hard shadow tones, in a restrained palette of night blue, snow violet, worn white, ink black, faded rescue orange, and warm lamp amber. Gradients appear only where a background painter would brush them, such as the sky, falling snow, and lamp glow. No glossy highlights and no airbrushed shading on the characters.
+
+Backgrounds
+Hand-painted poster-color background art with visible brush strokes: storm clouds, distant mountain ranges, wind-carved snow, and the dark pit, all on visible paper texture. Snow edges are painted with thick, confident strokes. Key emotional moments are held as fully painted harmony frames, where the characters are rendered in background-painting style for a beat.
+
+Lighting
