@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>AI 영상 제작 연수</title>
+<title>안산호원초 찾아가는 학교 컨설팅 연수 · AI 영상 제작</title>
 <meta name="description" content="한음쌤의 영상 실습 — 영상의 구조부터 Google Flow 실습까지 SESSION 01~05 발표 자료">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/static/pretendard.min.css">
 <style>
@@ -74,6 +74,20 @@ h1,h2,h3,p{margin:0}
 .btn{display:inline-flex;align-items:center;gap:12px;padding:20px 36px;border-radius:999px;background:var(--blue);color:#fff;text-decoration:none;font-size:28px;font-weight:800}
 .btn.ghost{background:#fff;color:var(--blue);border:3px solid var(--blue)}
 .slide > a.btn{align-self:flex-start}
+.prof{width:430px;height:540px;object-fit:cover;border-radius:36px;box-shadow:0 14px 40px rgba(60,70,140,.22)}
+.creds{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}
+.creds span{background:#fff;border:2px solid var(--line);border-radius:999px;padding:10px 22px;font-size:25px;font-weight:700}
+.creds span.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.works{display:grid;grid-template-columns:repeat(5,1fr);gap:16px}
+.works figure,.lects figure{margin:0;background:#fff;border-radius:22px;overflow:hidden;box-shadow:0 6px 20px rgba(80,90,160,.10)}
+.works img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}
+.works figcaption{padding:12px 14px 14px;font-size:21px;font-weight:800;line-height:1.3}
+.works figcaption small{display:block;font-size:17px;font-weight:500;color:var(--sub);margin-top:4px}
+.lects{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.lects figure{display:flex;align-items:center}
+.lects img{width:230px;height:150px;object-fit:cover;display:block;flex:none}
+.lects figcaption{padding:16px 22px;font-size:23px;font-weight:800;line-height:1.35}
+.lects figcaption small{display:block;font-size:19px;font-weight:500;color:var(--sub);margin-top:6px}
 .stills{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;width:1340px;align-self:center}
 .stills figure{margin:0;background:#16161D;border-radius:20px;overflow:hidden}
 .stills img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover}
@@ -170,16 +184,41 @@ img.char{border-radius:30px;box-shadow:0 10px 30px rgba(60,70,140,.18);display:b
 <section class="slide" data-s="표지" data-t="AI 영상 제작 연수">
   <div class="row" style="height:100%;align-items:center;gap:80px">
     <div style="flex:1">
-      <span class="tag on">교원 연수 · SESSION 01 ~ 05</span>
+      <span class="tag on">안산호원초 · 찾아가는 학교 컨설팅 연수</span> <span class="tag">2026. 11. 18.(수)</span>
       <h1 class="h1" style="margin-top:34px">AI 영상 제작 연수</h1>
       <p class="h2 grad" style="margin-top:14px">한음쌤의 영상 실습</p>
       <p class="lead">영상의 구조를 이해하고, Google Flow로<br>나만의 캐릭터 1분 영상을 완성합니다.</p>
+      <p class="small" style="margin-top:30px">강사 <b style="color:var(--ink)">최진성</b> · 광명초등학교 · 2026 인공지능 활용 선도교사</p>
     </div>
     <img class="char" src="assets/char-base.webp" alt="실습 예시 캐릭터" style="height:640px">
   </div>
 </section>
 
 <!-- ════════════════════ 들어가며: 왜 영상을 만들까 ════════════════════ -->
+<section class="slide" data-s="표지" data-t="강사 소개">
+  <div class="row" style="height:100%;align-items:center;gap:70px">
+    <img class="prof" src="assets/instructor/profile.jpg" alt="강사 최진성 사진">
+    <div style="flex:1">
+      <span class="tag on">강사 소개</span>
+      <h2 class="h1" style="margin-top:22px">안녕하세요, <span class="grad">최진성</span>입니다</h2>
+      <p class="lead" style="margin-top:10px">광명초등학교 6학년 담임 · 사랑으로 학생을 품기 위해 도약하는 교사</p>
+      <div class="creds"><span class="on">2026 인공지능 활용 선도교사</span><span class="on">2026 경기도 과학 선도교원</span><span>중앙대 교육대학원 인공지능융합교육 석사 과정</span><span>경인교대 컴퓨터교육과</span></div>
+      <div class="quote" style="margin-top:30px;font-size:30px;padding:30px 40px">"학생 개개인이 사회와 의미 있게 관계 맺도록 돕는 것"<br><span class="small">그림을 몰라도 웹툰 작가가 되고, 코딩을 몰라도 게임을 출시하는 시대. 교실에서 가장 힘주어 말하는 건 <b>"너희는 뭐든 할 수 있다"</b>는 자신감입니다.</span></div>
+      <p class="small" style="margin-top:22px">🏆 2025 GTPC(경기도 교원 프로그래밍 챌린지) 팀 1위 · 2026 인공지능 활용 선도교사 우수 수업 사례 선정</p>
+    </div>
+  </div>
+</section>
+
+<section class="slide" data-s="표지" data-t="교실에서 만들고 나눈 것들">
+  <div class="head" style="margin-bottom:26px"><h2 class="h2" style="font-size:62px">교실에서 <span class="grad">만들고 나눈 것들</span></h2><p class="lead" style="font-size:30px">교실에 필요한 건 선생님이 직접 만들 수 있다 — 직접 만든 웹앱을 수업에 쓰고 있어요</p></div>
+  <div class="works"><figure><img src="assets/instructor/work-rpg.jpg" alt="성장 RPG 화면"><figcaption>성장 RPG<small>학생 성장을 게임처럼 기록·인증하는 학급 운영</small></figcaption></figure><figure><img src="assets/instructor/work-moon.jpg" alt="달의 위상 관측소 화면"><figcaption>달의 위상 관측소<small>태양·지구·달을 돌려 보는 과학 웹앱</small></figcaption></figure><figure><img src="assets/instructor/work-planet.jpg" alt="행성 크기 그리기 화면"><figcaption>행성 크기 그리기<small>실시간 멀티플레이 태양계 비교 게임</small></figcaption></figure><figure><img src="assets/instructor/work-battleship.jpg" alt="World Battleship 화면"><figcaption>World Battleship<small>위도·경도를 배우는 사회 웹앱</small></figcaption></figure><figure><img src="assets/instructor/work-eraser.jpg" alt="사라진 지우개 찾기 화면"><figcaption>사라진 지우개 찾기<small>3D 멀티플레이 교실 게임으로 업그레이드</small></figcaption></figure></div>
+  <div class="lects" style="margin-top:22px">
+    <figure><img src="assets/instructor/lecture-gunpo.jpg" alt="군포의왕교육지원청 연수 사진"><figcaption>평가 관련 에듀테크 연수<small>군포의왕교육지원청 · 하이러닝 서논술형 평가 워크숍</small></figcaption></figure>
+    <figure><img src="assets/instructor/lecture-gwangmyeong.jpg" alt="광명교육지원청 바이브코딩 연수 사진"><figcaption>2026 진로·과학 바이브코딩 연수<small>광명교육지원청 · 웹앱 수업 사례, 바이브 코딩과 호스팅</small></figcaption></figure>
+  </div>
+  <p class="foot" style="bottom:66px">🔗 포트폴리오 <b>jideokchoi2.github.io</b> · 오늘 자료 <b>jideokchoi2.github.io/video-making-guide</b> · 인스타그램 @jideokchoi</p>
+</section>
+
 <section class="slide" data-s="들어가며" data-t="왜 영상을 만들까요?">
   <span class="pill">들어가며</span>
   <div class="head"><h2 class="h2">같은 말을 몇 번째 <span class="grad">하고 계신가요?</span></h2><p class="lead">학교의 하루는 설명과 안내로 채워집니다</p></div>
