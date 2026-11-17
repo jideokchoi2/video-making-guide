@@ -1,0 +1,2080 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>黒い紙飛行機の群れ — 검은 종이비행기 떼의 습격 (1993 OVA Remastered)</title>
+<style>
+:root {
+  --ink: #f4ebd9;
+  --dim: rgba(244, 235, 217, 0.62);
+  --line: rgba(244, 235, 217, 0.26);
+  --bg: #060509;
+  --accent: #ff9e44;
+  --cyan: #5ce1e6;
+}
+* { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Iowan Old Style", "Palatino Linotype", "Yu Mincho", "Batang", Georgia, serif;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+#stage {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, #120e1a 0%, #050408 100%);
+}
+#frame {
+  position: relative;
+  width: min(100vw, calc(100vh * 1.84615));
+  width: min(100dvw, calc(100dvh * 1.84615));
+  aspect-ratio: 1920 / 1040;
+  background: #08070d;
+  overflow: hidden;
+  box-shadow: 0 0 110px rgba(255, 158, 68, 0.08), 0 0 2px rgba(255, 255, 255, 0.18);
+  cursor: none;
+}
+#frame.ui-visible {
+  cursor: default;
+}
+#weave-wrap {
+  position: absolute;
+  inset: -6px;
+  width: calc(100% + 12px);
+  height: calc(100% + 12px);
+  will-change: transform;
+}
+canvas.layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+#webgl-canvas { z-index: 1; }
+#cel-overlay { z-index: 2; pointer-events: none; }
+#halation-canvas {
+  z-index: 3;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  opacity: 0.44;
+  filter: blur(6px);
+}
+#grain-canvas {
+  z-index: 4;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+  opacity: 0.075;
+}
+#vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at center, transparent 60%, rgba(4, 3, 8, 0.68) 100%),
+    linear-gradient(180deg, rgba(255, 145, 70, 0.03), rgba(40, 180, 220, 0.03));
+  box-shadow: inset 0 0 46px rgba(0, 0, 0, 0.78);
+}
+#veil {
+  position: absolute;
+  inset: 0;
+  z-index: 12;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  text-align: center;
+  padding: 24px;
+  background: radial-gradient(ellipse at center, rgba(10, 8, 16, 0.45), rgba(5, 4, 9, 0.88));
+  transition: opacity 0.6s ease;
+}
+#veil.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+.ova-badge {
+  font-size: clamp(10px, 1vw, 13px);
+  letter-spacing: 0.32em;
+  color: var(--accent);
+  text-transform: uppercase;
+  opacity: 0.88;
+}
+h1 {
+  margin: 0;
+  font-weight: 400;
+  font-size: clamp(22px, 3.8vw, 46px);
+  letter-spacing: 0.12em;
+  color: var(--ink);
+  text-shadow: 0 4px 28px rgba(0, 0, 0, 0.85), 0 0 18px rgba(255, 158, 68, 0.25);
+}
+.sub-jp {
+  font-size: clamp(12px, 1.3vw, 16px);
+  letter-spacing: 0.26em;
+  color: var(--dim);
+  margin-bottom: 8px;
+}
+button {
+  font: inherit;
+  color: var(--ink);
+  background: rgba(14, 12, 22, 0.65);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 10px 26px;
+  font-size: clamp(13px, 1.3vw, 16px);
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: background 0.2s, border-color 0.2s, transform 0.15s;
+}
+button:hover {
+  background: rgba(255, 158, 68, 0.2);
+  border-color: var(--accent);
+}
+button:active {
+  transform: scale(0.97);
+}
+#bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  padding: 28px clamp(12px, 2vw, 24px) 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(transparent, rgba(4, 3, 8, 0.78));
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+#frame.ui-visible #bar {
+  opacity: 1;
+  pointer-events: auto;
+}
+.ic {
+  padding: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(12, 10, 18, 0.45);
+  border: 1px solid rgba(244, 235, 217, 0.18);
+  flex: none;
+}
+.ic svg {
+  width: 17px;
+  height: 17px;
+  fill: var(--ink);
+}
+.step-btn {
+  padding: 5px 11px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  border-radius: 6px;
+  background: rgba(12, 10, 18, 0.55);
+  border: 1px solid rgba(244, 235, 217, 0.2);
+  color: var(--dim);
+  flex: none;
+}
+.step-btn:hover {
+  color: var(--ink);
+}
+#track {
+  flex: 1;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  touch-action: none;
+}
+#rail {
+  position: relative;
+  width: 100%;
+  height: 3px;
+  background: rgba(244, 235, 217, 0.22);
+  border-radius: 2px;
+}
+#fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--cyan));
+  border-radius: 2px;
+}
+#time-readout {
+  font-family: "Courier New", monospace;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--dim);
+  min-width: 84px;
+  text-align: right;
+}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="frame" class="ui-visible" aria-label="The Swarm of Black Paper Planes, 1990s OVA Cel Animation">
+    <div id="weave-wrap">
+      <canvas id="webgl-canvas" class="layer" width="1280" height="693"></canvas>
+      <canvas id="cel-overlay" class="layer" width="1280" height="693"></canvas>
+      <canvas id="halation-canvas" class="layer" width="480" height="260"></canvas>
+    </div>
+    <canvas id="grain-canvas" class="layer" width="320" height="174"></canvas>
+    <div id="vignette"></div>
+
+    <div id="veil">
+      <div class="ova-badge">1993 LASERDISC TRANSFER · 24FPS / ON TWOS CEL ANIMATION</div>
+      <h1>검은 종이비행기 떼의 습격</h1>
+      <div class="sub-jp">黒い紙飛行機の群れ — 噂の影と黄金の風</div>
+      <button id="start-btn">▶ 재생 (Play with Sound)</button>
+    </div>
+
+    <div id="bar">
+      <button class="ic" id="play-btn" aria-label="Play/Pause">
+        <svg id="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+      </button>
+      <button class="step-btn" id="prev-cel" title="이전 셀 프레임 ([)">-1/12s</button>
+      <button class="step-btn" id="next-cel" title="다음 셀 프레임 (])">+1/12s CEL</button>
+      <div id="track" role="slider" aria-label="Timeline" tabindex="0">
+        <div id="rail"><div id="fill"></div></div>
+      </div>
+      <div id="time-readout">00:00 / 01:00</div>
+      <button class="ic" id="mute-btn" aria-label="Mute/Unmute">
+        <svg id="vol-icon" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+      </button>
+      <button class="ic" id="fs-btn" aria-label="Fullscreen">
+        <svg viewBox="0 0 24 24"><path d="M4 9V4h5v2H6v3zm11-5h5v5h-2V6h-3zM6 15v3h3v2H4v-5zm12 3v-3h2v5h-5v-2z"/></svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(() => {
+  const DURATION = 60.0;
+  const CEL_FPS = 12; // Traditional anime "on twos" (12 drawings per second)
+  const W = 1280;
+  const H = 693;
+
+  const frameEl = document.getElementById('frame');
+  const weaveWrap = document.getElementById('weave-wrap');
+  const webglCanvas = document.getElementById('webgl-canvas');
+  const celCanvas = document.getElementById('cel-overlay');
+  const celCtx = celCanvas.getContext('2d');
+  const halCanvas = document.getElementById('halation-canvas');
+  const halCtx = halCanvas.getContext('2d');
+  const grainCanvas = document.getElementById('grain-canvas');
+  const grainCtx = grainCanvas.getContext('2d');
+
+  const veilEl = document.getElementById('veil');
+  const startBtn = document.getElementById('start-btn');
+  const playBtn = document.getElementById('play-btn');
+  const playIcon = document.getElementById('play-icon');
+  const prevCelBtn = document.getElementById('prev-cel');
+  const nextCelBtn = document.getElementById('next-cel');
+  const trackEl = document.getElementById('track');
+  const fillEl = document.getElementById('fill');
+  const timeReadout = document.getElementById('time-readout');
+  const muteBtn = document.getElementById('mute-btn');
+  const volIcon = document.getElementById('vol-icon');
+  const fsBtn = document.getElementById('fs-btn');
+
+  let currentTime = 0.0;
+  let isPlaying = false;
+  let lastRaf = performance.now();
+  let lastQuantizedStep = -1;
+  let uiTimer = null;
+
+  // Deterministic PRNG & math utilities
+  function mulberry32(a) {
+    return function() {
+      let t = a += 0x6D2B79F5;
+      t = Math.imul(t ^ t >>> 15, t | 1);
+      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function hash(n) {
+    const x = Math.sin(n * 127.1 + 311.7) * 43758.5453123;
+    return x - Math.floor(x);
+  }
+  function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+  function lerp(a, b, t) { return a + (b - a) * clamp(t, 0, 1); }
+  function smoothstep(e0, e1, x) {
+    const t = clamp((x - e0) / (e1 - e0), 0, 1);
+    return t * t * (3 - 2 * t);
+  }
+  function quantizeTwos(t) {
+    return Math.floor(t * CEL_FPS) / CEL_FPS;
+  }
+
+  // =========================================================================
+  // 1. NATURAL WEB AUDIO SYNTHESIZER WITH CONVOLUTION REVERB & FOLEY
+  // =========================================================================
+  class OvaAudioEngine {
+    constructor() {
+      this.ctx = null;
+      this.master = null;
+      this.reverb = null;
+      this.muted = false;
+      this.lastStep = -1;
+      this.lastBarIdx = -1;
+    }
+
+    init() {
+      if (this.ctx) {
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+        return;
+      }
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return;
+      this.ctx = new AudioCtx();
+      this.master = this.ctx.createGain();
+      this.master.gain.value = 0.78;
+      this.master.connect(this.ctx.destination);
+
+      // Create lush hall convolution reverb for natural 1990s OVA soundtrack space
+      const revLen = Math.floor(this.ctx.sampleRate * 2.4);
+      const revBuf = this.ctx.createBuffer(2, revLen, this.ctx.sampleRate);
+      for (let ch = 0; ch < 2; ch++) {
+        const d = revBuf.getChannelData(ch);
+        for (let i = 0; i < revLen; i++) {
+          const decay = Math.pow(1 - i / revLen, 2.6);
+          d[i] = (Math.random() * 2 - 1) * decay * 0.35;
+        }
+      }
+      this.reverb = this.ctx.createConvolver();
+      this.reverb.buffer = revBuf;
+      const revGain = this.ctx.createGain();
+      revGain.gain.value = 0.42;
+      this.reverb.connect(revGain);
+      revGain.connect(this.master);
+
+      // Soft analog tape room tone & evening breeze through hallway windows
+      const bufSize = this.ctx.sampleRate * 3;
+      const noiseBuf = this.ctx.createBuffer(1, bufSize, this.ctx.sampleRate);
+      const out = noiseBuf.getChannelData(0);
+      for (let i = 0; i < bufSize; i++) {
+        out[i] = (Math.random() * 2 - 1) * 0.012;
+      }
+      const white = this.ctx.createBufferSource();
+      white.buffer = noiseBuf;
+      white.loop = true;
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 520;
+      const ambGain = this.ctx.createGain();
+      ambGain.gain.value = 0.35;
+      white.connect(filter);
+      filter.connect(ambGain);
+      ambGain.connect(this.master);
+      white.start();
+    }
+
+    setMuted(m) {
+      this.muted = m;
+      if (this.master && this.ctx) {
+        this.master.gain.setTargetAtTime(m ? 0.0 : 0.78, this.ctx.currentTime, 0.06);
+      }
+    }
+
+    playWarmPad(freqs, duration, darkness = 0.0, vol = 0.075) {
+      if (!this.ctx || !isPlaying) return;
+      const now = this.ctx.currentTime;
+      freqs.forEach((f) => {
+        const osc1 = this.ctx.createOscillator();
+        const osc2 = this.ctx.createOscillator();
+        osc1.type = darkness > 0.5 ? 'sawtooth' : 'triangle';
+        osc2.type = 'sine';
+        osc1.frequency.setValueAtTime(f * 0.998, now);
+        osc2.frequency.setValueAtTime(f * 1.002, now);
+
+        const flt = this.ctx.createBiquadFilter();
+        flt.type = 'lowpass';
+        flt.frequency.setValueAtTime(lerp(1450, 580, darkness), now);
+
+        const g = this.ctx.createGain();
+        g.gain.setValueAtTime(0.0001, now);
+        g.gain.linearRampToValueAtTime(vol / freqs.length, now + 0.65);
+        g.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+        osc1.connect(flt);
+        osc2.connect(flt);
+        flt.connect(g);
+        g.connect(this.master);
+        if (this.reverb) g.connect(this.reverb);
+
+        osc1.start(now);
+        osc2.start(now);
+        osc1.stop(now + duration + 0.08);
+        osc2.stop(now + duration + 0.08);
+      });
+    }
+
+    playElectricPianoNote(freq, delay = 0, vol = 0.055) {
+      if (!this.ctx || !isPlaying) return;
+      const now = this.ctx.currentTime + delay;
+      const carrier = this.ctx.createOscillator();
+      const mod = this.ctx.createOscillator();
+      const modGain = this.ctx.createGain();
+
+      carrier.type = 'sine';
+      mod.type = 'sine';
+      carrier.frequency.setValueAtTime(freq, now);
+      mod.frequency.setValueAtTime(freq * 2.0, now);
+
+      modGain.gain.setValueAtTime(freq * 0.8, now);
+      modGain.gain.exponentialRampToValueAtTime(0.1, now + 0.45);
+
+      const env = this.ctx.createGain();
+      env.gain.setValueAtTime(0.0001, now);
+      env.gain.linearRampToValueAtTime(vol, now + 0.018);
+      env.gain.exponentialRampToValueAtTime(0.0001, now + 1.85);
+
+      mod.connect(modGain);
+      modGain.connect(carrier.frequency);
+      carrier.connect(env);
+      env.connect(this.master);
+      if (this.reverb) env.connect(this.reverb);
+
+      carrier.start(now);
+      mod.start(now);
+      carrier.stop(now + 1.9);
+      mod.stop(now + 1.9);
+    }
+
+    playPaperFlutter(intensity = 0.5, pitch = 650, pan = 0) {
+      if (!this.ctx || !isPlaying) return;
+      const now = this.ctx.currentTime;
+      const dur = 0.14 + intensity * 0.12;
+      const bufSize = Math.floor(this.ctx.sampleRate * dur);
+      const buf = this.ctx.createBuffer(1, bufSize, this.ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let i = 0; i < bufSize; i++) {
+        const env = Math.sin((i / bufSize) * Math.PI);
+        const flutter = 0.65 + 0.35 * Math.sin(i * 0.08);
+        data[i] = (Math.random() * 2 - 1) * env * flutter;
+      }
+      const src = this.ctx.createBufferSource();
+      src.buffer = buf;
+
+      const bp = this.ctx.createBiquadFilter();
+      bp.type = 'bandpass';
+      bp.frequency.setValueAtTime(pitch, now);
+      bp.frequency.exponentialRampToValueAtTime(pitch * 1.45, now + dur);
+      bp.Q.value = 2.6;
+
+      const g = this.ctx.createGain();
+      g.gain.setValueAtTime(0.075 * intensity, now);
+      g.gain.exponentialRampToValueAtTime(0.001, now + dur);
+
+      src.connect(bp);
+      bp.connect(g);
+      g.connect(this.master);
+      if (this.reverb) g.connect(this.reverb);
+      src.start(now);
+    }
+
+    playDramaticChordHit(isBright = false) {
+      if (!this.ctx || !isPlaying) return;
+      const now = this.ctx.currentTime;
+      const notes = isBright
+        ? [174.61, 261.63, 349.23, 440.0, 523.25, 659.25] // Fmaj7#11 heroic bloom
+        : [73.42, 110.0, 146.83, 174.61, 233.08];         // Dm(b6) ominous impact
+      notes.forEach((f, idx) => {
+        const osc = this.ctx.createOscillator();
+        osc.type = isBright ? 'triangle' : 'sawtooth';
+        osc.frequency.setValueAtTime(f, now);
+        const flt = this.ctx.createBiquadFilter();
+        flt.type = 'lowpass';
+        flt.frequency.setValueAtTime(isBright ? 3200 : 1050, now);
+        flt.frequency.exponentialRampToValueAtTime(260, now + 2.3);
+
+        const g = this.ctx.createGain();
+        g.gain.setValueAtTime(0.001, now);
+        g.gain.linearRampToValueAtTime(0.085 / Math.sqrt(notes.length), now + 0.035);
+        g.gain.exponentialRampToValueAtTime(0.0001, now + 2.35);
+
+        osc.connect(flt);
+        flt.connect(g);
+        g.connect(this.master);
+        if (this.reverb) g.connect(this.reverb);
+        osc.start(now);
+        osc.stop(now + 2.4);
+      });
+    }
+
+    update(t) {
+      if (!this.ctx || !isPlaying) return;
+      const step = Math.floor(t * CEL_FPS);
+      if (step === this.lastStep) return;
+      this.lastStep = step;
+
+      const barIdx = Math.floor(t / 4.0);
+      if (barIdx !== this.lastBarIdx) {
+        this.lastBarIdx = barIdx;
+        if (t < 9.0) {
+          this.playWarmPad(barIdx % 2 === 0 ? [146.83, 220.0, 261.63, 329.63] : [116.54, 174.61, 220.0, 293.66], 4.4, 0.0, 0.08);
+          this.playElectricPianoNote(523.25, 0.2, 0.04);
+          this.playElectricPianoNote(659.25, 0.9, 0.035);
+          this.playElectricPianoNote(587.33, 1.8, 0.04);
+        } else if (t < 24.0) {
+          const d = clamp((t - 9.0) / 13.0, 0, 1);
+          this.playWarmPad(barIdx % 2 === 0 ? [146.83, 174.61, 233.08, 293.66] : [110.0, 155.56, 207.65, 261.63], 4.2, d, 0.095);
+        } else if (t < 36.0) {
+          if (t < 30.0) {
+            this.playWarmPad([98.0, 146.83, 220.0, 233.08], 3.9, 0.85, 0.11);
+          } else {
+            this.playWarmPad([174.61, 261.63, 329.63, 392.0], 4.3, 0.1, 0.11);
+          }
+        } else if (t < 46.0) {
+          this.playWarmPad([174.61, 220.0, 261.63, 349.23, 440.0], 4.5, 0.0, 0.095);
+          this.playElectricPianoNote(440.0, 0.3, 0.045);
+          this.playElectricPianoNote(523.25, 1.1, 0.045);
+          this.playElectricPianoNote(659.25, 2.0, 0.05);
+        } else {
+          this.playWarmPad(barIdx % 2 === 0 ? [116.54, 220.0, 261.63, 349.23, 523.25] : [174.61, 261.63, 329.63, 440.0, 523.25], 4.8, 0.0, 0.095);
+          const arp = [523.25, 659.25, 783.99, 1046.5];
+          arp.forEach((n, idx) => this.playElectricPianoNote(n, idx * 0.65, 0.04));
+        }
+      }
+
+      if (t >= 9.2 && t < 22.0 && step % 4 === 0) {
+        this.playPaperFlutter(0.4 + ((t - 9) / 13) * 0.55, 500 + (step % 6) * 85);
+      }
+      if (step === Math.floor(22.0 * CEL_FPS)) {
+        this.playDramaticChordHit(false);
+      }
+      if (step === Math.floor(30.0 * CEL_FPS)) {
+        this.playPaperFlutter(1.0, 420);
+        this.playElectricPianoNote(523.25, 0.02, 0.075);
+        this.playElectricPianoNote(659.25, 0.12, 0.075);
+        this.playElectricPianoNote(783.99, 0.24, 0.08);
+      }
+      if (step === Math.floor(36.0 * CEL_FPS)) {
+        this.playDramaticChordHit(true);
+      }
+      if (t >= 38.5 && t < 44.5 && step % 12 === 0) {
+        this.playPaperFlutter(0.42, 880);
+      }
+    }
+  }
+  const audio = new OvaAudioEngine();
+
+  // =========================================================================
+  // 2. PROCEDURAL GOUACHE / POSTER-COLOR TEXTURES FOR 3D CORRIDOR
+  // =========================================================================
+  function makeCanvasTexture(w, h, seed, drawFn) {
+    const c = document.createElement('canvas');
+    c.width = w;
+    c.height = h;
+    const ctx = c.getContext('2d');
+    const rng = mulberry32(seed);
+    drawFn(ctx, w, h, rng);
+    // Poster-color drybrush grain
+    for (let i = 0; i < 300; i++) {
+      ctx.fillStyle = rng() > 0.5 ? 'rgba(255,235,205,0.022)' : 'rgba(8,6,15,0.028)';
+      ctx.fillRect(rng() * w, rng() * h, 14 + rng() * 60, 2 + rng() * 6);
+    }
+    const tex = new THREE.CanvasTexture(c);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    return tex;
+  }
+
+  // =========================================================================
+  // 3. THREE.JS 3D CORRIDOR + ARTICULATED ORIGAMI PLANES + IRO-TRESU SHADER
+  // =========================================================================
+  let renderer, scene, camera;
+  let corridorGroup, sunbeamMeshes = [], curtainMeshes = [];
+  let paperPlanes = [];
+  let heroOrigamiGroup, heroOrigamiPanels = {};
+  let ambientLight, sunsetDirLight;
+  let skyUniforms;
+
+  const celVertexShader = `
+    varying vec3 vNormal;
+    varying vec3 vViewPos;
+    varying vec3 vWorldPos;
+    varying vec2 vUv;
+    void main() {
+      vUv = uv;
+      vNormal = normalize(normalMatrix * normal);
+      vec4 mvPos = modelViewMatrix * vec4(position, 1.0);
+      vViewPos = -mvPos.xyz;
+      vWorldPos = (modelMatrix * vec4(position, 1.0)).xyz;
+      gl_Position = projectionMatrix * mvPos;
+    }
+  `;
+
+  // 3-Tone OVA Cel Shader with Colored Held Lines (Iro-Tresu) & Paper Fiber Texture
+  const celFragmentShader = `
+    uniform vec3 uBaseColor;
+    uniform vec3 uShadow1;
+    uniform vec3 uShadow2;
+    uniform vec3 uWarmRim;
+    uniform vec3 uCoolRim;
+    uniform vec3 uLightDir;
+    uniform float uCorruption;
+    uniform float uCreaseGlow;
+    varying vec3 vNormal;
+    varying vec3 vViewPos;
+    varying vec3 vWorldPos;
+    varying vec2 vUv;
+
+    void main() {
+      vec3 N = normalize(vNormal);
+      if (!gl_FrontFacing) N = -N;
+      vec3 V = normalize(vViewPos);
+      vec3 L = normalize(uLightDir);
+
+      float ndl = dot(N, L);
+      float rim = 1.0 - max(dot(N, V), 0.0);
+
+      vec3 cleanBase = uBaseColor;
+      vec3 cleanSh1  = uShadow1;
+      vec3 cleanSh2  = uShadow2;
+
+      vec3 darkBase  = vec3(0.12, 0.10, 0.18);
+      vec3 darkSh1   = vec3(0.06, 0.05, 0.10);
+      vec3 darkSh2   = vec3(0.02, 0.015, 0.04);
+
+      vec3 base = mix(cleanBase, darkBase, uCorruption);
+      vec3 sh1  = mix(cleanSh1,  darkSh1,  uCorruption);
+      vec3 sh2  = mix(cleanSh2,  darkSh2,  uCorruption);
+
+      // Smoothly anti-aliased 3-tone cel step
+      float s1 = smoothstep(-0.18, -0.11, ndl);
+      float s2 = smoothstep(0.26, 0.33, ndl);
+      vec3 col = mix(sh2, sh1, s1);
+      col = mix(col, base, s2);
+
+      // Subtle paper fold crease line highlight/shadow
+      float crease = exp(-abs(vUv.x - 0.5) * 28.0);
+      col = mix(col, col * 0.82 + vec3(0.18, 0.12, 0.06) * uCreaseGlow, crease * 0.65);
+
+      // Airbrushed cel highlight pass
+      vec3 H = normalize(L + V);
+      float spec = smoothstep(0.76, 0.86, max(dot(N, H), 0.0));
+      col += spec * mix(vec3(0.20, 0.16, 0.10), vec3(0.32, 0.12, 0.18), uCorruption);
+
+      // Colored Held Rim Line (Iro-Tresu)
+      float rimMask = smoothstep(0.68, 0.78, rim);
+      vec3 rimCol = ndl > 0.0 ? uWarmRim : uCoolRim;
+      col = mix(col, rimCol, rimMask * 0.85);
+
+      gl_FragColor = vec4(col, 1.0);
+    }
+  `;
+
+  function createPlaneWingGeometry(side) {
+    // side = -1 (left) or +1 (right)
+    const geom = new THREE.BufferGeometry();
+    // Nose at (0, 0, 1.25), tail at z = -0.85, outer wingtip at x = side * 1.05
+    const s = side;
+    const positions = new Float32Array([
+      // Inner keel triangle (hinged at center bottom y=0, rises to fold ridge x = s*0.14, y = 0.22)
+      0, 0, 1.25,
+      s * 0.14, 0.22, -0.78,
+      0, 0, -0.78,
+
+      // Main outer wing triangle (from nose to fold ridge to outer wingtip)
+      0, 0, 1.25,
+      s * 1.08, 0.26, -0.86,
+      s * 0.14, 0.22, -0.78,
+
+      // Crow-feather rear barb triangle
+      s * 0.14, 0.22, -0.78,
+      s * 1.08, 0.26, -0.86,
+      s * 0.58, 0.24, -1.16
+    ]);
+    const uvs = new Float32Array([
+      0.5, 1.0,  0.5 + s * 0.12, 0.15,  0.5, 0.15,
+      0.5, 1.0,  0.5 + s * 0.48, 0.10,  0.5 + s * 0.12, 0.15,
+      0.5 + s * 0.12, 0.15,  0.5 + s * 0.48, 0.10,  0.5 + s * 0.28, 0.0
+    ]);
+    geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geom.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+    geom.computeVertexNormals();
+    return geom;
+  }
+
+  function createArticulatedPaperPlane(index) {
+    const group = new THREE.Group();
+    const mat = new THREE.ShaderMaterial({
+      vertexShader: celVertexShader,
+      fragmentShader: celFragmentShader,
+      side: THREE.DoubleSide,
+      uniforms: {
+        uBaseColor:  { value: new THREE.Color('#f7efe0') },
+        uShadow1:    { value: new THREE.Color('#c2aea0') },
+        uShadow2:    { value: new THREE.Color('#6b5569') },
+        uWarmRim:    { value: new THREE.Color('#ff9e44') },
+        uCoolRim:    { value: new THREE.Color('#5ce1e6') },
+        uLightDir:   { value: new THREE.Vector3(-1.0, 0.45, 0.35).normalize() },
+        uCorruption: { value: index === 0 ? 0.0 : 1.0 },
+        uCreaseGlow: { value: 0.3 }
+      }
+    });
+
+    const leftGeo = createPlaneWingGeometry(-1);
+    const rightGeo = createPlaneWingGeometry(1);
+
+    const leftWing = new THREE.Mesh(leftGeo, mat);
+    const rightWing = new THREE.Mesh(rightGeo, mat);
+
+    const lineMat = new THREE.LineBasicMaterial({
+      color: index === 0 ? 0x261a24 : 0xff8247,
+      transparent: true,
+      opacity: 0.88
+    });
+    leftWing.add(new THREE.LineSegments(new THREE.EdgesGeometry(leftGeo, 6), lineMat));
+    rightWing.add(new THREE.LineSegments(new THREE.EdgesGeometry(rightGeo, 6), lineMat));
+
+    group.add(leftWing);
+    group.add(rightWing);
+
+    group.userData = {
+      index,
+      seed: hash(index * 19.37 + 7.1),
+      phase: hash(index * 43.11) * Math.PI * 2,
+      laneX: (hash(index * 11.3) - 0.5) * 4.8,
+      laneY: (hash(index * 29.7) - 0.5) * 2.4,
+      speedOffset: 0.78 + hash(index * 61.9) * 0.55,
+      leftWing,
+      rightWing,
+      shaderMat: mat,
+      lineMat
+    };
+
+    return group;
+  }
+
+  // Create the Hero 3D Origami Sheet that smoothly unfolds from a Paper Plane into a Flat Sheet in Shot 5
+  function createHeroOrigamiMesh() {
+    const root = new THREE.Group();
+    const mat = new THREE.ShaderMaterial({
+      vertexShader: celVertexShader,
+      fragmentShader: celFragmentShader,
+      side: THREE.DoubleSide,
+      uniforms: {
+        uBaseColor:  { value: new THREE.Color('#faf3e3') },
+        uShadow1:    { value: new THREE.Color('#d2beae') },
+        uShadow2:    { value: new THREE.Color('#836d7d') },
+        uWarmRim:    { value: new THREE.Color('#ffae52') },
+        uCoolRim:    { value: new THREE.Color('#5ce1e6') },
+        uLightDir:   { value: new THREE.Vector3(-0.7, 0.5, 0.8).normalize() },
+        uCorruption: { value: 1.0 },
+        uCreaseGlow: { value: 1.0 }
+      }
+    });
+
+    const lineMat = new THREE.LineBasicMaterial({ color: 0x2c1d26, transparent: true, opacity: 0.85 });
+
+    // Left & Right hinged halves of a rectangular sheet (width 2.2, height 2.8) with diagonal nose fold hinges
+    function makeHalfSheet(side) {
+      const pivot = new THREE.Group();
+      const g = new THREE.BufferGeometry();
+      const s = side;
+      // Main panel quad + nose corner fold
+      const verts = new Float32Array([
+        0, -1.35, 0,    s * 1.05, -1.35, 0,   s * 1.05, 0.45, 0,
+        0, -1.35, 0,    s * 1.05, 0.45, 0,    0, 1.35, 0,
+        // Upper outer corner triangle (folds inward when plane is folded)
+        0, 1.35, 0,     s * 1.05, 0.45, 0,    s * 0.92, 1.35, 0
+      ]);
+      const uvs = new Float32Array([
+        0.5, 0,   0.5 + s * 0.45, 0,   0.5 + s * 0.45, 0.65,
+        0.5, 0,   0.5 + s * 0.45, 0.65, 0.5, 1.0,
+        0.5, 1.0, 0.5 + s * 0.45, 0.65, 0.5 + s * 0.42, 1.0
+      ]);
+      g.setAttribute('position', new THREE.BufferAttribute(verts, 3));
+      g.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+      g.computeVertexNormals();
+      const m = new THREE.Mesh(g, mat);
+      m.add(new THREE.LineSegments(new THREE.EdgesGeometry(g, 1), lineMat));
+      pivot.add(m);
+      return pivot;
+    }
+
+    const leftHalf = makeHalfSheet(-1);
+    const rightHalf = makeHalfSheet(1);
+    root.add(leftHalf);
+    root.add(rightHalf);
+    root.visible = false;
+
+    heroOrigamiPanels = { root, leftHalf, rightHalf, mat, lineMat };
+    return root;
+  }
+
+  function build3DCorridorEnvironment() {
+    corridorGroup = new THREE.Group();
+
+    // 1. Sunset Sky Backdrop outside the left corridor windows
+    const skyCanvas = document.createElement('canvas');
+    skyCanvas.width = 512;
+    skyCanvas.height = 512;
+    const sCtx = skyCanvas.getContext('2d');
+    const skyGrad = sCtx.createLinearGradient(0, 0, 0, 512);
+    skyGrad.addColorStop(0.0, '#181332');
+    skyGrad.addColorStop(0.32, '#5c2344');
+    skyGrad.addColorStop(0.62, '#d9532f');
+    skyGrad.addColorStop(0.84, '#ffae47');
+    skyGrad.addColorStop(1.0, '#fff0b8');
+    sCtx.fillStyle = skyGrad;
+    sCtx.fillRect(0, 0, 512, 512);
+    // Painted distant town rooftops & utility poles silhouette
+    sCtx.fillStyle = '#1b1124';
+    sCtx.fillRect(0, 420, 512, 92);
+    for (let i = 0; i < 18; i++) {
+      sCtx.fillRect(i * 30, 385 + ((i * 17) % 35), 26, 50);
+    }
+    const skyTex = new THREE.CanvasTexture(skyCanvas);
+    const skyPlane = new THREE.Mesh(
+      new THREE.PlaneGeometry(65, 28),
+      new THREE.MeshBasicMaterial({ map: skyTex, side: THREE.DoubleSide })
+    );
+    skyPlane.position.set(-14.5, 2.5, -12);
+    skyPlane.rotation.y = Math.PI * 0.5;
+    corridorGroup.add(skyPlane);
+
+    // 2. Wooden Corridor Floor (with warm sunset reflection bands)
+    const floorTex = makeCanvasTexture(512, 512, 101, (ctx, w, h, rng) => {
+      ctx.fillStyle = '#2b1922';
+      ctx.fillRect(0, 0, w, h);
+      // Planks
+      for (let i = 0; i < 16; i++) {
+        const x = (i / 16) * w;
+        ctx.fillStyle = i % 2 === 0 ? 'rgba(48, 28, 36, 0.85)' : 'rgba(38, 21, 29, 0.85)';
+        ctx.fillRect(x, 0, w / 16 - 2, h);
+        ctx.fillStyle = '#140b11';
+        ctx.fillRect(x, 0, 2, h);
+      }
+    });
+    floorTex.repeat.set(2, 8);
+    const floorMesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(7.2, 46),
+      new THREE.MeshLambertMaterial({ map: floorTex })
+    );
+    floorMesh.rotation.x = -Math.PI * 0.5;
+    floorMesh.position.set(0, -2.2, -10);
+    corridorGroup.add(floorMesh);
+
+    // 3. Ceiling & Structural Beams
+    const ceilMat = new THREE.MeshLambertMaterial({ color: 0x1a1528 });
+    const ceilMesh = new THREE.Mesh(new THREE.PlaneGeometry(7.2, 46), ceilMat);
+    ceilMesh.rotation.x = Math.PI * 0.5;
+    ceilMesh.position.set(0, 2.8, -10);
+    corridorGroup.add(ceilMesh);
+
+    const pillarMat = new THREE.MeshLambertMaterial({ color: 0x221929 });
+    const frameRimMat = new THREE.MeshBasicMaterial({ color: 0xff9e44 });
+
+    // 4. Left Wall: Window Bays, Mullions, Curtains & Volumetric Sunbeams
+    for (let b = 0; b < 7; b++) {
+      const zPos = 8.0 - b * 5.2;
+
+      // Concrete/wood pillar between windows
+      const pillar = new THREE.Mesh(new THREE.BoxGeometry(0.45, 5.0, 0.65), pillarMat);
+      pillar.position.set(-3.55, 0.3, zPos);
+      corridorGroup.add(pillar);
+
+      // Orange rim highlight strip on pillar edge facing window
+      const rimStrip = new THREE.Mesh(new THREE.BoxGeometry(0.04, 5.0, 0.06), frameRimMat);
+      rimStrip.position.set(-3.31, 0.3, zPos - 0.32);
+      corridorGroup.add(rimStrip);
+
+      // Lower wall wainscot under window
+      const wainscot = new THREE.Mesh(new THREE.BoxGeometry(0.35, 1.35, 4.6), pillarMat);
+      wainscot.position.set(-3.55, -1.52, zPos - 2.6);
+      corridorGroup.add(wainscot);
+
+      // Upper transom beam
+      const transom = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.65, 4.6), pillarMat);
+      transom.position.set(-3.55, 2.48, zPos - 2.6);
+      corridorGroup.add(transom);
+
+      // Horizontal middle window bar
+      const midBar = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.1, 4.6), pillarMat);
+      midBar.position.set(-3.55, 0.55, zPos - 2.6);
+      corridorGroup.add(midBar);
+
+      // Billowing sheer curtain on window bay
+      const curtainGeo = new THREE.PlaneGeometry(1.1, 2.9, 6, 12);
+      const curtainMat = new THREE.MeshLambertMaterial({
+        color: 0xffd8b8,
+        transparent: true,
+        opacity: 0.42,
+        side: THREE.DoubleSide
+      });
+      const curtain = new THREE.Mesh(curtainGeo, curtainMat);
+      curtain.rotation.y = Math.PI * 0.5;
+      curtain.position.set(-3.32, 0.65, zPos - 0.85);
+      curtain.userData = { basePos: curtainGeo.attributes.position.array.slice(), seed: b * 1.7 };
+      corridorGroup.add(curtain);
+      curtainMeshes.push(curtain);
+
+      // Volumetric Golden Sunbeam Shaft slanting across the hallway
+      const beamCanvas = document.createElement('canvas');
+      beamCanvas.width = 128;
+      beamCanvas.height = 128;
+      const bCtx = beamCanvas.getContext('2d');
+      const bGrad = bCtx.createLinearGradient(0, 0, 128, 0);
+      bGrad.addColorStop(0.0, 'rgba(255, 185, 90, 0.26)');
+      bGrad.addColorStop(0.5, 'rgba(255, 160, 65, 0.11)');
+      bGrad.addColorStop(1.0, 'rgba(255, 140, 50, 0.0)');
+      bCtx.fillStyle = bGrad;
+      bCtx.fillRect(0, 0, 128, 128);
+      const beamTex = new THREE.CanvasTexture(beamCanvas);
+
+      const beamMesh = new THREE.Mesh(
+        new THREE.PlaneGeometry(6.8, 3.6),
+        new THREE.MeshBasicMaterial({
+          map: beamTex,
+          transparent: true,
+          opacity: 0.85,
+          depthWrite: false,
+          blending: THREE.AdditiveBlending,
+          side: THREE.DoubleSide
+        })
+      );
+      beamMesh.position.set(-0.2, -0.35, zPos - 2.6);
+      beamMesh.rotation.z = -0.32;
+      beamMesh.userData = { bayIndex: b };
+      corridorGroup.add(beamMesh);
+      sunbeamMeshes.push(beamMesh);
+    }
+
+    // 5. Right Wall: Classroom Sliding Doors & Wooden Shoe Lockers (신발장)
+    const rightWallTex = makeCanvasTexture(512, 256, 202, (ctx, w, h) => {
+      ctx.fillStyle = '#231829';
+      ctx.fillRect(0, 0, w, h);
+      // Lower wooden paneling
+      ctx.fillStyle = '#2d1c24';
+      ctx.fillRect(0, h * 0.52, w, h * 0.48);
+      ctx.fillStyle = '#120b12';
+      ctx.fillRect(0, h * 0.52, w, 5);
+      // Classroom sliding door & transom windows
+      ctx.fillStyle = '#161120';
+      ctx.fillRect(w * 0.15, h * 0.12, w * 0.28, h * 0.32);
+      ctx.fillRect(w * 0.55, h * 0.18, w * 0.26, h * 0.82);
+    });
+    rightWallTex.repeat.set(5, 1);
+    const rightWall = new THREE.Mesh(
+      new THREE.PlaneGeometry(46, 5.0),
+      new THREE.MeshLambertMaterial({ map: rightWallTex })
+    );
+    rightWall.rotation.y = -Math.PI * 0.5;
+    rightWall.position.set(3.55, 0.3, -10);
+    corridorGroup.add(rightWall);
+
+    // 3D Wooden Shoe Lockers (신발장) along the right wall
+    const lockerTex = makeCanvasTexture(256, 256, 303, (ctx, w, h) => {
+      ctx.fillStyle = '#331f27';
+      ctx.fillRect(0, 0, w, h);
+      ctx.strokeStyle = '#130a10';
+      ctx.lineWidth = 4;
+      const cols = 4, rows = 5;
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const x = (c / cols) * w;
+          const y = (r / rows) * h;
+          const cw = w / cols;
+          const ch = h / rows;
+          ctx.fillStyle = '#1c1118';
+          ctx.fillRect(x + 4, y + 4, cw - 8, ch - 8);
+          // Small white indoor shoes inside some cubbies
+          if ((r + c) % 3 === 0) {
+            ctx.fillStyle = '#e5dfd3';
+            ctx.fillRect(x + 10, y + ch - 14, 14, 7);
+            ctx.fillRect(x + 28, y + ch - 14, 14, 7);
+          }
+          ctx.strokeRect(x, y, cw, ch);
+        }
+      }
+    });
+    for (let l = 0; l < 4; l++) {
+      const lockerBox = new THREE.Mesh(
+        new THREE.BoxGeometry(0.65, 2.1, 3.2),
+        new THREE.MeshLambertMaterial({ map: lockerTex })
+      );
+      lockerBox.position.set(3.2, -1.15, 2.5 - l * 4.2);
+      corridorGroup.add(lockerBox);
+    }
+
+    // 6. Far End Corridor Wall & Bright Sunset Window
+    const endWall = new THREE.Mesh(new THREE.PlaneGeometry(7.4, 5.2), pillarMat);
+    endWall.position.set(0, 0.3, -24.5);
+    corridorGroup.add(endWall);
+
+    const endWindow = new THREE.Mesh(
+      new THREE.PlaneGeometry(2.6, 2.2),
+      new THREE.MeshBasicMaterial({ map: skyTex })
+    );
+    endWindow.position.set(0, 0.65, -24.42);
+    corridorGroup.add(endWindow);
+
+    scene.add(corridorGroup);
+  }
+
+  function initThreeScene() {
+    renderer = new THREE.WebGLRenderer({
+      canvas: webglCanvas,
+      antialias: true,
+      powerPreference: 'high-performance'
+    });
+    renderer.setSize(W, H, false);
+    renderer.setPixelRatio(1);
+    renderer.setClearColor(0x120d1c, 1);
+
+    scene = new THREE.Scene();
+    scene.fog = new THREE.FogExp2(0x1a1224, 0.024);
+
+    camera = new THREE.PerspectiveCamera(40, W / H, 0.1, 90);
+
+    ambientLight = new THREE.AmbientLight(0x9c7a8c, 0.85);
+    scene.add(ambientLight);
+
+    sunsetDirLight = new THREE.DirectionalLight(0xff9e44, 1.35);
+    sunsetDirLight.position.set(-12, 4.5, 2);
+    scene.add(sunsetDirLight);
+
+    build3DCorridorEnvironment();
+
+    const TOTAL_PLANES = 56;
+    for (let i = 0; i < TOTAL_PLANES; i++) {
+      const p = createArticulatedPaperPlane(i);
+      scene.add(p);
+      paperPlanes.push(p);
+    }
+
+    heroOrigamiGroup = createHeroOrigamiMesh();
+    scene.add(heroOrigamiGroup);
+  }
+
+  // =========================================================================
+  // 4. ANATOMICAL 2D CEL ART HELPERS (NO GEOMETRIC STICK FIGURES!)
+  // =========================================================================
+  function drawAnatomicalCelHand(ctx, x, y, scale, rot, flipX = 1, pose = 'catch', rimCol = '#ffae52') {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rot);
+    ctx.scale(scale * flipX, scale);
+
+    // Forearm & Navy School Cardigan / Blazer Sleeve with realistic fabric folds
+    ctx.fillStyle = '#1d2842';
+    ctx.strokeStyle = '#110d19';
+    ctx.lineWidth = 2.6;
+    ctx.beginPath();
+    ctx.moveTo(-210, 75);
+    ctx.bezierCurveTo(-150, 48, -95, 24, -48, 8);
+    ctx.lineTo(-42, 14);
+    ctx.bezierCurveTo(-36, 30, -38, 44, -44, 52);
+    ctx.bezierCurveTo(-95, 76, -145, 105, -195, 132);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // Sleeve shadow fold (Cel Shadow 1)
+    ctx.fillStyle = '#101729';
+    ctx.beginPath();
+    ctx.moveTo(-195, 132);
+    ctx.bezierCurveTo(-140, 102, -90, 74, -44, 52);
+    ctx.lineTo(-41, 34);
+    ctx.bezierCurveTo(-92, 52, -145, 78, -202, 105);
+    ctx.closePath();
+    ctx.fill();
+
+    // White shirt cuff peeking out
+    ctx.fillStyle = '#efe6d8';
+    ctx.beginPath();
+    ctx.moveTo(-48, 8);
+    ctx.lineTo(-32, 4);
+    ctx.bezierCurveTo(-26, 20, -28, 38, -34, 48);
+    ctx.lineTo(-44, 52);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // Anatomical Palm & Articulated Fingers
+    ctx.fillStyle = '#f2bfa0';
+    ctx.beginPath();
+    if (pose === 'catch') {
+      // Dynamic gripping hand wrapping around the paper plane keel
+      ctx.moveTo(-34, 6);
+      ctx.bezierCurveTo(-15, -8, 8, -22, 28, -26); // Back of hand to index knuckle
+      ctx.bezierCurveTo(46, -28, 62, -18, 66, -8);  // Index finger curled
+      ctx.bezierCurveTo(60, 0, 44, -4, 32, -2);
+      ctx.bezierCurveTo(52, 2, 64, 12, 58, 22);     // Middle & ring fingers
+      ctx.bezierCurveTo(46, 28, 32, 24, 22, 22);
+      ctx.bezierCurveTo(34, 28, 40, 38, 28, 44);    // Pinky finger
+      ctx.bezierCurveTo(8, 48, -14, 46, -34, 44);   // Lower palm
+    } else {
+      // Gentle open holding hand for Shot 5 (unfolding the paper edge)
+      ctx.moveTo(-34, 8);
+      ctx.bezierCurveTo(-12, -4, 12, -14, 34, -18);
+      ctx.bezierCurveTo(48, -20, 56, -12, 52, -2);
+      ctx.bezierCurveTo(40, 6, 24, 10, 14, 16);
+      ctx.bezierCurveTo(28, 22, 34, 34, 20, 42);
+      ctx.bezierCurveTo(2, 48, -16, 46, -34, 44);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // Cel shadow under palm & fingers
+    ctx.fillStyle = '#c28367';
+    ctx.beginPath();
+    ctx.moveTo(-32, 26);
+    ctx.bezierCurveTo(-8, 22, 18, 16, 42, 14);
+    ctx.bezierCurveTo(36, 36, 10, 46, -34, 44);
+    ctx.closePath();
+    ctx.fill();
+
+    // Opposable thumb on top/front
+    ctx.fillStyle = '#f5c8ab';
+    ctx.beginPath();
+    ctx.moveTo(-18, 14);
+    ctx.bezierCurveTo(0, 6, 22, 2, 38, 8);
+    ctx.bezierCurveTo(42, 16, 32, 24, 16, 24);
+    ctx.bezierCurveTo(2, 24, -10, 22, -18, 14);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // Iro-Tresu Warm Rim Highlight along upper forearm & knuckles
+    ctx.strokeStyle = rimCol;
+    ctx.lineWidth = 3.2;
+    ctx.beginPath();
+    ctx.moveTo(-206, 74);
+    ctx.bezierCurveTo(-148, 47, -94, 23, -32, 4);
+    ctx.bezierCurveTo(-12, -8, 12, -22, 34, -25);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  // Anatomical Anime Side-Profile Silhouette (for whispering figures in Shot 2)
+  function drawWhisperingSilhouette(ctx, x, y, scale, flipX, rimColor) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(scale * flipX, scale);
+
+    ctx.fillStyle = '#0b0914';
+    ctx.strokeStyle = rimColor;
+    ctx.lineWidth = 2.4;
+
+    // Anime head profile with hair locks, nose bridge, chin, and school blazer shoulders
+    ctx.beginPath();
+    ctx.moveTo(-55, 220);
+    ctx.bezierCurveTo(-52, 140, -38, 85, -18, 58); // Back of blazer
+    ctx.bezierCurveTo(-28, 35, -36, 5, -32, -28);  // Nape & back hair spikes
+    ctx.bezierCurveTo(-25, -62, 5, -82, 38, -74);  // Crown of hair
+    ctx.bezierCurveTo(58, -68, 72, -48, 78, -28);  // Forehead & bangs
+    ctx.lineTo(66, -24);
+    ctx.bezierCurveTo(72, -12, 78, -2, 75, 6);     // Nose profile
+    ctx.lineTo(66, 12);
+    ctx.bezierCurveTo(68, 22, 64, 32, 52, 36);     // Lips & chin
+    ctx.bezierCurveTo(38, 40, 26, 46, 24, 58);     // Neck
+    // Hand raised near mouth whispering
+    ctx.bezierCurveTo(48, 52, 74, 32, 86, 18);
+    ctx.bezierCurveTo(94, 24, 90, 44, 72, 64);
+    ctx.bezierCurveTo(82, 110, 88, 165, 85, 220);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  // Anatomical Crouching Student by the Shoe Lockers (Shot 4)
+  function drawCrouchingStudentCel(ctx, x, y, scale, trembleAmt, isProtected) {
+    ctx.save();
+    const tx = Math.sin(performance.now() * 0.04) * trembleAmt;
+    const ty = Math.cos(performance.now() * 0.05) * trembleAmt;
+    ctx.translate(x + tx, y + ty);
+    ctx.scale(scale, scale);
+
+    const rimCol = isProtected ? '#ffae52' : '#5ce1e6';
+
+    // Shadow on floor
+    ctx.fillStyle = 'rgba(6, 4, 12, 0.65)';
+    ctx.beginPath();
+    ctx.ellipse(0, 115, 92, 22, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Hunched back, knees drawn up, arms shielding head
+    ctx.fillStyle = '#182138';
+    ctx.strokeStyle = '#0e0b16';
+    ctx.lineWidth = 2.6;
+    ctx.beginPath();
+    ctx.moveTo(-45, 108);
+    ctx.bezierCurveTo(-68, 55, -52, -15, -8, -32); // Raised arms & shoulders
+    ctx.bezierCurveTo(35, -45, 78, -12, 86, 45);   // Curved back
+    ctx.bezierCurveTo(92, 78, 75, 105, 48, 112);   // Lower back to hip
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // Head & tousled hair tucked down
+    ctx.fillStyle = '#14101c';
+    ctx.beginPath();
+    ctx.moveTo(-28, -18);
+    ctx.bezierCurveTo(-36, -54, -4, -76, 28, -66);
+    ctx.bezierCurveTo(52, -58, 58, -28, 42, -6);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // Drawn-up knees & indoor shoes (실내화)
+    ctx.fillStyle = '#e5dfd3';
+    ctx.beginPath();
+    ctx.ellipse(-48, 108, 26, 11, -0.15, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    // Colored Rim Light along head, shoulder, and arm
+    ctx.strokeStyle = rimCol;
+    ctx.lineWidth = 3.0;
+    ctx.beginPath();
+    ctx.moveTo(-30, -24);
+    ctx.bezierCurveTo(-34, -56, -2, -75, 28, -66);
+    ctx.moveTo(-48, 45);
+    ctx.bezierCurveTo(-54, 5, -32, -24, -8, -32);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  // =========================================================================
+  // 5. HARMONY CUTS (止め絵 — PAINTED STILL FRAMES AT 0:22 & 0:36)
+  // =========================================================================
+  function drawHarmonyCut1(ctx, progress) {
+    const rng = mulberry32(88412);
+    const zoom = 1.0 + progress * 0.04;
+    ctx.save();
+    ctx.translate(W / 2, H / 2);
+    ctx.scale(zoom, zoom);
+    ctx.translate(-W / 2, -H / 2);
+
+    const g = ctx.createRadialGradient(W * 0.42, H * 0.35, 40, W * 0.5, H * 0.5, 760);
+    g.addColorStop(0, '#ff6830');
+    g.addColorStop(0.28, '#6e1e36');
+    g.addColorStop(0.65, '#19142b');
+    g.addColorStop(1, '#06050c');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+
+    // Dry-brush vortex strokes
+    for (let i = 0; i < 180; i++) {
+      const ang = (i / 180) * Math.PI * 2;
+      const rad = 70 + rng() * 580;
+      const x = W * 0.44 + Math.cos(ang) * rad;
+      const y = H * 0.38 + Math.sin(ang) * rad * 0.65;
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(ang + Math.PI * 0.45);
+      ctx.fillStyle = rng() > 0.35 ? 'rgba(12, 9, 22, 0.72)' : 'rgba(92, 225, 230, 0.24)';
+      ctx.fillRect(-45, -3, 90 + rng() * 65, 3 + rng() * 6);
+      ctx.restore();
+    }
+
+    // Painted crouching student & indoor shoes in bottom-right corner
+    drawCrouchingStudentCel(ctx, W * 0.76, H * 0.76, 1.35, 0, false);
+
+    //Painted flock of sharp black paper planes diving toward bottom-right
+    for (let i = 0; i < 38; i++) {
+      const px = 120 + rng() * 880;
+      const py = 60 + rng() * 460;
+      const sc = 0.55 + rng() * 1.25;
+      const ang = 0.34 + (rng() - 0.5) * 0.3;
+      drawPaintedPlaneStill(ctx, px, py, sc, ang);
+    }
+
+    ctx.restore();
+  }
+
+  function drawPaintedPlaneStill(ctx, x, y, sc, ang) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(ang);
+    ctx.scale(sc, sc);
+    ctx.fillStyle = 'rgba(92, 225, 230, 0.22)';
+    ctx.beginPath();
+    ctx.moveTo(-95, -14); ctx.lineTo(35, 0); ctx.lineTo(-95, 16);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.fillStyle = '#181424';
+    ctx.strokeStyle = '#ff7b38';
+    ctx.lineWidth = 2.2;
+    ctx.beginPath();
+    ctx.moveTo(58, 0); ctx.lineTo(-46, -32); ctx.lineTo(-28, -2); ctx.lineTo(-42, 30);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawHarmonyCut2(ctx, progress) {
+    const rng = mulberry32(99317);
+    const zoom = 1.04 - progress * 0.035;
+    ctx.save();
+    ctx.translate(W / 2, H / 2);
+    ctx.scale(zoom, zoom);
+    ctx.translate(-W / 2, -H / 2);
+
+    const bgG = ctx.createRadialGradient(W * 0.52, H * 0.48, 15, W * 0.52, H * 0.48, 740);
+    bgG.addColorStop(0, '#fff7dc');
+    bgG.addColorStop(0.24, '#ffae42');
+    bgG.addColorStop(0.56, '#8c2d38');
+    bgG.addColorStop(1, '#120d1e');
+    ctx.fillStyle = bgG;
+    ctx.fillRect(0, 0, W, H);
+
+    // Sakuga radial impact lines
+    for (let i = 0; i < 140; i++) {
+      const a = (i / 140) * Math.PI * 2;
+      const r0 = 85 + rng() * 75;
+      const r1 = 420 + rng() * 420;
+      ctx.strokeStyle = i % 3 === 0 ? '#fff5cc' : (i % 2 === 0 ? '#161021' : '#5ce1e6');
+      ctx.lineWidth = 1.5 + rng() * 3.8;
+      ctx.beginPath();
+      ctx.moveTo(W * 0.52 + Math.cos(a) * r0, H * 0.48 + Math.sin(a) * r0);
+      ctx.lineTo(W * 0.52 + Math.cos(a) * r1, H * 0.48 + Math.sin(a) * r1);
+      ctx.stroke();
+    }
+
+    // Giant Black Paper Plane caught mid-air
+    drawPaintedPlaneStill(ctx, W * 0.54, H * 0.47, 3.6, 0.14);
+
+    // Detailed anatomical cel hand gripping the plane
+    drawAnatomicalCelHand(ctx, W * 0.48, H * 0.50, 2.35, -0.08, 1, 'catch', '#fff2a6');
+
+    ctx.restore();
+  }
+
+  // =========================================================================
+  // 6. MAIN SCENE CHOREOGRAPHY & AERODYNAMIC FLIGHT ENGINE
+  // =========================================================================
+  const dustMotes = Array.from({ length: 110 }, (_, i) => ({
+    x: hash(i * 13.1) * W,
+    y: hash(i * 27.9) * H,
+    r: 1.4 + hash(i * 41.3) * 3.0,
+    spdX: (hash(i * 53.7) - 0.3) * 22,
+    spdY: -10 - hash(i * 71.1) * 28,
+    phase: hash(i * 89.3) * Math.PI * 2
+  }));
+
+  function renderFrame(rawTime) {
+    const qt = quantizeTwos(rawTime);
+
+    // Subtle 35mm film gate weave on twos
+    const weaveX = (hash(qt * 37.1) - 0.5) * 1.4;
+    const weaveY = (hash(qt * 73.7) - 0.5) * 1.2;
+    weaveWrap.style.transform = `translate3d(${weaveX.toFixed(2)}px, ${weaveY.toFixed(2)}px, 0)`;
+
+    celCtx.clearRect(0, 0, W, H);
+
+    // Harmony Cuts at 22.0-24.0s and 36.0-38.0s
+    if (rawTime >= 22.0 && rawTime < 24.0) {
+      webglCanvas.style.opacity = '0';
+      drawHarmonyCut1(celCtx, (qt - 22.0) / 2.0);
+      updatePostEffects();
+      return;
+    }
+    if (rawTime >= 36.0 && rawTime < 38.0) {
+      webglCanvas.style.opacity = '0';
+      drawHarmonyCut2(celCtx, (qt - 36.0) / 2.0);
+      updatePostEffects();
+      return;
+    }
+    webglCanvas.style.opacity = '1';
+
+    // Compute atmospheric darkness & sun intensity
+    let darkness = 0.0;
+    if (qt >= 9.0 && qt < 22.0) {
+      darkness = smoothstep(9.0, 21.5, qt) * 0.9;
+    } else if (qt >= 24.0 && qt < 36.0) {
+      darkness = 0.9 - smoothstep(30.0, 35.8, qt) * 0.45;
+    } else if (qt >= 38.0 && qt < 46.0) {
+      darkness = lerp(0.45, 0.08, (qt - 38.0) / 8.0);
+    } else if (qt >= 46.0) {
+      darkness = lerp(0.08, 0.0, (qt - 46.0) / 6.0);
+    }
+
+    // Update 3D Corridor Lighting, Curtains & Sunbeams
+    sunsetDirLight.intensity = lerp(1.45, 0.22, darkness);
+    ambientLight.color.setRGB(
+      lerp(0.62, 0.16, darkness),
+      lerp(0.46, 0.18, darkness),
+      lerp(0.55, 0.34, darkness)
+    );
+    scene.fog.color.setRGB(
+      lerp(0.14, 0.04, darkness),
+      lerp(0.09, 0.05, darkness),
+      lerp(0.16, 0.11, darkness)
+    );
+
+    sunbeamMeshes.forEach((bm) => {
+      const bayEclipse = clamp(darkness * 1.25 - bm.userData.bayIndex * 0.08, 0, 1);
+      bm.material.opacity = (1.0 - bayEclipse) * 0.78;
+    });
+
+    curtainMeshes.forEach((cm) => {
+      const pos = cm.geometry.attributes.position;
+      const base = cm.userData.basePos;
+      const s = cm.userData.seed;
+      for (let i = 0; i < pos.count; i++) {
+        const bx = base[i * 3];
+        const by = base[i * 3 + 1];
+        const bz = base[i * 3 + 2];
+        const pinFactor = clamp((1.45 - by) / 2.9, 0, 1); // Pinned at top rail
+        const wave = Math.sin(qt * 2.4 + by * 1.8 + s) * 0.18 * pinFactor;
+        pos.setXYZ(i, bx + wave * 0.4, by, bz + wave);
+      }
+      pos.needsUpdate = true;
+    });
+
+    updateCameraAndPlanes(qt, darkness);
+    renderer.render(scene, camera);
+
+    // 2D Hand-Drawn Cel Overlays per Shot
+    if (qt >= 9.0 && qt < 22.0) {
+      drawShot2And3WhisperOverlay(celCtx, qt);
+    } else if (qt >= 24.0 && qt < 36.0) {
+      drawShot4InterceptionOverlay(celCtx, qt);
+    } else if (qt >= 38.0 && qt < 46.0) {
+      drawShot5UnfoldingHandsOverlay(celCtx, qt);
+    } else if (qt >= 46.0) {
+      drawShot6WalkingFriendsOverlay(celCtx, qt);
+    }
+
+    drawAtmosphericSparks(celCtx, qt, darkness);
+    updatePostEffects();
+  }
+
+  function updateCameraAndPlanes(qt, darkness) {
+    heroOrigamiGroup.visible = false;
+
+    if (qt < 9.0) {
+      // Shot 1: Smooth tracking camera following the single white paper plane gliding through sunbeams
+      const p = smoothstep(0.0, 9.0, qt);
+      const planeZ = lerp(-16.0, 3.5, p);
+      const swoopY = 0.25 + Math.sin(qt * 1.35) * 0.32;
+      const swoopX = -0.35 + Math.cos(qt * 0.95) * 0.65;
+
+      camera.position.set(
+        swoopX + 1.15,
+        swoopY + 0.18,
+        planeZ + 3.6
+      );
+      camera.lookAt(swoopX - 0.2, swoopY - 0.05, planeZ - 2.5);
+
+      paperPlanes.forEach((group, i) => {
+        if (i > 0) {
+          group.visible = false;
+          return;
+        }
+        group.visible = true;
+        group.position.set(swoopX, swoopY, planeZ);
+        // Natural aerodynamic pitch, yaw & roll banking
+        const pitch = Math.cos(qt * 1.35) * 0.18;
+        const yaw = -Math.sin(qt * 0.95) * 0.22;
+        const bank = Math.sin(qt * 0.95) * 0.38;
+        group.rotation.set(pitch, yaw, bank);
+
+        // Subtle wing flex in air currents
+        const flex = Math.sin(qt * 6.0) * 0.06;
+        group.userData.leftWing.rotation.z = flex;
+        group.userData.rightWing.rotation.z = -flex;
+        group.userData.shaderMat.uniforms.uCorruption.value = 0.0;
+        group.userData.lineMat.color.setHex(0x281b24);
+      });
+    } else if (qt < 22.0) {
+      // Shot 2 & 3: Sweeping low-angle pan as whispers multiply the plane into a turbulent dark flock
+      const p = (qt - 9.0) / 13.0;
+      camera.position.set(
+        Math.sin(p * 2.6) * 1.25,
+        lerp(0.15, -1.15, smoothstep(0.0, 0.8, p)),
+        lerp(5.8, 3.2, p)
+      );
+      camera.lookAt(0.2, lerp(0.1, 0.65, p), -8.5);
+
+      const activeCount = Math.floor(lerp(1, paperPlanes.length, smoothstep(0.0, 0.65, p)));
+      paperPlanes.forEach((group, i) => {
+        if (i >= activeCount) {
+          group.visible = false;
+          return;
+        }
+        group.visible = true;
+        const u = group.userData;
+        const zCycle = ((qt * 6.4 * u.speedOffset + u.seed * 26.0) % 28.0) - 21.0;
+        const swirl = qt * 2.1 + u.phase;
+        const spread = smoothstep(9.0, 18.0, qt);
+
+        const gx = u.laneX * 0.55 * spread + Math.cos(swirl) * (0.35 + spread * 1.45);
+        const gy = u.laneY * 0.55 * spread + Math.sin(swirl * 1.3) * (0.25 + spread * 0.85) + 0.35;
+        group.position.set(gx, gy, zCycle);
+
+        // Aerodynamic banking along helical path
+        const pitch = 0.14 + Math.cos(swirl * 1.3) * 0.22;
+        const yaw = -Math.sin(swirl) * 0.28;
+        const bank = -Math.cos(swirl) * 0.52;
+        group.rotation.set(pitch, yaw, bank);
+
+        const wingFlap = Math.sin(qt * 9.0 + u.phase) * 0.11;
+        u.leftWing.rotation.z = wingFlap;
+        u.rightWing.rotation.z = -wingFlap;
+
+        const corr = clamp((qt - 9.2 - u.seed * 2.2) / 2.2, 0, 1);
+        u.shaderMat.uniforms.uCorruption.value = corr;
+        u.lineMat.color.setHex(corr > 0.5 ? 0xff7b38 : 0x281b24);
+      });
+    } else if (qt < 36.0) {
+      // Shot 4: Swarm dives toward the shoe lockers on the right wall; freezes mid-air at 30.0s!
+      const effectiveT = qt < 30.0 ? qt : 30.0 + (qt - 30.0) * 0.05;
+      const p = clamp((effectiveT - 24.0) / 6.0, 0, 1);
+      const camShake = qt < 30.0 ? (hash(qt * 83.1) - 0.5) * 0.08 * p : 0;
+
+      camera.position.set(
+        lerp(-0.6, 0.55, p) + camShake,
+        lerp(0.1, -0.55, p) + camShake,
+        lerp(5.5, 2.6, p)
+      );
+      camera.lookAt(lerp(0.8, 1.85, p), lerp(-0.2, -0.65, p), -1.8);
+
+      paperPlanes.forEach((group, i) => {
+        group.visible = true;
+        const u = group.userData;
+        if (i === 0) {
+          // Lead spear-like black plane diving straight toward the shoe lockers, caught at 30.0s
+          const lx = lerp(-1.2, 1.15, p);
+          const ly = lerp(1.15, -0.42, p);
+          const lz = lerp(-6.5, -0.35, p);
+          group.position.set(lx, ly, lz);
+          group.scale.setScalar(1.35);
+          group.rotation.set(0.32, -0.38, -0.25);
+        } else {
+          group.scale.setScalar(1.0);
+          const zPos = lerp(-16.0 + u.seed * 12.0, -1.8 + u.seed * 3.5, p);
+          const swirl = effectiveT * 2.4 + u.phase;
+          group.position.set(
+            lerp(u.laneX * 0.6, 1.2 + Math.cos(swirl) * 1.4, p),
+            lerp(u.laneY * 0.6 + 0.4, -0.2 + Math.sin(swirl) * 0.9, p),
+            zPos
+          );
+          group.rotation.set(0.28, -0.32, Math.sin(swirl) * 0.45);
+        }
+        u.shaderMat.uniforms.uCorruption.value = 1.0;
+        u.lineMat.color.setHex(0xff7b38);
+      });
+    } else if (qt < 46.0) {
+      // Shot 5: Close-up 3D Articulated Origami Unfolding in a warm sunbeam!
+      const unfoldP = smoothstep(38.4, 44.2, qt);
+      camera.position.set(0.0, 0.0, 4.2);
+      camera.lookAt(0.0, 0.0, -4.0);
+
+      // Background planes softly suspended & fading out
+      paperPlanes.forEach((group, i) => {
+        group.visible = i > 0 && i < 24;
+        const u = group.userData;
+        group.position.set(u.laneX * 0.9, u.laneY * 0.8, -5.5 - u.seed * 10.0);
+        group.rotation.set(0.1, 0.2, u.phase * 0.2);
+      });
+
+      // Animate 3D Hero Origami Group unfolding from folded dart (74 deg) to flat sheet (0 deg)
+      heroOrigamiGroup.visible = true;
+      heroOrigamiGroup.position.set(0, -0.05 + Math.sin(qt * 1.8) * 0.03, 1.35);
+      heroOrigamiGroup.rotation.set(
+        lerp(0.55, 0.18, unfoldP),
+        Math.sin(qt * 1.2) * 0.08,
+        lerp(-0.12, 0.0, unfoldP)
+      );
+
+      const foldAngle = lerp(1.28, 0.03, unfoldP); // 1.28 rad (~73 deg) -> 0.03 rad (nearly flat)
+      heroOrigamiPanels.leftHalf.rotation.y = foldAngle;
+      heroOrigamiPanels.rightHalf.rotation.y = -foldAngle;
+      heroOrigamiPanels.mat.uniforms.uCorruption.value = lerp(0.92, 0.0, smoothstep(0.15, 0.85, unfoldP));
+    } else {
+      // Shot 6: Serene wide corridor shot as remaining planes dissolve into golden dust
+      const p = clamp((qt - 46.0) / 14.0, 0, 1);
+      camera.position.set(0.0, lerp(-0.2, 0.35, p), lerp(5.2, 7.4, p));
+      camera.lookAt(0.0, lerp(0.0, 0.35, p), -12.0);
+
+      paperPlanes.forEach((group, i) => {
+        const u = group.userData;
+        if (p * 1.35 > u.seed * 0.85 + 0.05) {
+          group.visible = false;
+          return;
+        }
+        group.visible = true;
+        group.scale.setScalar(lerp(1.0, 0.2, p));
+        group.position.y += 0.03;
+        u.shaderMat.uniforms.uCorruption.value = clamp(1.0 - p * 2.5, 0, 1);
+      });
+    }
+  }
+
+  // Shot 2 & 3 Overlay: Anatomical Whispering Silhouettes & Organic Sound Ripples
+  function drawShot2And3WhisperOverlay(ctx, qt) {
+    const enterL = smoothstep(9.0, 11.2, qt);
+    const exitL  = 1.0 - smoothstep(18.5, 20.5, qt);
+    const vis = enterL * exitL;
+    if (vis <= 0.01) return;
+
+    ctx.save();
+    ctx.globalAlpha = vis;
+
+    const lx = lerp(-180, 75, enterL);
+    const rx = lerp(W + 180, W - 75, smoothstep(9.8, 12.0, qt));
+
+    drawWhisperingSilhouette(ctx, lx, H * 0.62, 1.15, 1, '#5ce1e6');
+    drawWhisperingSilhouette(ctx, rx, H * 0.64, 1.18, -1, '#ff9e44');
+
+    // Organic curved whisper sound-waves (drawn on twos)
+    if (qt >= 9.6 && qt < 19.0) {
+      const stepSeed = Math.floor(qt * 8);
+      const rng = mulberry32(stepSeed * 71);
+      ctx.strokeStyle = 'rgba(92, 225, 230, 0.58)';
+      ctx.lineWidth = 2.0;
+      for (let w = 0; w < 4; w++) {
+        const rad = 45 + ((qt * 90 + w * 45) % 180);
+        ctx.beginPath();
+        ctx.arc(lx + 95, H * 0.56, rad, -0.45, 0.45);
+        ctx.stroke();
+
+        ctx.strokeStyle = 'rgba(255, 158, 68, 0.52)';
+        ctx.beginPath();
+        ctx.arc(rx - 95, H * 0.58, rad, Math.PI - 0.45, Math.PI + 0.45);
+        ctx.stroke();
+      }
+    }
+    ctx.restore();
+  }
+
+  // Shot 4 Overlay: Crouching Student by Lockers & Courageous Friend's Hand Catching the Plane at 0:30
+  function drawShot4InterceptionOverlay(ctx, qt) {
+    const isCaught = qt >= 30.0;
+    const tremble = isCaught ? 0 : 2.2;
+
+    // Crouching student near right shoe lockers
+    drawCrouchingStudentCel(ctx, W * 0.78, H * 0.72, 1.28, tremble, isCaught);
+
+    if (qt >= 29.4) {
+      const catchP = smoothstep(29.4, 30.05, qt);
+      const handX = lerp(-160, W * 0.56, catchP);
+      const handY = lerp(H + 80, H * 0.55, catchP);
+
+      // Golden shockwave ring when hand catches the lead black plane at 30.0s
+      if (qt >= 30.0 && qt < 33.8) {
+        const ringP = (qt - 30.0) / 3.8;
+        ctx.save();
+        ctx.strokeStyle = `rgba(255, 220, 130, ${(1 - ringP) * 0.85})`;
+        ctx.lineWidth = 5.0 * (1 - ringP);
+        ctx.beginPath();
+        ctx.arc(W * 0.58, H * 0.53, 28 + ringP * 340, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      drawAnatomicalCelHand(ctx, handX, handY, 1.65, -0.18, 1, 'catch', '#ffae52');
+    }
+  }
+
+  // Shot 5 Overlay: Anatomical Left & Right Hands Gently Unfolding the 3D Origami Sheet
+  function drawShot5UnfoldingHandsOverlay(ctx, qt) {
+    const unfoldP = smoothstep(38.4, 44.2, qt);
+    const spreadX = lerp(95, 215, unfoldP);
+    const bobY = Math.sin(qt * 1.8) * 6;
+
+    // Left & Right hands gripping the unfolding 3D paper edges
+    drawAnatomicalCelHand(ctx, W * 0.5 - spreadX, H * 0.62 + bobY, 1.55, 0.12, 1, 'hold', '#ffae52');
+    drawAnatomicalCelHand(ctx, W * 0.5 + spreadX, H * 0.62 + bobY, 1.55, -0.12, -1, 'hold', '#ffae52');
+  }
+
+  // Shot 6 Overlay: Two Friends Walking Side by Side Down the Sunlit Corridor (Natural 12fps Walk Cycle)
+  function drawShot6WalkingFriendsOverlay(ctx, qt) {
+    const p = clamp((qt - 46.0) / 14.0, 0, 1);
+    const scale = lerp(1.05, 0.64, p);
+    const walkY = lerp(H * 0.72, H * 0.58, p);
+    const stepPhase = qt * 5.2;
+
+    ctx.save();
+    ctx.translate(W * 0.5, walkY);
+    ctx.scale(scale, scale);
+
+    function drawWalkingStudent(offsetX, phaseOffset, hairStyle) {
+      const ph = stepPhase + phaseOffset;
+      const legSwing = Math.sin(ph) * 18;
+      const armSwing = -Math.sin(ph) * 14;
+      const bodyBob = Math.abs(Math.cos(ph)) * -6;
+
+      ctx.save();
+      ctx.translate(offsetX, bodyBob);
+
+      // Floor shadow
+      ctx.fillStyle = 'rgba(12, 7, 16, 0.45)';
+      ctx.beginPath();
+      ctx.ellipse(0, 118 - bodyBob, 36, 9, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = '#120c18';
+      ctx.lineWidth = 2.4;
+
+      // Left & Right Legs (natural stride)
+      ctx.fillStyle = '#181d2c';
+      ctx.beginPath();
+      ctx.moveTo(-18, 30);
+      ctx.lineTo(-22, 108 + legSwing * 0.45);
+      ctx.lineTo(-6, 108 + legSwing * 0.45);
+      ctx.lineTo(-4, 30);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(4, 30);
+      ctx.lineTo(6, 108 - legSwing * 0.45);
+      ctx.lineTo(22, 108 - legSwing * 0.45);
+      ctx.lineTo(18, 30);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // White indoor shoes (실내화)
+      ctx.fillStyle = '#e8e0d2';
+      ctx.beginPath();
+      ctx.ellipse(-14, 110 + legSwing * 0.45, 11, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.ellipse(14, 110 - legSwing * 0.45, 11, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      // Swinging Arms
+      ctx.fillStyle = '#1f2b46';
+      ctx.beginPath();
+      ctx.moveTo(-30, -48);
+      ctx.bezierCurveTo(-44, -18, -42, 12 + armSwing * 0.4, -34, 28 + armSwing * 0.5);
+      ctx.lineTo(-22, 26 + armSwing * 0.5);
+      ctx.lineTo(-22, -42);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(30, -48);
+      ctx.bezierCurveTo(44, -18, 42, 12 - armSwing * 0.4, 34, 28 - armSwing * 0.5);
+      ctx.lineTo(22, 26 - armSwing * 0.5);
+      ctx.lineTo(22, -42);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Torso / School Cardigan with shoulder & waist taper
+      ctx.fillStyle = '#22304d';
+      ctx.beginPath();
+      ctx.moveTo(-32, -52);
+      ctx.bezierCurveTo(-12, -58, 12, -58, 32, -52);
+      ctx.lineTo(26, 34);
+      ctx.lineTo(-26, 34);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Sailor / Shirt Collar
+      ctx.fillStyle = '#efe6d5';
+      ctx.beginPath();
+      ctx.moveTo(-20, -54);
+      ctx.lineTo(20, -54);
+      ctx.lineTo(14, -38);
+      ctx.lineTo(-14, -38);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Head & Anime Hair Back View
+      ctx.fillStyle = '#181220';
+      ctx.beginPath();
+      ctx.moveTo(-24, -64);
+      ctx.bezierCurveTo(-30, -96, -12, -114, 0, -114);
+      ctx.bezierCurveTo(12, -114, 30, -96, 24, -64);
+      // Hair tips along nape
+      ctx.lineTo(18, -54);
+      ctx.lineTo(8, -60);
+      ctx.lineTo(0, -52);
+      ctx.lineTo(-8, -60);
+      ctx.lineTo(-18, -54);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+
+      // Warm Sunset Rim Light on left side of hair & shoulder
+      ctx.strokeStyle = '#ffae52';
+      ctx.lineWidth = 2.8;
+      ctx.beginPath();
+      ctx.moveTo(-24, -66);
+      ctx.bezierCurveTo(-29, -94, -14, -112, 0, -114);
+      ctx.moveTo(-32, -52);
+      ctx.bezierCurveTo(-42, -22, -40, 6, -34, 26);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    drawWalkingStudent(-48, 0.0, 0);
+    drawWalkingStudent(48, Math.PI, 1);
+
+    ctx.restore();
+  }
+
+  function drawAtmosphericSparks(ctx, qt, darkness) {
+    const isGoldenDissolve = qt >= 44.0;
+    const count = isGoldenDissolve ? 105 : 42;
+
+    for (let i = 0; i < count; i++) {
+      const d = dustMotes[i];
+      const px = (d.x + qt * d.spdX + Math.sin(qt * 2.1 + d.phase) * 22 + W * 4) % W;
+      const py = (d.y + qt * d.spdY + H * 4) % H;
+
+      if (isGoldenDissolve) {
+        const twinkle = 0.4 + 0.6 * Math.sin(qt * 7.5 + d.phase);
+        ctx.fillStyle = i % 3 === 0
+          ? `rgba(92, 225, 230, ${twinkle * 0.85})`
+          : `rgba(255, 215, 115, ${twinkle * 0.92})`;
+        const r = d.r * (1.1 + twinkle * 0.75);
+        ctx.beginPath();
+        ctx.arc(px, py, r, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (darkness > 0.4) {
+        ctx.fillStyle = i % 2 === 0 ? 'rgba(92, 225, 230, 0.52)' : 'rgba(255, 120, 65, 0.52)';
+        ctx.fillRect(px, py, d.r * 1.4, d.r * 0.8);
+      } else {
+        ctx.fillStyle = 'rgba(255, 224, 170, 0.42)';
+        ctx.beginPath();
+        ctx.arc(px, py, d.r * 0.75, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  }
+
+  // =========================================================================
+  // 7. POST-PROCESSING: HALATION BLOOM & 35MM FILM GRAIN
+  // =========================================================================
+  function updatePostEffects() {
+    halCtx.clearRect(0, 0, halCanvas.width, halCanvas.height);
+    if (webglCanvas.style.opacity !== '0') {
+      halCtx.drawImage(webglCanvas, 0, 0, halCanvas.width, halCanvas.height);
+    }
+    halCtx.drawImage(celCanvas, 0, 0, halCanvas.width, halCanvas.height);
+  }
+
+  function renderFilmGrain(stepSeed) {
+    const gw = grainCanvas.width;
+    const gh = grainCanvas.height;
+    const img = grainCtx.createImageData(gw, gh);
+    const data = img.data;
+    let s = (stepSeed * 2654435761) >>> 0;
+    for (let i = 0; i < data.length; i += 4) {
+      s = (s * 1664525 + 1013904223) >>> 0;
+      const v = (s >>> 24);
+      data[i] = v;
+      data[i + 1] = v;
+      data[i + 2] = v;
+      data[i + 3] = 255;
+    }
+    grainCtx.putImageData(img, 0, 0);
+  }
+
+  // =========================================================================
+  // 8. PLAYBACK LOOP & UI CONTROLS
+  // =========================================================================
+  function formatTime(sec) {
+    const s = Math.floor(clamp(sec, 0, DURATION));
+    const m = Math.floor(s / 60);
+    const rem = s % 60;
+    return `${String(m).padStart(2, '0')}:${String(rem).padStart(2, '0')}`;
+  }
+
+  function updateUI() {
+    const pct = (currentTime / DURATION) * 100;
+    fillEl.style.width = `${pct.toFixed(2)}%`;
+    timeReadout.textContent = `${formatTime(currentTime)} / 01:00`;
+    playIcon.innerHTML = isPlaying
+      ? '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>'
+      : '<path d="M8 5v14l11-7z"/>';
+  }
+
+  function stepCelFrame(deltaSteps) {
+    isPlaying = false;
+    const currentStep = Math.round(currentTime * CEL_FPS);
+    const nextStep = clamp(currentStep + deltaSteps, 0, DURATION * CEL_FPS);
+    currentTime = nextStep / CEL_FPS;
+    lastQuantizedStep = -1;
+    renderFilmGrain(nextStep);
+    renderFrame(currentTime);
+    updateUI();
+  }
+
+  function tick(now) {
+    const dt = (now - lastRaf) / 1000;
+    lastRaf = now;
+
+    if (isPlaying) {
+      currentTime += dt;
+      if (currentTime >= DURATION) {
+        currentTime = 0.0;
+      }
+      audio.update(currentTime);
+      updateUI();
+    }
+
+    const qStep = Math.floor(currentTime * CEL_FPS);
+    if (qStep !== lastQuantizedStep) {
+      lastQuantizedStep = qStep;
+      renderFilmGrain(qStep);
+      renderFrame(currentTime);
+    }
+
+    requestAnimationFrame(tick);
+  }
+
+  function wakeUI() {
+    frameEl.classList.add('ui-visible');
+    clearTimeout(uiTimer);
+    if (isPlaying) {
+      uiTimer = setTimeout(() => {
+        frameEl.classList.remove('ui-visible');
+      }, 2200);
+    }
+  }
+
+  frameEl.addEventListener('mousemove', wakeUI);
+  frameEl.addEventListener('mouseleave', () => {
+    if (isPlaying) frameEl.classList.remove('ui-visible');
+  });
+
+  startBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    audio.init();
+    veilEl.classList.add('hidden');
+    isPlaying = true;
+    lastRaf = performance.now();
+    wakeUI();
+    updateUI();
+  });
+
+  playBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    audio.init();
+    veilEl.classList.add('hidden');
+    isPlaying = !isPlaying;
+    lastRaf = performance.now();
+    wakeUI();
+    updateUI();
+  });
+
+  frameEl.addEventListener('click', (e) => {
+    if (e.target.closest('#bar') || e.target.closest('#veil')) return;
+    audio.init();
+    veilEl.classList.add('hidden');
+    isPlaying = !isPlaying;
+    lastRaf = performance.now();
+    wakeUI();
+    updateUI();
+  });
+
+  prevCelBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    veilEl.classList.add('hidden');
+    stepCelFrame(-1);
+    wakeUI();
+  });
+
+  nextCelBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    veilEl.classList.add('hidden');
+    stepCelFrame(1);
+    wakeUI();
+  });
+
+  let dragging = false;
+  function seekFromEvent(e) {
+    const rect = trackEl.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const f = clamp((clientX - rect.left) / rect.width, 0, 1);
+    currentTime = f * DURATION;
+    lastQuantizedStep = -1;
+    renderFrame(currentTime);
+    updateUI();
+  }
+  trackEl.addEventListener('pointerdown', (e) => {
+    e.stopPropagation();
+    dragging = true;
+    trackEl.setPointerCapture(e.pointerId);
+    seekFromEvent(e);
+  });
+  trackEl.addEventListener('pointermove', (e) => {
+    if (dragging) seekFromEvent(e);
+  });
+  trackEl.addEventListener('pointerup', () => { dragging = false; });
+
+  muteBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    audio.setMuted(!audio.muted);
+    volIcon.innerHTML = audio.muted
+      ? '<path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>'
+      : '<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>';
+  });
+
+  fsBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (!document.fullscreenElement) {
+      frameEl.requestFullscreen?.();
+    } else {
+      document.exitFullscreen?.();
+    }
+  });
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === ' ') {
+      e.preventDefault();
+      playBtn.click();
+    } else if (e.key === '[') {
+      veilEl.classList.add('hidden');
+      stepCelFrame(-1);
+      wakeUI();
+    } else if (e.key === ']') {
+      veilEl.classList.add('hidden');
+      stepCelFrame(1);
+      wakeUI();
+    }
+  });
+
+  initThreeScene();
+  renderFilmGrain(0);
+  renderFrame(0.0);
+  updateUI();
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>
