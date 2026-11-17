@@ -74,6 +74,7 @@ h1,h2,h3,p{margin:0}
 .btn{display:inline-flex;align-items:center;gap:12px;padding:20px 36px;border-radius:999px;background:var(--blue);color:#fff;text-decoration:none;font-size:28px;font-weight:800}
 .btn.ghost{background:#fff;color:var(--blue);border:3px solid var(--blue)}
 .slide > a.btn{align-self:flex-start}
+.padurl{margin:46px 0 18px;padding:30px 70px;border-radius:36px;background:#fff;border:5px solid var(--blue);font-size:110px;font-weight:900;letter-spacing:-.02em;color:var(--ink);box-shadow:0 14px 40px rgba(61,123,247,.18)}
 .prof{width:300px;height:300px;object-fit:cover;object-position:50% 30%;border-radius:50%;box-shadow:0 10px 30px rgba(60,70,140,.18);border:8px solid #fff}
 .intro h2{font-size:96px;font-weight:900;margin:22px 0 4px;letter-spacing:-.02em}
 .intro .role{font-size:34px;color:var(--sub);margin:0 0 34px}
@@ -213,6 +214,21 @@ img.char{border-radius:30px;box-shadow:0 10px 30px rgba(60,70,140,.18);display:b
   <div class="head" style="margin-bottom:40px"><h2 class="h2" style="font-size:62px">직접 만들어 <span class="grad">수업에 쓰는 웹앱</span></h2></div>
   <div class="works"><figure><img src="assets/instructor/work-rpg.jpg" alt="성장 RPG 화면"><figcaption>성장 RPG</figcaption></figure><figure><img src="assets/instructor/work-moon.jpg" alt="달의 위상 관측소 화면"><figcaption>달의 위상 관측소</figcaption></figure><figure><img src="assets/instructor/work-planet.jpg" alt="행성 크기 그리기 화면"><figcaption>행성 크기 그리기</figcaption></figure><figure><img src="assets/instructor/work-battleship.jpg" alt="World Battleship 화면"><figcaption>World Battleship</figcaption></figure><figure><img src="assets/instructor/work-eraser.jpg" alt="사라진 지우개 찾기 화면"><figcaption>사라진 지우개 찾기</figcaption></figure></div>
   <p class="lead" style="margin-top:44px;font-size:28px">강의 · 군포의왕교육지원청 평가 에듀테크 연수 · 광명교육지원청 진로·과학 바이브코딩 연수</p>
+</section>
+
+<section class="slide" data-s="표지" data-t="사전 설문 · 패들렛">
+  <div class="center">
+    <span class="tag on">시작하기 전에</span>
+    <h2 class="h2" style="margin-top:26px">오늘 자료는 모두 <span class="grad">패들렛</span>에 있어요</h2>
+    <p class="lead" style="margin-top:14px">아래 주소로 들어가서 <b style="color:var(--ink)">사전 설문</b>에 먼저 참여해 주세요</p>
+    <div class="padurl">숏.한국/호원초</div>
+    <a class="small" href="https://padlet.com/sbpm/padlet-s024rn0nj9jipvkswepn" target="_blank" style="color:var(--blue)">padlet.com/sbpm/padlet-s024rn0nj9jipvkswepn</a>
+    <div class="row" style="gap:18px;margin-top:46px;justify-content:center">
+      <span class="tag" style="font-size:26px;padding:12px 30px">① 주소 입력</span><span class="arrow">›</span>
+      <span class="tag" style="font-size:26px;padding:12px 30px">② 사전 설문 참여</span><span class="arrow">›</span>
+      <span class="tag" style="font-size:26px;padding:12px 30px">③ 오늘 자료 확인</span>
+    </div>
+  </div>
 </section>
 
 <section class="slide" data-s="들어가며" data-t="왜 영상을 만들까요?">
@@ -1243,7 +1259,7 @@ img.char{border-radius:30px;box-shadow:0 10px 30px rgba(60,70,140,.18);display:b
 </div></div>
 
 <div class="bar"><i id="bar"></i></div>
-<div class="help" id="help">← → 넘기기 · O 전체 보기 · F 전체 화면 · 그림 클릭 = 영상 재생 · 영상 클릭 = 크게 보기(소리 켜짐)</div>
+<div class="help" id="help">← → 넘기기 · O 전체 보기 · F 전체 화면 · 그림 클릭 = 영상 재생 · 다시 클릭·Esc = 그림으로 · 더블클릭 = 크게 보기(소리)</div>
 <div class="ctrl">
   <button id="prev" aria-label="이전 슬라이드">◀</button>
   <span id="count">1 / 1</span>
@@ -1343,14 +1359,27 @@ const zoomVideo = zoom.querySelector('video');
 function closeZoom() {
   zoom.classList.remove('on'); zoomVideo.pause(); zoomVideo.removeAttribute('src'); zoomVideo.load();
 }
+// 지금 슬라이드에서 재생 중인 영상을 모두 그림으로 되돌림 (되돌린 게 있으면 true)
+function resetClips() {
+  let n = 0;
+  slides[cur].querySelectorAll('.swap.on').forEach(sw => { const v = sw.querySelector('video'); v.pause(); v.currentTime = 0; sw.classList.remove('on'); n++; });
+  return n > 0;
+}
+let clickTimer = null;
 stage.addEventListener('click', e => {
   const sw = e.target.closest('.swap');
-  if (sw && !sw.classList.contains('on')) {
-    const v = sw.querySelector('video');
-    sw.classList.add('on'); v.currentTime = 0; v.play().catch(() => {});
-  } else if (e.target.matches('video.clip')) {
-    zoomVideo.src = e.target.getAttribute('src'); zoom.classList.add('on'); zoomVideo.play().catch(() => {});
-  } else if (e.target === zoom) closeZoom();
+  if (!sw) { if (e.target === zoom) closeZoom(); return; }
+  const v = sw.querySelector('video');
+  if (!sw.classList.contains('on')) { sw.classList.add('on'); v.currentTime = 0; v.play().catch(() => {}); return; }
+  // 재생 중인 영상을 한 번 누르면 그림으로 (더블클릭과 구분하려고 잠깐 기다림)
+  clearTimeout(clickTimer);
+  clickTimer = setTimeout(() => { v.pause(); v.currentTime = 0; sw.classList.remove('on'); }, 230);
+});
+// 재생 중인 영상을 두 번 누르면 크게 보기 (소리와 함께)
+stage.addEventListener('dblclick', e => {
+  const sw = e.target.closest('.swap.on'); if (!sw) return;
+  clearTimeout(clickTimer);
+  zoomVideo.src = sw.querySelector('video').getAttribute('src'); zoom.classList.add('on'); zoomVideo.play().catch(() => {});
 });
 addEventListener('resize', fit);
 addEventListener('keydown', e => {
@@ -1361,7 +1390,9 @@ addEventListener('keydown', e => {
   else if (['ArrowLeft', 'PageUp', 'Backspace'].includes(k)) { e.preventDefault(); go(cur - 1); }
   else if (k === 'Home') go(0);
   else if (k === 'End') go(slides.length - 1);
-  else if (k === 'o' || k === 'O' || k === 'Escape') toggleOv(k === 'Escape' ? false : undefined);
+  else if (k === 'Escape') { if (!resetClips()) toggleOv(false); }
+  else if (k === 'v' || k === 'V') resetClips();
+  else if (k === 'o' || k === 'O') toggleOv();
   else if (k === 'f' || k === 'F') toggleFs();
 });
 document.getElementById('prev').onclick = () => go(cur - 1);
